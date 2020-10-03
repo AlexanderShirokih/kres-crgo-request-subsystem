@@ -31,6 +31,8 @@ class Document {
     addEmptyWorksheet();
   }
 
+  void addWorksheet(Worksheet worksheet) => _worksheets.add(worksheet);
+
   Worksheet addEmptyWorksheet({String name}) {
     name ??= "Лист ${_worksheets.length + 1}";
     String worksheetName;

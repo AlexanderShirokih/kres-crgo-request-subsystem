@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/screens/startup/startup_screen.dart';
 
-import 'repo/config_repository.dart';
-import 'repo/worksheet_repository.dart';
+import 'package:kres_requests2/repo/settings_repository.dart';
+import 'package:kres_requests2/repo/config_repository.dart';
+import 'package:kres_requests2/screens/startup/startup_screen.dart';
 
 void main() => runApp(MyApp());
 
@@ -12,8 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MultiRepositoryProvider(
         providers: [
-          RepositoryProvider.value(
-              value: WorksheetRepository('requests/bin/Requests2.0')),
+          RepositoryProvider.value(value: SettingsRepository()),
           RepositoryProvider.value(value: ConfigRepository()),
         ],
         child: MaterialApp(
