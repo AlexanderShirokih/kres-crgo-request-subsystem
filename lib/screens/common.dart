@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 class ErrorView extends StatelessWidget {
   final String errorDescription;
   final String stackTrace;
-  final VoidCallback onPressed;
 
   const ErrorView({
     this.errorDescription,
     this.stackTrace,
-    @required this.onPressed,
-  }) : assert(onPressed != null);
+  });
 
   @override
   Widget build(BuildContext context) => Center(
@@ -26,6 +24,7 @@ class ErrorView extends StatelessWidget {
                     style: Theme.of(context).textTheme.headline6),
                 Expanded(
                   child: ListView(
+                    padding: EdgeInsets.all(12.0),
                     children: [
                       Text(errorDescription ?? "",
                           style: Theme.of(context).textTheme.bodyText2),
@@ -34,10 +33,6 @@ class ErrorView extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodyText2)
                     ],
                   ),
-                ),
-                RaisedButton(
-                  onPressed: onPressed,
-                  child: Text("НАЗАД"),
                 ),
               ],
             ),
@@ -49,7 +44,7 @@ class ErrorView extends StatelessWidget {
 class LoadingView extends StatelessWidget {
   final String label;
 
-  const LoadingView(this.label);
+  const LoadingView(this.label) : assert(label != null);
 
   @override
   Widget build(BuildContext context) => Center(

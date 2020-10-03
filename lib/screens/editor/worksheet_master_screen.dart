@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/common/worksheet_creation_mode.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:kres_requests2/common/worksheet_creation_mode.dart';
+import 'package:kres_requests2/common/worksheet_importer.dart';
+import 'package:kres_requests2/core/counters_importer.dart';
 import 'package:kres_requests2/data/document.dart';
 import 'package:kres_requests2/data/worksheet.dart';
+import 'package:kres_requests2/repo/config_repository.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_tab_view.dart';
+import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 
 import 'worksheet_editor_screen.dart';
@@ -106,36 +111,7 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
       child: ListView.builder(
         itemCount: _currentDocument.worksheets.length + 1,
         itemBuilder: (_, index) => index == _currentDocument.worksheets.length
-            ? AddNewWorkSheetTabView(
-                (WorksheetCreationMode mode) {
-                  switch (mode) {
-                    case WorksheetCreationMode.Import:
-                      Navigator.push<Document>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (ctx) => RequestsImporterScreen.fromContext(
-                            context: ctx,
-                            targetDocument: _currentDocument,
-                          ),
-                        ),
-                      ).then(
-                        (resultDoc) => setState(() {
-                          if (resultDoc != null)
-                            resultDoc.active = resultDoc.worksheets.last;
-                        }),
-                      );
-                      break;
-                    case WorksheetCreationMode.EmptyRaid:
-                    case WorksheetCreationMode.ImportCounters:
-                    case WorksheetCreationMode.Empty:
-                    default:
-                      setState(() {
-                        _currentDocument.active =
-                            _currentDocument.addEmptyWorksheet();
-                      });
-                  }
-                },
-              )
+            ? AddNewWorkSheetTabView(_handleAddNewScreen)
             : withClosure(
                 _currentDocument.worksheets[index],
                 (current) => WorkSheetTabView(
@@ -165,6 +141,81 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
                         },
                 ),
               ),
+      ),
+    );
+  }
+
+  void _handleAddNewScreen(WorksheetCreationMode mode) {
+    switch (mode) {
+      case WorksheetCreationMode.Import:
+        _navigateToImporter(
+          context,
+          RequestsImporterScreen.fromContext(
+            context: context,
+            targetDocument: _currentDocument,
+          ),
+        );
+        break;
+      case WorksheetCreationMode.ImportCounters:
+        _navigateToImporter(
+          context,
+          CountersImporterScreen(
+            targetDocument: _currentDocument,
+            importer: CountersWorksheetImporter(
+              importer:
+                  CountersImporter(context.repository<ConfigRepository>()),
+              tableChooser: (tables) => showDialog<String>(
+                context: context,
+                builder: (_) => _TableSelectionDialog(tables),
+              ),
+            ),
+          ),
+        );
+        break;
+      // TODO: Implement feature
+      case WorksheetCreationMode.EmptyRaid:
+      case WorksheetCreationMode.Empty:
+      default:
+        setState(() {
+          _currentDocument.active = _currentDocument.addEmptyWorksheet();
+        });
+    }
+  }
+
+  Future _navigateToImporter(BuildContext context, Widget importerScreen) =>
+      Navigator.push<Document>(
+        context,
+        MaterialPageRoute(builder: (_) => importerScreen),
+      ).then(
+        (resultDoc) => setState(() {
+          if (resultDoc != null) resultDoc.active = resultDoc.worksheets.last;
+        }),
+      );
+}
+
+class _TableSelectionDialog extends StatelessWidget {
+  final List<String> choices;
+
+  const _TableSelectionDialog(this.choices) : assert(choices != null);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Выберите таблицу для импорта'),
+      content: SizedBox(
+        width: 300.0,
+        height: 440.0,
+        child: ListView(
+          children: choices
+              .map(
+                (e) => ListTile(
+                  leading: FaIcon(FontAwesomeIcons.table),
+                  title: Text(e),
+                  onTap: () => Navigator.pop(context, e),
+                ),
+              )
+              .toList(),
+        ),
       ),
     );
   }

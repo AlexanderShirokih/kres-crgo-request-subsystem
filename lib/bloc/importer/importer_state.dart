@@ -18,6 +18,13 @@ class ImportLoadingState extends ImporterState {
   List<Object> get props => [path];
 }
 
+class ImportEmptyState extends ImporterState {
+  const ImportEmptyState();
+
+  @override
+  List<Object> get props => [];
+}
+
 class WorksheetReadyState extends ImporterState {
   const WorksheetReadyState();
 

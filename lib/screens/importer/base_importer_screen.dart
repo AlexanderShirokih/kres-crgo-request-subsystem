@@ -31,18 +31,18 @@ abstract class BaseImporterScreen extends StatelessWidget {
       body: BlocProvider.value(
         value: ImporterBloc(importer),
         child: Builder(
-          builder: (ctx) => BlocConsumer(
+          builder: (ctx) => BlocConsumer<ImporterBloc, ImporterState>(
             cubit: ctx.bloc<ImporterBloc>(),
             builder: (_, state) {
               if (state is ImportLoadingState) {
                 return LoadingView("Загрузка файла ${state.path}");
               } else if (state is ImportErrorState) {
                 return ErrorView(
-                  errorDescription: state.error.toString(),
-                  stackTrace: state.stackTrace.toString(),
-                  onPressed: () =>
-                      context.bloc<ImporterBloc>().add(InitialEvent()),
+                  errorDescription: state.error?.toString(),
+                  stackTrace: state.stackTrace?.toString(),
                 );
+              } else if (state is ImportEmptyState) {
+                return _EmptyStateView();
               } else
                 return mainWidgetBuilder(targetDocument);
             },
@@ -53,6 +53,31 @@ abstract class BaseImporterScreen extends StatelessWidget {
             },
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _EmptyStateView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Полученный список оказался пуст',
+            style: Theme.of(context).textTheme.headline4,
+          ),
+          const SizedBox(height: 28.0),
+          RaisedButton(
+            padding: EdgeInsets.all(24.0),
+            color: Theme.of(context).primaryColor,
+            textColor: Theme.of(context).primaryTextTheme.bodyText2.color,
+            child: Text('НАЗАД'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
       ),
     );
   }

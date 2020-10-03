@@ -31,13 +31,16 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
       String path, Document targetDocument) async* {
     yield ImportLoadingState(path);
 
-    yield await _worksheetImporter.importWorksheet(path).then(
+    Future<ImporterState> state = _worksheetImporter.importWorksheet(path).then(
       (importedWorksheet) {
+        if (importedWorksheet == null) return ImportEmptyState();
         targetDocument
           ..savePath ??= File(p.withoutExtension(path) + ".json")
           ..addWorksheet(importedWorksheet);
         return WorksheetReadyState();
       },
-    ).catchError((e, s) => ImportErrorState(e, s));
+    );
+
+    yield await state.catchError((e, s) => ImportErrorState(e, s));
   }
 }

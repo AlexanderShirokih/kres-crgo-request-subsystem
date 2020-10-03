@@ -1,10 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:kres_requests2/core/counters_importer.dart';
 import 'package:kres_requests2/data/request_entity.dart';
 import 'package:kres_requests2/data/worksheet.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
+
+class ImporterException implements Exception {
+  final String message;
+  final Object parent;
+
+  const ImporterException(this.message, [this.parent]);
+
+  @override
+  String toString() =>
+      '$ImporterException: $message. ${parent == null ? '' : 'Parental exception: $parent'}';
+}
 
 abstract class WorksheetImporter {
   const WorksheetImporter();
@@ -26,10 +38,12 @@ class RequestsWorksheetImporter extends WorksheetImporter {
   @override
   Future<Worksheet> importWorksheet(String filePath) {
     return _importRequests(filePath).then(
-      (requests) => Worksheet(
-        name: _getWorksheetName(filePath),
-        requests: requests,
-      ),
+      (requests) => requests.isEmpty
+          ? null
+          : Worksheet(
+              name: _getWorksheetName(filePath),
+              requests: requests,
+            ),
     );
   }
 
@@ -44,4 +58,30 @@ class RequestsWorksheetImporter extends WorksheetImporter {
             .map((e) => RequestEntity.fromJson(e))
             .toList();
       });
+}
+
+class CountersWorksheetImporter extends WorksheetImporter {
+  final CountersImporter importer;
+  final TableChooser tableChooser;
+
+  const CountersWorksheetImporter({
+    @required this.importer,
+    @required this.tableChooser,
+  })  : assert(importer != null),
+        assert(tableChooser != null);
+
+  @override
+  Future<Worksheet> importWorksheet(String filePath) {
+    return _doImport(filePath).then(
+      (namedRequests) => namedRequests.requests.isEmpty
+          ? null
+          : Worksheet(
+              name: namedRequests.name,
+              requests: namedRequests.requests,
+            ),
+    );
+  }
+
+  Future<NamedWorksheet> _doImport(String filePath) =>
+      importer.importAsRequestsList(filePath, tableChooser);
 }
