@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path/path.dart' as path;
 
 import 'package:kres_requests2/common/worksheet_creation_mode.dart';
 import 'package:kres_requests2/common/worksheet_importer.dart';
@@ -13,6 +17,7 @@ import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_tab_view.dart';
 import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
+import 'package:kres_requests2/screens/preview/worksheets_preview_screen.dart';
 
 import 'worksheet_editor_screen.dart';
 
@@ -28,9 +33,13 @@ class WorksheetMasterScreen extends StatefulWidget {
 
 class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
   final Document _currentDocument;
+  String _currentDirectory;
 
   _WorksheetMasterScreenState(Document currentDocument)
-      : _currentDocument = currentDocument ?? Document.empty();
+      : _currentDocument = currentDocument ??= Document.empty(),
+        _currentDirectory = currentDocument.savePath == null
+            ? './'
+            : path.dirname(currentDocument.savePath.path);
 
   String _getDocumentName() => _currentDocument.savePath == null
       ? "Несохранённый документ"
@@ -48,28 +57,27 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
       appBar: AppBar(
         title: Text('Редактирование - ${_getDocumentName()}'),
         actions: [
-          IconButton(
+          _createActionButton(
             icon: FaIcon(FontAwesomeIcons.save),
             tooltip: "Сохранить",
-            onPressed: () {
-              // TODO: Save current document
-            },
+            onPressed: (ctx) => _saveDocument(ctx, false),
           ),
           const SizedBox(width: 24.0),
-          IconButton(
+          _createActionButton(
             icon: FaIcon(FontAwesomeIcons.solidSave),
-            tooltip: "Сохранить как",
-            onPressed: () {
-              // TODO: Save current document
-            },
+            tooltip: "Сохранить под новым именем (копия)",
+            onPressed: (ctx) => _saveDocument(ctx, true),
           ),
           const SizedBox(width: 24.0),
           IconButton(
             icon: FaIcon(FontAwesomeIcons.fileExport),
             tooltip: "Вывод",
-            onPressed: () {
-              // TODO: Navigate to print dialog
-            },
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => WorksheetsPreviewScreen(_currentDocument),
+              ),
+            ),
           ),
           const SizedBox(width: 24.0),
         ],
@@ -91,6 +99,19 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
       ),
     );
   }
+
+  Widget _createActionButton({
+    Widget icon,
+    String tooltip,
+    void Function(BuildContext) onPressed,
+  }) =>
+      Builder(
+        builder: (ctx) => IconButton(
+          icon: icon,
+          tooltip: tooltip,
+          onPressed: () => onPressed(ctx),
+        ),
+      );
 
   Widget _createPageController() {
     Widget withClosure(Worksheet current, Widget Function(Worksheet) closure) =>
@@ -191,6 +212,64 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
           if (resultDoc != null) resultDoc.active = resultDoc.worksheets.last;
         }),
       );
+
+  Future _saveDocument(BuildContext context, bool changePath) async {
+    if (_currentDocument.savePath == null || changePath) {
+      final newSavePath = await _showSaveDialog();
+      if (newSavePath == null) return;
+
+      setState(() {
+        _currentDocument.savePath = newSavePath;
+      });
+    }
+
+    final scaffold = Scaffold.of(context);
+
+    void showSnackbar(String message, Duration duration) =>
+        scaffold.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: duration,
+          ),
+        );
+
+    showSnackbar('Сохранение...', const Duration(hours: 1));
+
+    _currentDocument.save().then((_) {
+      scaffold.removeCurrentSnackBar();
+      showSnackbar(
+        'Документ сохранён',
+        const Duration(seconds: 2),
+      );
+    }).catchError(
+      (e, s) {
+        print("$e\n$s");
+        scaffold.removeCurrentSnackBar();
+        showSnackbar(
+          'Не удалось сохранить! $e',
+          const Duration(seconds: 6),
+        );
+      },
+    );
+  }
+
+  Future<File> _showSaveDialog() async {
+    final res = await showSavePanel(
+      initialDirectory: _currentDirectory,
+      confirmButtonText: 'Сохранить',
+      allowedFileTypes: [
+        FileTypeFilterGroup(
+          label: "Документ работы",
+          fileExtensions: ["json"],
+        )
+      ],
+    );
+    if (res.canceled) return null;
+
+    final savePath = res.paths[0];
+    _currentDirectory = path.dirname(savePath);
+    return File(savePath);
+  }
 }
 
 class _TableSelectionDialog extends StatelessWidget {

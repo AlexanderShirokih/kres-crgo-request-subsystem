@@ -48,6 +48,17 @@ class RequestEntity extends Equatable {
         counterInfo: data['counterInfo'],
       );
 
+  /// Converts [RequestEntity] to JSON representation
+  Map<String, dynamic> toJson() => {
+        'accountId': accountId,
+        'name': name,
+        'address': address,
+        'reqType': reqType,
+        'fullReqType': fullReqType,
+        'additionalInfo': additionalInfo,
+        'counterInfo': counterInfo,
+      };
+
   factory RequestEntity.empty() => RequestEntity(
         name: "",
         address: "",

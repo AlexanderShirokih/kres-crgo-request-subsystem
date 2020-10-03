@@ -10,23 +10,30 @@ class Employee extends Equatable {
   final String position;
 
   /// Electrical access group
-  final int elAccessGroup;
+  final int accessGroup;
 
   const Employee({
     @required this.name,
     @required this.position,
-    @required this.elAccessGroup,
+    @required this.accessGroup,
   })  : assert(name != null),
         assert(position != null),
-        assert(elAccessGroup != null);
+        assert(accessGroup != null);
 
   /// Creates [Employee] instance from JSON data
   factory Employee.fromJson(Map<String, dynamic> data) => Employee(
         name: data['name'],
         position: data['position'],
-        elAccessGroup: data['elAccessGroup'],
+        accessGroup: data['accessGroup'],
       );
 
+  /// Converts [Employee] instance to JSON representation
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'position': position,
+        'accessGroup': accessGroup,
+      };
+
   @override
-  List<Object> get props => [name, position, elAccessGroup];
+  List<Object> get props => [name, position, accessGroup];
 }

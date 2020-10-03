@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -14,13 +15,37 @@ class Document {
 
   List<Worksheet> _worksheets;
 
+  /// Last save date
+  DateTime updateDate = DateTime.now();
+
   int _activeWorksheet = 0;
 
   Worksheet get active => _worksheets[_activeWorksheet];
 
+  /// Converts [Document] instance to JSON representation
+  Map<String, dynamic> toJson() => {
+        'updateDate': updateDate.millisecondsSinceEpoch,
+        'activeWorksheet': _activeWorksheet,
+        'worksheets': _worksheets.map((w) => w.toJson()).toList()
+      };
+
+  factory Document.fromJson(Map<String, dynamic> data) => Document._(
+        (data['worksheets'] as List<dynamic>)
+            .map((w) => Worksheet.fromJson(w))
+            .toList(),
+        data['activeWorksheet'] ?? 0,
+        DateTime.fromMillisecondsSinceEpoch(data['updateDate']),
+      );
+
   set active(Worksheet worksheet) {
     _activeWorksheet = max(_worksheets.indexOf(worksheet), 0);
   }
+
+  Document._(
+    this._worksheets,
+    this._activeWorksheet,
+    this.updateDate,
+  );
 
   Document({this.savePath, List<Worksheet> worksheets})
       : _worksheets = worksheets,
@@ -61,4 +86,11 @@ class Document {
 
   // TODO: Implement raid creation
   Worksheet addEmptyRaidWorksheet() => throw UnimplementedError();
+
+  /// Saves [Document] instance to [savePath]
+  Future save() async {
+    if (savePath == null) throw ('savePath == null!');
+
+    await savePath.writeAsString(json.encode(toJson()));
+  }
 }

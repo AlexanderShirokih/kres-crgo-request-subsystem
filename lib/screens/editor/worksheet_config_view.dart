@@ -181,7 +181,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
                     (e) => DropdownMenuItem(
                       value: e,
                       child: Text(
-                          "${e.name}, ${e.position}, ${e.elAccessGroup} гр."),
+                          "${e.name}, ${e.position}, ${e.accessGroup} гр."),
                     ),
                   )
                   .toList(),
