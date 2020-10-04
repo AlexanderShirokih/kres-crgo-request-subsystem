@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:bloc/bloc.dart';
 import 'package:path/path.dart' as p;
 import 'package:equatable/equatable.dart';
 
@@ -14,9 +14,18 @@ part 'importer_event.dart';
 part 'importer_state.dart';
 
 class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
-  final WorksheetImporter _worksheetImporter;
+  final WorksheetImporter importer;
+  final Document targetDocument;
+  final Future<String> Function() fileChooser;
 
-  ImporterBloc(this._worksheetImporter) : super(ImporterInitialState());
+  ImporterBloc({
+    this.targetDocument,
+    @required this.importer,
+    @required this.fileChooser,
+    @required bool forceFileChooser,
+  }) : super(ImporterInitialState()) {
+    if (forceFileChooser) add(ImportEvent());
+  }
 
   @override
   Stream<ImporterState> mapEventToState(ImporterEvent event) async* {
@@ -28,30 +37,39 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
   }
 
   Stream<ImporterState> _doWorksheetImport(ImportEvent import) async* {
-    Document _copyToTarget(Document source) {
-      import.targetDocument
-        ..savePath ??= (import.attachPath
-            ? File(p.withoutExtension(import.path) + ".json")
-            : null)
-        ..addWorksheets(source.worksheets);
-      return import.targetDocument;
+    final file = await fileChooser();
+    if (file == null) {
+      yield WorksheetReadyState(null);
+      return;
     }
 
-    yield ImportLoadingState(import.path);
+    Document _copyToTarget(Document source) {
+      targetDocument
+        ..savePath ??= (import.attachPath
+            ? File(p.withoutExtension(file) + ".json")
+            : null)
+        ..addWorksheets(source.worksheets);
+      return targetDocument;
+    }
 
-    Future<ImporterState> state =
-        _worksheetImporter.importDocument(import.path).then(
+    yield ImportLoadingState(file);
+
+    Future<ImporterState> state = importer.importDocument(file).then(
       (importedDocument) {
         if (importedDocument == null) return ImportEmptyState();
 
-        final newTarget = import.targetDocument == null
-            ? (importedDocument..savePath = File(import.path))
+        final newTarget = targetDocument == null
+            ? (importedDocument..savePath = File(file))
             : _copyToTarget(importedDocument);
 
         return WorksheetReadyState(newTarget);
       },
     );
 
-    yield await state.catchError((e, s) => ImportErrorState(e, s));
+    yield await state.catchError((e, s) {
+      return e is ImporterProcessMissingException
+          ? ImporterProccessMissingState()
+          : ImportErrorState(e, s);
+    });
   }
 }

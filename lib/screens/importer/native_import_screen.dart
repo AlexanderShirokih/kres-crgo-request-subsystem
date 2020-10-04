@@ -1,80 +1,56 @@
 import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kres_requests2/data/worksheet.dart';
 
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
-import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/common/worksheet_importer.dart';
 import 'package:kres_requests2/data/document.dart';
 
 class NativeImporterScreen extends BaseImporterScreen {
   final String initialDirectory;
+  final Document targetDocument;
 
   NativeImporterScreen({
-    Document targetDocument,
     MultiTableChooser multiTableChooser,
+    this.targetDocument,
     this.initialDirectory,
   })  : assert((targetDocument != null) == (multiTableChooser != null)),
         super(
           title: 'Импорт файла',
           importer: NativeWorksheetImporter(tableChooser: multiTableChooser),
           targetDocument: targetDocument,
-          mainWidgetBuilder: (doc) => _NativeImportWidget(
-            initialDirectory,
-            doc,
-          ),
+          mainWidgetBuilder: (_) => _NativeImportWidget(),
+          forceFileSelection: true,
         );
-}
-
-class _NativeImportWidget extends StatefulWidget {
-  final String initialDirectory;
-  final Document targetDocument;
-
-  const _NativeImportWidget(
-    this.initialDirectory,
-    this.targetDocument,
-  );
 
   @override
-  __NativeImportWidgetState createState() => __NativeImportWidgetState();
-}
-
-class __NativeImportWidgetState extends State<_NativeImportWidget> {
-  bool _isImported = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _isImported ? Future.value(null) : _showImportDialog(context),
-      builder: (ctx, snap) => Container(),
-    );
-  }
-
-  Future _showImportDialog(BuildContext context) async {
+  Future<String> showOpenDialog(BuildContext context) async {
     final res = await showOpenPanel(
-      initialDirectory: widget.initialDirectory,
+      initialDirectory: initialDirectory,
       allowsMultipleSelection: false,
       canSelectDirectories: false,
       confirmButtonText: 'Открыть',
       allowedFileTypes: [
         FileTypeFilterGroup(
-          label: "Документ работы",
+          label: "Документ заявок",
           fileExtensions: ["json"],
         )
       ],
     );
-    if (res.canceled) return;
-    _isImported = true;
 
-    context.bloc<ImporterBloc>().add(
-          ImportEvent(
-            path: res.paths[0],
-            targetDocument: widget.targetDocument,
-            attachPath: false,
-          ),
-        );
+    if (res.canceled) return null;
+
+    return res.paths[0];
+  }
+}
+
+class _NativeImportWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: CircularProgressIndicator(),
+    );
   }
 }
 

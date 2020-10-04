@@ -8,6 +8,11 @@ class EmployeesRepository {
           accessGroup: 3,
         ),
         Employee(
+          name: "Рясная Я.В.",
+          position: "эл.монт.",
+          accessGroup: 3,
+        ),
+        Employee(
           name: "Петренко И.П.",
           position: "мастер БОП",
           accessGroup: 4,

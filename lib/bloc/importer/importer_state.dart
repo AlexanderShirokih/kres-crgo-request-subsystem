@@ -9,6 +9,11 @@ class ImporterInitialState extends ImporterState {
   List<Object> get props => [];
 }
 
+class ImporterProccessMissingState extends ImporterState {
+  @override
+  List<Object> get props => [];
+}
+
 class ImportLoadingState extends ImporterState {
   final String path;
 

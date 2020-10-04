@@ -26,6 +26,8 @@ abstract class WorksheetImporter {
   Future<Document> importDocument(String filePath);
 }
 
+class ImporterProcessMissingException implements Exception {}
+
 class RequestsWorksheetImporter extends WorksheetImporter {
   final String importerExecutablePath;
 
@@ -36,24 +38,29 @@ class RequestsWorksheetImporter extends WorksheetImporter {
   String _getWorksheetName(String filePath) =>
       path.basenameWithoutExtension(filePath);
 
+  Future<bool> _checkExporter() => File(importerExecutablePath).exists();
+
   @override
-  Future<Document> importDocument(String filePath) {
-    return _importRequests(filePath)
-        .then(
-          (requests) => requests.isEmpty
-              ? null
-              : [
-                  Worksheet(
-                    name: _getWorksheetName(filePath),
-                    requests: requests,
-                  )
-                ],
-        )
-        .then(
-          (worksheets) =>
-              worksheets == null ? null : Document(worksheets: worksheets),
-        );
-  }
+  Future<Document> importDocument(String filePath) =>
+      _checkExporter().then((isExists) {
+        if (!isExists) throw ImporterProcessMissingException();
+      }).then(
+        (value) => _importRequests(filePath)
+            .then(
+              (requests) => requests.isEmpty
+                  ? null
+                  : [
+                      Worksheet(
+                        name: _getWorksheetName(filePath),
+                        requests: requests,
+                      )
+                    ],
+            )
+            .then(
+              (worksheets) =>
+                  worksheets == null ? null : Document(worksheets: worksheets),
+            ),
+      );
 
   Future<List<RequestEntity>> _importRequests(String filePath) =>
       Process.run(importerExecutablePath, ['-parse', filePath])

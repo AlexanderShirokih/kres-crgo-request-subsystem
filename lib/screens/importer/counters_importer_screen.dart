@@ -19,59 +19,17 @@ class CountersImporterScreen extends BaseImporterScreen {
   }) : super(
           title: 'Импорт списка счетчиков на замену',
           targetDocument: targetDocument,
-          mainWidgetBuilder: (document) => _CountersImporterIdleView(
-            document,
-            initialDirectory,
-          ),
+          mainWidgetBuilder: (_) => _CountersImporterIdleView(),
           importer: importer,
+          forceFileSelection: false,
         );
-}
-
-class _CountersImporterIdleView extends StatelessWidget {
-  final Document _targetDocument;
-  final String _initialDirectory;
-
-  const _CountersImporterIdleView(
-    this._targetDocument,
-    this._initialDirectory,
-  );
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      heightFactor: 4.0,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '1. Подготовьте отчёт со списком счётчиков в формате XLSX (Excel 2007-365).\n'
-            '2. Расположение данных в колонках должно соответствовать примеру\n'
-            '3. Нажмите Открыть отчёт и выберите сохранённый файл',
-            style: Theme.of(context).textTheme.headline4,
-          ),
-          const SizedBox(height: 42.0),
-          Image.asset('assets/images/counters_import_template.png'),
-          const SizedBox(height: 42.0),
-          RaisedButton.icon(
-            color: Theme.of(context).primaryColor,
-            textColor: Theme.of(context).primaryTextTheme.bodyText2.color,
-            padding: EdgeInsets.all(22.0),
-            icon: FaIcon(FontAwesomeIcons.fileExcel),
-            label: Text(
-              'Открыть отчёт',
-            ),
-            onPressed: () => _showImportDialog(context),
-          )
-        ],
-      ),
-    );
-  }
-
-  Future _showImportDialog(BuildContext context) async {
+  Future<String> showOpenDialog(BuildContext context) async {
     final res = await showOpenPanel(
       allowsMultipleSelection: false,
       canSelectDirectories: false,
-      initialDirectory: _initialDirectory,
+      initialDirectory: initialDirectory,
       confirmButtonText: 'Открыть',
       allowedFileTypes: [
         FileTypeFilterGroup(
@@ -80,13 +38,38 @@ class _CountersImporterIdleView extends StatelessWidget {
         )
       ],
     );
-    if (res.canceled) return;
 
-    context.bloc<ImporterBloc>().add(
-          ImportEvent(
-            path: res.paths[0],
-            targetDocument: _targetDocument,
-          ),
-        );
+    return res.canceled ? null : res.paths[0];
   }
+}
+
+class _CountersImporterIdleView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Center(
+        heightFactor: 4.0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '1. Подготовьте отчёт со списком счётчиков в формате XLSX (Excel 2007-365).\n'
+              '2. Расположение данных в колонках должно соответствовать примеру\n'
+              '3. Нажмите Открыть отчёт и выберите сохранённый файл',
+              style: Theme.of(context).textTheme.headline4,
+            ),
+            const SizedBox(height: 42.0),
+            Image.asset('assets/images/counters_import_template.png'),
+            const SizedBox(height: 42.0),
+            RaisedButton.icon(
+              color: Theme.of(context).primaryColor,
+              textColor: Theme.of(context).primaryTextTheme.bodyText2.color,
+              padding: EdgeInsets.all(22.0),
+              icon: FaIcon(FontAwesomeIcons.fileExcel),
+              label: Text(
+                'Открыть отчёт',
+              ),
+              onPressed: () => context.bloc<ImporterBloc>().add(ImportEvent()),
+            )
+          ],
+        ),
+      );
 }

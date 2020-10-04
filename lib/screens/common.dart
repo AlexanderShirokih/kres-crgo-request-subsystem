@@ -126,7 +126,7 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
       confirmButtonText: 'Сохранить',
       allowedFileTypes: [
         FileTypeFilterGroup(
-          label: "Документ работы",
+          label: "Документ заявок",
           fileExtensions: ["json"],
         )
       ],

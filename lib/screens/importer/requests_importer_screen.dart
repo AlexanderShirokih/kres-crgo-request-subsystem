@@ -35,21 +35,31 @@ class RequestsImporterScreen extends BaseImporterScreen {
   }) : super(
           title: 'Импорт заявок',
           targetDocument: targetDocument,
-          mainWidgetBuilder: (document) =>
-              _RequestsImporterIdleView(document, initialDirectory),
+          mainWidgetBuilder: (_) => _RequestsImporterIdleView(),
           importer: importer,
+          forceFileSelection: false,
         );
+
+  @override
+  Future<String> showOpenDialog(BuildContext context) async {
+    final res = await showOpenPanel(
+      allowsMultipleSelection: false,
+      canSelectDirectories: false,
+      initialDirectory: initialDirectory,
+      confirmButtonText: 'Открыть',
+      allowedFileTypes: [
+        FileTypeFilterGroup(
+          label: "Файлы Excel 97-2003",
+          fileExtensions: ["xls"],
+        )
+      ],
+    );
+
+    return res.canceled ? null : res.paths[0];
+  }
 }
 
 class _RequestsImporterIdleView extends StatelessWidget {
-  final Document _targetDocument;
-  final String _initialDirectory;
-
-  const _RequestsImporterIdleView(
-    this._targetDocument,
-    this._initialDirectory,
-  );
-
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -72,33 +82,10 @@ class _RequestsImporterIdleView extends StatelessWidget {
             label: Text(
               'Открыть отчёт',
             ),
-            onPressed: () => _showImportDialog(context),
+            onPressed: () => context.bloc<ImporterBloc>().add(ImportEvent()),
           )
         ],
       ),
     );
-  }
-
-  Future _showImportDialog(BuildContext context) async {
-    final res = await showOpenPanel(
-      allowsMultipleSelection: false,
-      canSelectDirectories: false,
-      initialDirectory: _initialDirectory,
-      confirmButtonText: 'Открыть',
-      allowedFileTypes: [
-        FileTypeFilterGroup(
-          label: "Файлы Excel 97-2003",
-          fileExtensions: ["xls"],
-        )
-      ],
-    );
-    if (res.canceled) return;
-
-    context.bloc<ImporterBloc>().add(
-          ImportEvent(
-            path: res.paths[0],
-            targetDocument: _targetDocument,
-          ),
-        );
   }
 }
