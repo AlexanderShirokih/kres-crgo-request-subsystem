@@ -1,5 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kres_requests2/data/employee.dart';
+import 'package:kres_requests2/repo/employees_repository.dart';
 
 import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/repo/config_repository.dart';
@@ -14,6 +19,14 @@ class MyApp extends StatelessWidget {
         providers: [
           RepositoryProvider.value(value: SettingsRepository()),
           RepositoryProvider.value(value: ConfigRepository()),
+          RepositoryProvider.value(
+            value: EmployeesRepository(
+              (jsonDecode(File("employees.json").readAsStringSync())
+                      as List<dynamic>)
+                  .map((e) => Employee.fromJson(e))
+                  .toList(),
+            ),
+          )
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

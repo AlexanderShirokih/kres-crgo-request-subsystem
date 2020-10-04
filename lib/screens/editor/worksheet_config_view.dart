@@ -19,36 +19,33 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
   @override
   Widget build(BuildContext context) {
     final w = widget.worksheet;
-    return RepositoryProvider.value(
-      value: EmployeesRepository(),
-      child: Form(
-        child: Builder(
-          builder: (ctx) => Padding(
-            padding: const EdgeInsets.only(left: 16.0, right: 8.0, top: 24.0),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ..._header(8.0, "Выдающий распоряжение:"),
-                  const SizedBox(height: 18.0),
-                  _createDropdownEmployeeForm(
-                    positionDesc: "Выберите выдающего распоряжения",
-                    current: w.chiefEmployee,
-                    employees: _getAllEmployees(ctx, 4),
-                    onChanged: (Employee value) => setState(() {
-                      w.chiefEmployee = value;
-                    }),
-                  ),
-                  const SizedBox(height: 28.0),
-                  ..._showMainEmployee(ctx, w),
-                  const SizedBox(height: 24.0),
-                  ..._showTeamMembers(ctx, w),
-                  const SizedBox(height: 24.0),
-                  _DatePicker(w),
-                  const SizedBox(height: 28.0),
-                  ..._showWorkTypes(w),
-                ],
-              ),
+    return Form(
+      child: Builder(
+        builder: (ctx) => Padding(
+          padding: const EdgeInsets.only(left: 16.0, right: 8.0, top: 24.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ..._header(8.0, "Выдающий распоряжение:"),
+                const SizedBox(height: 18.0),
+                _createDropdownEmployeeForm(
+                  positionDesc: "Выберите выдающего распоряжения",
+                  current: w.chiefEmployee,
+                  employees: _getAllEmployees(ctx, 4),
+                  onChanged: (Employee value) => setState(() {
+                    w.chiefEmployee = value;
+                  }),
+                ),
+                const SizedBox(height: 28.0),
+                ..._showMainEmployee(ctx, w),
+                const SizedBox(height: 24.0),
+                ..._showTeamMembers(ctx, w),
+                const SizedBox(height: 24.0),
+                _DatePicker(w),
+                const SizedBox(height: 28.0),
+                ..._showWorkTypes(w),
+              ],
             ),
           ),
         ),
