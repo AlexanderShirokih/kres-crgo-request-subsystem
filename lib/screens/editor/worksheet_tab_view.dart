@@ -50,6 +50,12 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
             mode: WorksheetCreationMode.EmptyRaid,
           ),
           _buildItemTile(
+            title: 'Импорт из другого документа',
+            tooltip: 'Добавить листы из другого документа',
+            icon: FontAwesomeIcons.fileImport,
+            mode: WorksheetCreationMode.ImportNative,
+          ),
+          _buildItemTile(
             title: 'Импорт файла заявок',
             tooltip:
                 'Создать новый лист заявок из подготовленного файла Mega-billing',

@@ -5,15 +5,18 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/common/worksheet_importer.dart';
-import 'package:kres_requests2/data/document.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
+import 'package:kres_requests2/data/document.dart';
 
 import 'base_importer_screen.dart';
 
 class RequestsImporterScreen extends BaseImporterScreen {
+  final String initialDirectory;
+
   factory RequestsImporterScreen.fromContext({
     @required BuildContext context,
     @required Document targetDocument,
+    String initialDirectory,
   }) =>
       RequestsImporterScreen(
         targetDocument: targetDocument,
@@ -22,23 +25,30 @@ class RequestsImporterScreen extends BaseImporterScreen {
               .repository<SettingsRepository>()
               .requestsImporterExecutable,
         ),
+        initialDirectory: initialDirectory,
       );
 
   RequestsImporterScreen({
     @required Document targetDocument,
     @required WorksheetImporter importer,
+    this.initialDirectory,
   }) : super(
           title: 'Импорт заявок',
           targetDocument: targetDocument,
-          mainWidgetBuilder: (document) => _RequestsImporterIdleView(document),
+          mainWidgetBuilder: (document) =>
+              _RequestsImporterIdleView(document, initialDirectory),
           importer: importer,
         );
 }
 
 class _RequestsImporterIdleView extends StatelessWidget {
   final Document _targetDocument;
+  final String _initialDirectory;
 
-  const _RequestsImporterIdleView(this._targetDocument);
+  const _RequestsImporterIdleView(
+    this._targetDocument,
+    this._initialDirectory,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +83,7 @@ class _RequestsImporterIdleView extends StatelessWidget {
     final res = await showOpenPanel(
       allowsMultipleSelection: false,
       canSelectDirectories: false,
-      initialDirectory: './',
+      initialDirectory: _initialDirectory,
       confirmButtonText: 'Открыть',
       allowedFileTypes: [
         FileTypeFilterGroup(

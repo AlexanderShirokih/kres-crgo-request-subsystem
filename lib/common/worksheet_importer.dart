@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:kres_requests2/core/counters_importer.dart';
+import 'package:kres_requests2/data/document.dart';
 import 'package:kres_requests2/data/request_entity.dart';
 import 'package:kres_requests2/data/worksheet.dart';
 import 'package:meta/meta.dart';
@@ -21,8 +22,8 @@ class ImporterException implements Exception {
 abstract class WorksheetImporter {
   const WorksheetImporter();
 
-  /// Runs parser program and returns worksheet containing parsing result
-  Future<Worksheet> importWorksheet(String filePath);
+  /// Runs parser program and returns worksheets containing parsing result
+  Future<Document> importDocument(String filePath);
 }
 
 class RequestsWorksheetImporter extends WorksheetImporter {
@@ -36,15 +37,22 @@ class RequestsWorksheetImporter extends WorksheetImporter {
       path.basenameWithoutExtension(filePath);
 
   @override
-  Future<Worksheet> importWorksheet(String filePath) {
-    return _importRequests(filePath).then(
-      (requests) => requests.isEmpty
-          ? null
-          : Worksheet(
-              name: _getWorksheetName(filePath),
-              requests: requests,
-            ),
-    );
+  Future<Document> importDocument(String filePath) {
+    return _importRequests(filePath)
+        .then(
+          (requests) => requests.isEmpty
+              ? null
+              : [
+                  Worksheet(
+                    name: _getWorksheetName(filePath),
+                    requests: requests,
+                  )
+                ],
+        )
+        .then(
+          (worksheets) =>
+              worksheets == null ? null : Document(worksheets: worksheets),
+        );
   }
 
   Future<List<RequestEntity>> _importRequests(String filePath) =>
@@ -71,17 +79,52 @@ class CountersWorksheetImporter extends WorksheetImporter {
         assert(tableChooser != null);
 
   @override
-  Future<Worksheet> importWorksheet(String filePath) {
-    return _doImport(filePath).then(
-      (namedRequests) => namedRequests.requests.isEmpty
-          ? null
-          : Worksheet(
-              name: namedRequests.name,
-              requests: namedRequests.requests,
-            ),
-    );
+  Future<Document> importDocument(String filePath) {
+    return _doImport(filePath)
+        .then(
+          (namedRequests) => namedRequests.requests.isEmpty
+              ? null
+              : [
+                  Worksheet(
+                    name: namedRequests.name,
+                    requests: namedRequests.requests,
+                  )
+                ],
+        )
+        .then(
+          (worksheets) =>
+              worksheets == null ? null : Document(worksheets: worksheets),
+        );
   }
 
   Future<NamedWorksheet> _doImport(String filePath) =>
       importer.importAsRequestsList(filePath, tableChooser);
+}
+
+typedef MultiTableChooser = Future<List<Worksheet>> Function(List<Worksheet>);
+
+class NativeWorksheetImporter extends WorksheetImporter {
+  final MultiTableChooser tableChooser;
+
+  const NativeWorksheetImporter({@required this.tableChooser});
+
+  @override
+  Future<Document> importDocument(String filePath) => File(filePath)
+      .readAsString()
+      .then((content) => jsonDecode(content))
+      .then((json) => Document.fromJson(json))
+      .then((document) =>
+          tableChooser == null ? document : _chooseWorksheets(document));
+
+  Future<Document> _chooseWorksheets(Document document) =>
+      _chooseWorksheets0(document).then(
+        (worksheets) => worksheets == null || worksheets.isEmpty
+            ? null
+            : Document(worksheets: worksheets),
+      );
+
+  Future<List<Worksheet>> _chooseWorksheets0(Document document) =>
+      document.worksheets.length == 1
+          ? Future.sync(() => document.worksheets)
+          : tableChooser(document.worksheets);
 }

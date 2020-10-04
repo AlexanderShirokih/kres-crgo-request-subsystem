@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/data/document.dart';
+import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 import 'package:kres_requests2/screens/startup/startup_screen_button.dart';
@@ -25,7 +26,15 @@ class StartupScreen extends StatelessWidget {
               StartupScreenButton(
                 label: 'Открыть документ',
                 iconData: FontAwesomeIcons.folderOpen,
-                onPressed: () {},
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => NativeImporterScreen(),
+                  ),
+                ).then((resultDocument) {
+                  if (resultDocument != null)
+                    return _runWorksheetEditorScreen(context, resultDocument);
+                }),
               ),
               StartupScreenButton(
                 label: 'Импорт заявок',

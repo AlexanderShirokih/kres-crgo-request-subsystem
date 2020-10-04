@@ -10,21 +10,31 @@ import 'package:kres_requests2/data/document.dart';
 import 'base_importer_screen.dart';
 
 class CountersImporterScreen extends BaseImporterScreen {
+  final String initialDirectory;
+
   CountersImporterScreen({
     @required Document targetDocument,
     @required WorksheetImporter importer,
+    this.initialDirectory,
   }) : super(
           title: 'Импорт списка счетчиков на замену',
           targetDocument: targetDocument,
-          mainWidgetBuilder: (document) => _CountersImporterIdleView(document),
+          mainWidgetBuilder: (document) => _CountersImporterIdleView(
+            document,
+            initialDirectory,
+          ),
           importer: importer,
         );
 }
 
 class _CountersImporterIdleView extends StatelessWidget {
   final Document _targetDocument;
+  final String _initialDirectory;
 
-  const _CountersImporterIdleView(this._targetDocument);
+  const _CountersImporterIdleView(
+    this._targetDocument,
+    this._initialDirectory,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +71,7 @@ class _CountersImporterIdleView extends StatelessWidget {
     final res = await showOpenPanel(
       allowsMultipleSelection: false,
       canSelectDirectories: false,
-      initialDirectory: './',
+      initialDirectory: _initialDirectory,
       confirmButtonText: 'Открыть',
       allowedFileTypes: [
         FileTypeFilterGroup(

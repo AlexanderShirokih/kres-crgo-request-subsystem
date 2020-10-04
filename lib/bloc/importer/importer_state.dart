@@ -26,7 +26,9 @@ class ImportEmptyState extends ImporterState {
 }
 
 class WorksheetReadyState extends ImporterState {
-  const WorksheetReadyState();
+  final Document document;
+
+  const WorksheetReadyState(this.document);
 
   @override
   List<Object> get props => [];

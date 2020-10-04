@@ -4,6 +4,7 @@ import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:kres_requests2/common/worksheet_creation_mode.dart';
@@ -32,7 +33,7 @@ class WorksheetMasterScreen extends StatefulWidget {
 }
 
 class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
-  final Document _currentDocument;
+  Document _currentDocument;
   String _currentDirectory;
 
   _WorksheetMasterScreenState(Document currentDocument)
@@ -65,7 +66,7 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
           const SizedBox(width: 24.0),
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.solidSave),
-            tooltip: "Сохранить под новым именем (копия)",
+            tooltip: "Сохранить как (копия)",
             onPressed: (ctx) => _saveDocument(ctx, true),
           ),
           const SizedBox(width: 24.0),
@@ -172,6 +173,7 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
         _navigateToImporter(
           context,
           RequestsImporterScreen.fromContext(
+            initialDirectory: _currentDirectory,
             context: context,
             targetDocument: _currentDocument,
           ),
@@ -182,6 +184,7 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
           context,
           CountersImporterScreen(
             targetDocument: _currentDocument,
+            initialDirectory: _currentDirectory,
             importer: CountersWorksheetImporter(
               importer:
                   CountersImporter(context.repository<ConfigRepository>()),
@@ -189,6 +192,19 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
                 context: context,
                 builder: (_) => _TableSelectionDialog(tables),
               ),
+            ),
+          ),
+        );
+        break;
+      case WorksheetCreationMode.ImportNative:
+        _navigateToImporter(
+          context,
+          NativeImporterScreen(
+            targetDocument: _currentDocument,
+            initialDirectory: _currentDirectory,
+            multiTableChooser: (tables) => showDialog<List<Worksheet>>(
+              context: context,
+              builder: (_) => SelectWorksheetsDialog(tables),
             ),
           ),
         );
@@ -209,7 +225,10 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen> {
         MaterialPageRoute(builder: (_) => importerScreen),
       ).then(
         (resultDoc) => setState(() {
-          if (resultDoc != null) resultDoc.active = resultDoc.worksheets.last;
+          if (resultDoc != null) {
+            _currentDocument = resultDoc;
+            _currentDocument.active = _currentDocument.worksheets.last;
+          }
         }),
       );
 

@@ -56,9 +56,19 @@ class Document {
     addEmptyWorksheet();
   }
 
-  void addWorksheet(Worksheet worksheet) => _worksheets.add(worksheet);
+  void addWorksheets(List<Worksheet> worksheets) => _worksheets.addAll(
+        worksheets.map(
+          (w) => w.copy(name: _getUniqueName(w.name)),
+        ),
+      );
 
   Worksheet addEmptyWorksheet({String name}) {
+    final worksheet = Worksheet(name: _getUniqueName(name));
+    _worksheets.add(worksheet);
+    return worksheet;
+  }
+
+  String _getUniqueName(String name) {
     name ??= "Лист ${_worksheets.length + 1}";
     String worksheetName;
     var attempt = 0;
@@ -66,10 +76,7 @@ class Document {
       worksheetName = "$name${attempt > 0 ? "($attempt)" : ""}";
       attempt++;
     } while (_worksheets.any((w) => w.name == worksheetName));
-
-    final worksheet = Worksheet(name: worksheetName);
-    _worksheets.add(worksheet);
-    return worksheet;
+    return worksheetName;
   }
 
   void removeWorksheet(Worksheet worksheet) {

@@ -19,7 +19,6 @@ abstract class BaseImporterScreen extends StatelessWidget {
     @required this.mainWidgetBuilder,
   })  : assert(title != null),
         assert(importer != null),
-        assert(targetDocument != null),
         assert(mainWidgetBuilder != null);
 
   @override
@@ -43,12 +42,13 @@ abstract class BaseImporterScreen extends StatelessWidget {
                 );
               } else if (state is ImportEmptyState) {
                 return _EmptyStateView();
-              } else
+              } else {
                 return mainWidgetBuilder(targetDocument);
+              }
             },
-            listener: (_, state) {
+            listener: (context, state) {
               if (state is WorksheetReadyState) {
-                Navigator.pop(context, targetDocument);
+                Navigator.pop(context, state.document);
               }
             },
           ),

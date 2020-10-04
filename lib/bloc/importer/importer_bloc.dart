@@ -21,23 +21,34 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
   @override
   Stream<ImporterState> mapEventToState(ImporterEvent event) async* {
     if (event is ImportEvent) {
-      yield* _doWorksheetImport(event.path, event.targetDocument);
+      yield* _doWorksheetImport(event);
     } else if (event is InitialEvent) {
       yield ImporterInitialState();
     }
   }
 
-  Stream<ImporterState> _doWorksheetImport(
-      String path, Document targetDocument) async* {
-    yield ImportLoadingState(path);
+  Stream<ImporterState> _doWorksheetImport(ImportEvent import) async* {
+    Document _copyToTarget(Document source) {
+      import.targetDocument
+        ..savePath ??= (import.attachPath
+            ? File(p.withoutExtension(import.path) + ".json")
+            : null)
+        ..addWorksheets(source.worksheets);
+      return import.targetDocument;
+    }
 
-    Future<ImporterState> state = _worksheetImporter.importWorksheet(path).then(
-      (importedWorksheet) {
-        if (importedWorksheet == null) return ImportEmptyState();
-        targetDocument
-          ..savePath ??= File(p.withoutExtension(path) + ".json")
-          ..addWorksheet(importedWorksheet);
-        return WorksheetReadyState();
+    yield ImportLoadingState(import.path);
+
+    Future<ImporterState> state =
+        _worksheetImporter.importDocument(import.path).then(
+      (importedDocument) {
+        if (importedDocument == null) return ImportEmptyState();
+
+        final newTarget = import.targetDocument == null
+            ? (importedDocument..savePath = File(import.path))
+            : _copyToTarget(importedDocument);
+
+        return WorksheetReadyState(newTarget);
       },
     );
 

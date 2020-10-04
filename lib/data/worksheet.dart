@@ -72,4 +72,13 @@ class Worksheet {
             : DateTime.fromMillisecondsSinceEpoch(data['date']),
         workTypes: (data['workTypes'] as List<dynamic>).cast<String>().toSet(),
       );
+
+  Worksheet copy({String name}) => Worksheet._(
+        name: name ?? this.name,
+        workTypes: this.workTypes,
+        requests: this.requests,
+        mainEmployee: this.mainEmployee,
+        membersEmployee: this.membersEmployee,
+        date: this.date,
+      );
 }

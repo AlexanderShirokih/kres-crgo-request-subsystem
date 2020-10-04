@@ -3,4 +3,5 @@ enum WorksheetCreationMode {
   EmptyRaid,
   Import,
   ImportCounters,
+  ImportNative,
 }

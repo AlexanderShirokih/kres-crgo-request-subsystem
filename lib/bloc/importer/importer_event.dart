@@ -14,12 +14,14 @@ class InitialEvent extends ImporterEvent {
 class ImportEvent extends ImporterEvent {
   final String path;
   final Document targetDocument;
+  final bool attachPath;
 
   const ImportEvent({
     @required this.path,
     @required this.targetDocument,
+    this.attachPath = true,
   })  : assert(path != null),
-        assert(targetDocument != null);
+        assert(attachPath != null);
 
   @override
   List<Object> get props => [path];
