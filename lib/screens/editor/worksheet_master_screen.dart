@@ -85,20 +85,25 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
           const SizedBox(width: 24.0),
         ],
       ),
-      body: Row(
-        children: [
-          _createPageController(),
-          Expanded(
-            child: Container(
-              height: double.maxFinite,
-              child: WorkSheetEditorView(
-                document: currentDocument,
-                worksheet: currentDocument.active,
-                onDocumentsChanged: () => setState(() {}),
+      body: Builder(
+        builder: (ctx) => WillPopScope(
+          onWillPop: () => _showExitConfirmationDialog(ctx),
+          child: Row(
+            children: [
+              _createPageController(),
+              Expanded(
+                child: Container(
+                  height: double.maxFinite,
+                  child: WorkSheetEditorView(
+                    document: currentDocument,
+                    worksheet: currentDocument.active,
+                    onDocumentsChanged: () => setState(() {}),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -233,6 +238,39 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
           }
         }),
       );
+
+  Future<bool> _showExitConfirmationDialog(BuildContext context) async {
+    if (currentDocument.isEmpty) return true;
+
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text('Сохранить документ перед выходом?'),
+        actionsPadding: EdgeInsets.only(right: 24.0, bottom: 12.0),
+        actions: [
+          FlatButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Отмена'),
+          ),
+          const SizedBox(width: 12.0),
+          FlatButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Нет'),
+          ),
+          const SizedBox(width: 12.0),
+          RaisedButton(
+            color: Theme.of(ctx).primaryColor,
+            textColor: Theme.of(ctx).primaryTextTheme.bodyText2.color,
+            onPressed: () => saveDocument(ctx, false).then(
+              (save) => Navigator.pop(ctx, save != null),
+            ),
+            child: Text('Да'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _TableSelectionDialog extends StatelessWidget {

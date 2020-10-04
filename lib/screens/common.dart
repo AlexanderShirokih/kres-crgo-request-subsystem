@@ -85,10 +85,10 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
       });
     }
 
-    final scaffold = Scaffold.of(context);
+    final scaffold = Scaffold.of(context, nullOk: true);
 
     void showSnackbar(String message, Duration duration) =>
-        scaffold.showSnackBar(
+        scaffold?.showSnackBar(
           SnackBar(
             content: Text(message),
             duration: duration,
@@ -100,7 +100,7 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
     return currentDocument
         .save()
         .then((_) {
-          scaffold.removeCurrentSnackBar();
+          scaffold?.removeCurrentSnackBar();
           showSnackbar(
             'Документ сохранён',
             const Duration(seconds: 2),
@@ -110,7 +110,7 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
         .catchError(
           (e, s) {
             print("$e\n$s");
-            scaffold.removeCurrentSnackBar();
+            scaffold?.removeCurrentSnackBar();
             showSnackbar(
               'Не удалось сохранить! $e',
               const Duration(seconds: 6),
