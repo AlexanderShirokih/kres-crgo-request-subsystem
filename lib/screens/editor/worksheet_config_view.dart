@@ -187,7 +187,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
               autovalidateMode: AutovalidateMode.always,
               value: current,
               validator: (value) {
-                return value == null
+                return value == null || value.name.isEmpty
                     ? positionDesc
                     : (widget.worksheet.isUsedElseWhere(value)
                         ? 'Значение дублируется'
@@ -197,8 +197,10 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
                   .map(
                     (e) => DropdownMenuItem(
                       value: e,
-                      child: Text(
-                          "${e.name}, ${e.position}, ${e.accessGroup} гр."),
+                      child: e == null
+                          ? Text('')
+                          : Text(
+                              "${e.name}, ${e.position}, ${e.accessGroup} гр."),
                     ),
                   )
                   .toList(),

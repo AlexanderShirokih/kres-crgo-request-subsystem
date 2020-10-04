@@ -65,10 +65,15 @@ class Worksheet {
 
   factory Worksheet.fromJson(Map<String, dynamic> data) => Worksheet._(
         name: data['name'] as String,
-        mainEmployee: Employee.fromJson(data['mainEmployee']),
-        chiefEmployee: Employee.fromJson(data['chiefEmployee']),
+        mainEmployee: data['mainEmployee'] == null
+            ? null
+            : Employee.fromJson(data['mainEmployee']),
+        chiefEmployee: data['chiefEmployee'] == null
+            ? null
+            : Employee.fromJson(data['chiefEmployee']),
         membersEmployee: (data['membersEmployee'] as List<dynamic>)
             .map((e) => Employee.fromJson(e))
+            .take(6)
             .toList(),
         requests: (data['requests'] as List<dynamic>)
             .map((r) => RequestEntity.fromJson(r))
@@ -95,4 +100,22 @@ class Worksheet {
   /// Returns `true` if [employee] used more than once at any positions
   bool isUsedElseWhere(Employee employee) =>
       getUsedEmployee().fold(0, (acc, e) => acc += (e == employee ? 1 : 0)) > 1;
+
+  Iterable<String> validate() sync* {
+    if (chiefEmployee == null) yield "Не выбран выдающий задание";
+
+    if (mainEmployee == null) yield "Не выбран производитель работ";
+
+    if (membersEmployee.any((emp) => emp == null))
+      yield "Поле члена бригады пусто";
+
+    if (requests.isEmpty) yield "Нет заявок для печати";
+
+    if (requests.length > 18)
+      yield "Слишком много заявок для печати на одном листе";
+
+    if (date == null) yield "Не выбрана дата";
+  }
+
+  bool hasErrors() => validate().iterator.moveNext();
 }

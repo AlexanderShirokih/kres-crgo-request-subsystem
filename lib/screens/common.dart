@@ -72,13 +72,13 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
   Document currentDocument;
   String currentDirectory;
 
-  Future saveDocument(
+  Future<String> saveDocument(
     BuildContext context,
     bool changePath,
   ) async {
     if (currentDocument.savePath == null || changePath) {
       final newSavePath = await _showSaveDialog();
-      if (newSavePath == null) return;
+      if (newSavePath == null) return null;
 
       setState(() {
         currentDocument.savePath = newSavePath;
@@ -97,22 +97,27 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
 
     showSnackbar('Сохранение...', const Duration(seconds: 20));
 
-    currentDocument.save().then((_) {
-      scaffold.removeCurrentSnackBar();
-      showSnackbar(
-        'Документ сохранён',
-        const Duration(seconds: 2),
-      );
-    }).catchError(
-      (e, s) {
-        print("$e\n$s");
-        scaffold.removeCurrentSnackBar();
-        showSnackbar(
-          'Не удалось сохранить! $e',
-          const Duration(seconds: 6),
+    return currentDocument
+        .save()
+        .then((_) {
+          scaffold.removeCurrentSnackBar();
+          showSnackbar(
+            'Документ сохранён',
+            const Duration(seconds: 2),
+          );
+        })
+        .then((_) => currentDocument.savePath.path)
+        .catchError(
+          (e, s) {
+            print("$e\n$s");
+            scaffold.removeCurrentSnackBar();
+            showSnackbar(
+              'Не удалось сохранить! $e',
+              const Duration(seconds: 6),
+            );
+            return null;
+          },
         );
-      },
-    );
   }
 
   Future<File> _showSaveDialog() async {
@@ -130,6 +135,6 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
 
     final savePath = res.paths[0];
     currentDirectory = path.dirname(savePath);
-    return File(savePath);
+    return File(path.setExtension(savePath, ".json"));
   }
 }
