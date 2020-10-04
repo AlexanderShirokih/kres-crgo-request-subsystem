@@ -29,25 +29,21 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ..._showMainEmployee(
-                    w,
-                    ctx.repository<EmployeesRepository>(),
-                  ),
-                  const SizedBox(height: 24.0),
-                  ..._showTeamMembers(w, ctx.repository<EmployeesRepository>()),
-                  ..._header(28.0, "Выдающий распоряжение:"),
+                  ..._header(8.0, "Выдающий распоряжение:"),
                   const SizedBox(height: 18.0),
                   _createDropdownEmployeeForm(
                     positionDesc: "Выберите выдающего распоряжения",
-                    current: w.mainEmployee,
-                    employees: ctx
-                        .repository<EmployeesRepository>()
-                        .getAllByMinGroup(4),
+                    current: w.chiefEmployee,
+                    employees: _getAllEmployees(ctx, 4),
                     onChanged: (Employee value) => setState(() {
-                      w.mainEmployee = value;
+                      w.chiefEmployee = value;
                     }),
                   ),
                   const SizedBox(height: 28.0),
+                  ..._showMainEmployee(ctx, w),
+                  const SizedBox(height: 24.0),
+                  ..._showTeamMembers(ctx, w),
+                  const SizedBox(height: 24.0),
                   _DatePicker(w),
                   const SizedBox(height: 28.0),
                   ..._showWorkTypes(w),
@@ -60,22 +56,20 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
     );
   }
 
-  Iterable<Widget> _showMainEmployee(
-      Worksheet w, EmployeesRepository repo) sync* {
+  Iterable<Widget> _showMainEmployee(BuildContext context, Worksheet w) sync* {
     yield* _header(4.0, "Производитель работ:");
     yield const SizedBox(height: 4.0);
     yield _createDropdownEmployeeForm(
       positionDesc: "Выберите производителя работ",
       current: w.mainEmployee,
-      employees: repo.getAllEmployees(),
+      employees: _getAllEmployees(context),
       onChanged: (Employee value) => setState(() {
         w.mainEmployee = value;
       }),
     );
   }
 
-  Iterable<Widget> _showTeamMembers(
-      Worksheet w, EmployeesRepository repo) sync* {
+  Iterable<Widget> _showTeamMembers(BuildContext context, Worksheet w) sync* {
     yield Row(
       children: [
         Expanded(
@@ -97,7 +91,10 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
       ],
     );
     yield const SizedBox(height: 4.0);
-    yield* _spreadTeamMembers(repo, w.membersEmployee);
+    yield* _spreadTeamMembers(
+      _getAllEmployees(context),
+      w.membersEmployee,
+    );
   }
 
   Iterable<Widget> _header(double height, String text) sync* {
@@ -136,7 +133,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
   }
 
   Iterable<Widget> _spreadTeamMembers(
-          EmployeesRepository repo, List<Employee> teamMembers) =>
+          List<Employee> employees, List<Employee> teamMembers) =>
       Iterable.generate(
         teamMembers.length,
         (i) => Padding(
@@ -144,7 +141,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
           child: _createDropdownEmployeeForm(
             positionDesc: "Выберите члена бригады",
             current: teamMembers[i],
-            employees: repo.getAllEmployees(),
+            employees: employees,
             onChanged: (value) => setState(() {
               teamMembers[i] = value;
             }),
@@ -152,6 +149,20 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
           ),
         ),
       );
+
+  /// Returns a list of all employees, including all currently present
+  /// (even if they is not present if [EmployeesRepository],
+  /// but exists in [Worksheet] data)
+  List<Employee> _getAllEmployees(BuildContext context, [int minGroup]) {
+    final w = widget.worksheet;
+    final repo = context.repository<EmployeesRepository>();
+    final used = w.getUsedEmployee();
+    final all = minGroup == null
+        ? repo.getAllEmployees()
+        : repo.getAllByMinGroup(minGroup);
+
+    return [...used, ...all].toSet().toList(growable: false);
+  }
 
   Widget _createDropdownEmployeeForm({
     String positionDesc,
@@ -172,10 +183,16 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
                 ),
                 onPressed: onRemove),
           Expanded(
-            child: DropdownButtonFormField(
-              autovalidate: true,
+            child: DropdownButtonFormField<Employee>(
+              autovalidateMode: AutovalidateMode.always,
               value: current,
-              validator: (value) => value == null ? positionDesc : null,
+              validator: (value) {
+                return value == null
+                    ? positionDesc
+                    : (widget.worksheet.isUsedElseWhere(value)
+                        ? 'Значение дублируется'
+                        : null);
+              },
               items: employees
                   .map(
                     (e) => DropdownMenuItem(

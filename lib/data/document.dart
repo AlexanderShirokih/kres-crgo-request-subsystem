@@ -98,6 +98,9 @@ class Document {
   Future save() async {
     if (savePath == null) throw ('savePath == null!');
 
+    updateDate = DateTime.now();
     await savePath.writeAsString(json.encode(toJson()));
   }
+
+  bool get isEmpty => _worksheets.every((worksheet) => worksheet.isEmpty);
 }

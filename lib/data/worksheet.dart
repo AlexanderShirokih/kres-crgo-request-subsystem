@@ -10,6 +10,9 @@ class Worksheet {
   /// Производитель работ
   Employee mainEmployee;
 
+  /// Выдающий распоряжение
+  Employee chiefEmployee;
+
   /// Члены бригады
   List<Employee> membersEmployee = [];
 
@@ -32,6 +35,7 @@ class Worksheet {
   Worksheet._({
     this.name,
     this.mainEmployee,
+    this.chiefEmployee,
     this.membersEmployee,
     this.workTypes,
     this.requests,
@@ -52,6 +56,7 @@ class Worksheet {
   Map<String, dynamic> toJson() => {
         'name': name,
         'mainEmployee': mainEmployee?.toJson(),
+        'chiefEmployee': chiefEmployee?.toJson(),
         'membersEmployee': membersEmployee.map((e) => e.toJson()).toList(),
         'date': date?.millisecondsSinceEpoch,
         'requests': requests.map((r) => r.toJson()).toList(),
@@ -60,7 +65,8 @@ class Worksheet {
 
   factory Worksheet.fromJson(Map<String, dynamic> data) => Worksheet._(
         name: data['name'] as String,
-        mainEmployee: data['mainEmployee'],
+        mainEmployee: Employee.fromJson(data['mainEmployee']),
+        chiefEmployee: Employee.fromJson(data['chiefEmployee']),
         membersEmployee: (data['membersEmployee'] as List<dynamic>)
             .map((e) => Employee.fromJson(e))
             .toList(),
@@ -78,7 +84,15 @@ class Worksheet {
         workTypes: this.workTypes,
         requests: this.requests,
         mainEmployee: this.mainEmployee,
+        chiefEmployee: this.chiefEmployee,
         membersEmployee: this.membersEmployee,
         date: this.date,
       );
+
+  List<Employee> getUsedEmployee() =>
+      [mainEmployee, chiefEmployee, ...membersEmployee];
+
+  /// Returns `true` if [employee] used more than once at any positions
+  bool isUsedElseWhere(Employee employee) =>
+      getUsedEmployee().fold(0, (acc, e) => acc += (e == employee ? 1 : 0)) > 1;
 }

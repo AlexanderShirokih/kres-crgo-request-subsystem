@@ -1,4 +1,10 @@
+import 'dart:io';
+
+import 'package:path/path.dart' as path;
+import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
+
+import 'package:kres_requests2/data/document.dart';
 
 class ErrorView extends StatelessWidget {
   final String errorDescription;
@@ -60,4 +66,70 @@ class LoadingView extends StatelessWidget {
           ],
         ),
       );
+}
+
+mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
+  Document currentDocument;
+  String currentDirectory;
+
+  Future saveDocument(
+    BuildContext context,
+    bool changePath,
+  ) async {
+    if (currentDocument.savePath == null || changePath) {
+      final newSavePath = await _showSaveDialog();
+      if (newSavePath == null) return;
+
+      setState(() {
+        currentDocument.savePath = newSavePath;
+      });
+    }
+
+    final scaffold = Scaffold.of(context);
+
+    void showSnackbar(String message, Duration duration) =>
+        scaffold.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: duration,
+          ),
+        );
+
+    showSnackbar('Сохранение...', const Duration(seconds: 20));
+
+    currentDocument.save().then((_) {
+      scaffold.removeCurrentSnackBar();
+      showSnackbar(
+        'Документ сохранён',
+        const Duration(seconds: 2),
+      );
+    }).catchError(
+      (e, s) {
+        print("$e\n$s");
+        scaffold.removeCurrentSnackBar();
+        showSnackbar(
+          'Не удалось сохранить! $e',
+          const Duration(seconds: 6),
+        );
+      },
+    );
+  }
+
+  Future<File> _showSaveDialog() async {
+    final res = await showSavePanel(
+      initialDirectory: currentDirectory,
+      confirmButtonText: 'Сохранить',
+      allowedFileTypes: [
+        FileTypeFilterGroup(
+          label: "Документ работы",
+          fileExtensions: ["json"],
+        )
+      ],
+    );
+    if (res.canceled) return null;
+
+    final savePath = res.paths[0];
+    currentDirectory = path.dirname(savePath);
+    return File(savePath);
+  }
 }
