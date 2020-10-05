@@ -17,8 +17,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MultiRepositoryProvider(
         providers: [
-          RepositoryProvider.value(value: SettingsRepository()),
           RepositoryProvider.value(value: ConfigRepository()),
+          RepositoryProvider.value(
+            value: SettingsRepository.fromJson(
+              jsonDecode(File("config.json").readAsStringSync()),
+            ),
+          ),
           RepositoryProvider.value(
             value: EmployeesRepository(
               (jsonDecode(File("employees.json").readAsStringSync())

@@ -1,4 +1,8 @@
-// TODO: Make concrete implementation
 class SettingsRepository {
-  String get requestsImporterExecutable => 'requests/bin/Requests2.0';
+  final String requestsImporterExecutable;
+
+  const SettingsRepository(this.requestsImporterExecutable);
+
+  factory SettingsRepository.fromJson(Map<String, dynamic> data) =>
+      SettingsRepository(data['requests_exec']);
 }
