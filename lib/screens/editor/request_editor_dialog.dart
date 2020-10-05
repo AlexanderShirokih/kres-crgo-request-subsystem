@@ -33,9 +33,9 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
   TextEditingController _nameController;
   TextEditingController _counterController;
   TextEditingController _additionalController;
+  TextEditingController _requestTypeController;
 
   final RequestEntity _request;
-  String _requestType;
   bool _isValid;
   bool _isNew;
 
@@ -48,7 +48,6 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
   @override
   void initState() {
     super.initState();
-    _requestType = _request.reqType;
     _lsController = TextEditingController(
         text: _request.accountId?.toString()?.padLeft(6, '0') ?? "");
     _addressController = TextEditingController(text: _request.address);
@@ -56,6 +55,9 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
     _counterController = TextEditingController(text: _request.counterInfo);
     _additionalController =
         TextEditingController(text: _request.additionalInfo);
+    _requestTypeController = TextEditingController(
+      text: _request.reqType,
+    );
   }
 
   @override
@@ -66,6 +68,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
     _nameController.dispose();
     _counterController.dispose();
     _additionalController.dispose();
+    _requestTypeController.dispose();
   }
 
   @override
@@ -78,70 +81,68 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
             : 'Редактирование заявки | Л/С №${_request.accountId?.toString()?.padLeft(6, '0') ?? "--"}',
         textAlign: TextAlign.center,
       ),
-      content: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 560.0),
-        child: Container(
-          height: 420.0,
-          padding: EdgeInsets.all(16.0),
-          child: Form(
-            onChanged: () {
-              final isValid = _formKey.currentState.validate();
-              if (_isValid != isValid)
-                setState(() {
-                  _isValid = isValid;
-                });
-            },
-            autovalidateMode: AutovalidateMode.always,
-            key: _formKey,
-            child: Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      children: [
-                        Text("Лицевой счёт: "),
-                        const SizedBox(width: 8.0),
-                        SizedBox(
-                          width: 80.0,
-                          child: TextFormField(
-                            controller: _lsController,
-                            autovalidateMode: AutovalidateMode.always,
-                            validator: (value) => value.characters.every(
-                              (element) => element.startsWith(RegExp('[0-9]')),
-                            )
-                                ? null
-                                : "",
-                            keyboardType: TextInputType.number,
-                            maxLength: 6,
-                          ),
+      content: Container(
+        height: 480.0,
+        padding: EdgeInsets.all(16.0),
+        child: Form(
+          onChanged: () {
+            final isValid = _formKey.currentState.validate();
+            if (_isValid != isValid)
+              setState(() {
+                _isValid = isValid;
+              });
+          },
+          autovalidateMode: AutovalidateMode.always,
+          key: _formKey,
+          child: Column(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    children: [
+                      Text("Лицевой счёт: "),
+                      const SizedBox(width: 8.0),
+                      SizedBox(
+                        width: 80.0,
+                        child: TextFormField(
+                          controller: _lsController,
+                          autovalidateMode: AutovalidateMode.always,
+                          validator: (value) => value.characters.every(
+                            (element) => element.startsWith(RegExp('[0-9]')),
+                          )
+                              ? null
+                              : "",
+                          keyboardType: TextInputType.number,
+                          maxLength: 6,
                         ),
-                      ],
-                    ),
-                    const SizedBox(width: 36.0),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      children: [
-                        Text("Тип заявки: "),
-                        const SizedBox(width: 8.0),
-                        _RequestTypeChooser(
-                            _availableRequestTypes, _requestType, (newReqType) {
-                          _requestType = newReqType;
-                        }),
-                      ],
-                    ),
-                  ],
-                ),
-                ..._createInputField("ФИО: ", "Введите ФИО", _nameController),
-                ..._createInputField(
-                    "Адрес: ", "Введите адрес", _addressController),
-                ..._createInputField(
-                    "Прибор учёта: ", null, _counterController),
-                ..._createInputField(
-                    "Дополнительно: ", null, _additionalController),
-              ],
-            ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 36.0),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    children: [
+                      Text("Тип заявки: "),
+                      const SizedBox(width: 8.0),
+                      _RequestTypeChooser(
+                        _availableRequestTypes,
+                        _requestTypeController,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              ..._createInputField("ФИО: ", "Введите ФИО", _nameController),
+              ..._createInputField(
+                  "Адрес: ", "Введите адрес", _addressController),
+              ..._createInputField("Прибор учёта: ", null, _counterController,
+                  limit: 36),
+              ..._createInputField(
+                  "Дополнительно: ", null, _additionalController,
+                  limit: 56),
+            ],
           ),
         ),
       ),
@@ -166,10 +167,10 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
                   accountId: _lsController.text.isNotEmpty
                       ? int.parse(_lsController.text)
                       : null,
-                  reqType: _requestType,
+                  reqType: _requestTypeController.text,
                   fullReqType: context
                       .repository<ConfigRepository>()
-                      .getFullRequestName(_requestType),
+                      .getFullRequestName(_requestTypeController.text),
                 ),
               );
             },
@@ -182,8 +183,9 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
   Iterable<Widget> _createInputField(
     String label,
     String errorHint,
-    TextEditingController controller,
-  ) sync* {
+    TextEditingController controller, {
+    int limit,
+  }) sync* {
     yield SizedBox(height: 24);
     yield Row(
       crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -199,6 +201,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
           child: TextFormField(
             controller: controller,
             autovalidateMode: AutovalidateMode.always,
+            maxLength: limit,
             validator: (value) =>
                 errorHint != null && value.isEmpty ? errorHint : null,
           ),
@@ -210,34 +213,29 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
 
 class _RequestTypeChooser extends StatefulWidget {
   final List<String> availableRequestTypes;
-  final String initialRequestType;
-  final Function(String) onReqTypeChanged;
+  final TextEditingController fieldController;
 
   const _RequestTypeChooser(
     this.availableRequestTypes,
-    this.initialRequestType,
-    this.onReqTypeChanged,
-  )   : assert(onReqTypeChanged != null),
-        assert(availableRequestTypes != null);
+    this.fieldController,
+  ) : assert(availableRequestTypes != null);
 
   @override
-  __RequestTypeChooserState createState() =>
-      __RequestTypeChooserState(availableRequestTypes, initialRequestType);
+  __RequestTypeChooserState createState() => __RequestTypeChooserState();
 }
 
 class __RequestTypeChooserState extends State<_RequestTypeChooser> {
   List<String> _availableRequestTypes;
 
   bool _isExtended = false;
-  String _currentType;
 
-  __RequestTypeChooserState(
-      List<String> availableRequestTypes, String initialRequestType) {
-    _availableRequestTypes = [
-      ...availableRequestTypes,
-      if (initialRequestType != null) initialRequestType
-    ].toSet().toList();
-    _currentType = initialRequestType;
+  @override
+  void initState() {
+    super.initState();
+    final all = widget.availableRequestTypes;
+    final curr = widget.fieldController.text;
+
+    _availableRequestTypes = all.contains(curr) ? all : [curr, ...all];
   }
 
   @override
@@ -249,8 +247,9 @@ class __RequestTypeChooserState extends State<_RequestTypeChooser> {
               _createFormField(),
               const SizedBox(width: 6.0),
               SizedBox(
-                width: 96.0,
+                width: 120.0,
                 child: TextFormField(
+                  controller: widget.fieldController,
                   autovalidateMode: AutovalidateMode.always,
                   validator: (val) => val.isEmpty ? "Значение пусто" : null,
                   onFieldSubmitted: (value) => setState(() {
@@ -258,9 +257,7 @@ class __RequestTypeChooserState extends State<_RequestTypeChooser> {
                       _availableRequestTypes.insert(0, value);
                       _availableRequestTypes =
                           _availableRequestTypes.toSet().toList();
-                      _currentType = value;
-                    } else
-                      _currentType = null;
+                    }
                     _isExtended = false;
                   }),
                 ),
@@ -274,8 +271,9 @@ class __RequestTypeChooserState extends State<_RequestTypeChooser> {
         width: 164.0,
         child: DropdownButtonFormField<String>(
           autovalidateMode: AutovalidateMode.always,
-          validator: (value) => value == null ? "Тип не выбран" : null,
-          value: _currentType,
+          validator: (value) =>
+              value == null || value.isEmpty ? "Тип не выбран" : null,
+          value: widget.fieldController.text,
           items: _availableRequestTypes
               .map(
                 (e) => DropdownMenuItem(
@@ -285,9 +283,8 @@ class __RequestTypeChooserState extends State<_RequestTypeChooser> {
               )
               .toList(),
           onChanged: (value) => setState(() {
-            _isExtended = value == _availableRequestTypes.last;
-            _currentType = value;
-            widget.onReqTypeChanged(value);
+            _isExtended = value == "Другое";
+            widget.fieldController.text = value;
           }),
         ),
       );
