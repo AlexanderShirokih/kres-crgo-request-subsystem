@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:kres_requests2/data/request_entity.dart';
 import 'package:kres_requests2/repo/config_repository.dart';
+
+import '../copyable_textformfield.dart';
 
 class RequestEditorDialog extends StatefulWidget {
   final RequestEntity editingRequest;
@@ -198,7 +201,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
         ),
         const SizedBox(width: 8.0),
         Expanded(
-          child: TextFormField(
+          child: CopyableTextFormField(
             controller: controller,
             autovalidateMode: AutovalidateMode.always,
             maxLength: limit,
