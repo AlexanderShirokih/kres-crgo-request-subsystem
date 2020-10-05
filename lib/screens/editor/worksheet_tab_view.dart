@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/common/worksheet_creation_mode.dart';
 import 'package:kres_requests2/data/worksheet.dart';
+import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
 class AddNewWorkSheetTabView extends StatefulWidget {
   final void Function(WorksheetCreationMode) onAddPressed;
@@ -151,7 +152,7 @@ class _WorkSheetTabViewState extends State<WorkSheetTabView> {
               ),
               onTap: widget.onSelect,
               title: _isEditable
-                  ? TextField(
+                  ? CopyableTextField(
                       controller: _controller,
                       onSubmitted: (text) => setState(() {
                         widget.worksheet.name = text;

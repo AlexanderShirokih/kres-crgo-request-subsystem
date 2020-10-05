@@ -5,6 +5,7 @@ import 'package:kres_requests2/data/employee.dart';
 import 'package:kres_requests2/data/worksheet.dart';
 import 'package:kres_requests2/repo/employees_repository.dart';
 import 'package:intl/intl.dart';
+import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
 class WorksheetConfigView extends StatefulWidget {
   final Worksheet worksheet;
@@ -295,7 +296,7 @@ class __WorkTypesListState extends State<_WorkTypesList> {
               ),
               title: e.isNotEmpty
                   ? Text(e)
-                  : TextField(
+                  : CopyableTextField(
                       onSubmitted: (value) {
                         if (value.isNotEmpty) {
                           setState(() {
