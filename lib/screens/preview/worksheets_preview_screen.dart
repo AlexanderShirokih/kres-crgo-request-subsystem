@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:intl/intl.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -7,7 +9,6 @@ import 'package:kres_requests2/data/document.dart';
 import 'package:kres_requests2/data/employee.dart';
 import 'package:kres_requests2/data/worksheet.dart';
 import 'package:kres_requests2/screens/common.dart';
-import 'package:intl/intl.dart';
 
 import 'exporter_dialogs.dart';
 
@@ -152,7 +153,10 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen>
   Future _showExportDialog(BuildContext context) => showDialog<String>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => ExportToPDFDialog(selectedWorksheets),
+        builder: (_) => ExportToPDFDialog(
+          selectedWorksheets,
+          getSuggestedName(".pdf"),
+        ),
       ).then(
         (resultMessage) {
           if (resultMessage != null)

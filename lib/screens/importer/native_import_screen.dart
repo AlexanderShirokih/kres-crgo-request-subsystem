@@ -49,7 +49,14 @@ class _NativeImportWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: CircularProgressIndicator(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(),
+          const SizedBox(height: 12.0),
+          Text('Ожидание выбора файла...'),
+        ],
+      ),
     );
   }
 }

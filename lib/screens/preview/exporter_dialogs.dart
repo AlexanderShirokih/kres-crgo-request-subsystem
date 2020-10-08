@@ -9,8 +9,13 @@ import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 
 class ExportToPDFDialog extends StatelessWidget {
   final List<Worksheet> worksheets;
+  final String suggestedExportBasename;
 
-  const ExportToPDFDialog(this.worksheets) : assert(worksheets != null);
+  const ExportToPDFDialog(
+    this.worksheets,
+    this.suggestedExportBasename,
+  )   : assert(worksheets != null),
+        assert(suggestedExportBasename != null);
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +36,7 @@ class ExportToPDFDialog extends StatelessWidget {
             builder: (context) => BlocConsumer<ExporterBloc, ExporterState>(
               builder: (context, state) {
                 return Center(
+                  // TODO:
                   child: CircularProgressIndicator(),
                 );
               },
@@ -54,6 +60,7 @@ class ExportToPDFDialog extends StatelessWidget {
 
   Future<String> _showFileChooser() async {
     final res = await showSavePanel(
+      suggestedFileName: path.setExtension(suggestedExportBasename, '.pdf'),
       confirmButtonText: 'Сохранить',
       allowedFileTypes: [
         FileTypeFilterGroup(

@@ -304,90 +304,87 @@ class _RequestItemView extends StatelessWidget {
       onTap: () {
         if (isSelected != null) onChanged(!isSelected);
       },
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: 90.0),
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (isSelected != null)
-                  Checkbox(value: isSelected, onChanged: onChanged),
-                SizedBox(
-                  width: 18.0,
-                  child: Text(position.toString()),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isSelected != null)
+                Checkbox(value: isSelected, onChanged: onChanged),
+              SizedBox(
+                width: 18.0,
+                child: Text(position.toString()),
+              ),
+              const SizedBox(width: 8.0),
+              Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    request.accountId?.toString()?.padLeft(6, '0') ?? "--",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                  const SizedBox(height: 16.0),
+                  Text(request.reqType ?? "--"),
+                ],
+              ),
+              const SizedBox(width: 12.0),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: 380.0,
                 ),
-                const SizedBox(width: 8.0),
-                Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      request.accountId?.toString()?.padLeft(6, '0') ?? "--",
+                      request.name,
                       style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20.0,
+                        fontSize: 22.0,
                       ),
                     ),
-                    const SizedBox(height: 16.0),
-                    Text(request.reqType ?? "--"),
+                    const SizedBox(height: 6.0),
+                    Text(
+                      request.address,
+                      style: TextStyle(
+                        fontSize: 18.0,
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(width: 12.0),
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: 380.0,
-                  ),
+              ),
+              const SizedBox(width: 24.0),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: 380.0,
+                  maxWidth: 420.0,
+                ),
+                child: Container(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        request.name,
+                        request.counterInfo,
                         style: TextStyle(
-                          fontSize: 22.0,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 6.0),
+                      const SizedBox(height: 10.0),
                       Text(
-                        request.address,
-                        style: TextStyle(
-                          fontSize: 18.0,
-                        ),
+                        request.additionalInfo,
+                        style: TextStyle(fontSize: 16.0),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 24.0),
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth: 380.0,
-                    maxWidth: 420.0,
-                  ),
-                  child: Container(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          request.counterInfo,
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 10.0),
-                        Text(
-                          request.additionalInfo,
-                          style: TextStyle(fontSize: 16.0),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              ],
-            ),
+              )
+            ],
           ),
         ),
       ),

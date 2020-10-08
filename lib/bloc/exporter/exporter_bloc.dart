@@ -72,6 +72,9 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
   }
 
   Future<bool> _runExporter(String exportDestination, String sourceFile) =>
-      Process.run(exporterExecutable, ['-pdf', exportDestination, sourceFile])
-          .then((result) => result.exitCode == 0);
+      Process.run(File(exporterExecutable).absolute.path, [
+        '-pdf',
+        exportDestination,
+        sourceFile
+      ]).then((result) => result.exitCode == 0);
 }

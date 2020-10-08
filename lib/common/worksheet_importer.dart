@@ -62,8 +62,10 @@ class RequestsWorksheetImporter extends WorksheetImporter {
             ),
       );
 
-  Future<List<RequestEntity>> _importRequests(String filePath) =>
-      Process.run(importerExecutablePath, ['-parse', filePath])
+  Future<List<RequestEntity>> _importRequests(String filePath) => Process.run(
+        File(importerExecutablePath).absolute.path,
+        ['-parse', filePath],
+      )
           .then((ProcessResult result) => result.exitCode != 0
               ? {"error": "Parsing error!\n${result.stderr}"}
               : jsonDecode(result.stdout))

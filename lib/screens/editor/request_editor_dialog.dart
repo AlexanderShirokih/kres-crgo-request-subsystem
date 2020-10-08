@@ -23,12 +23,12 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
   final _formKey = GlobalKey<FormState>();
   final List<String> _availableRequestTypes = [
     "замена",
-    "по сроку",
     "опломб.",
     "распломб.",
     "тех. пров.",
-    "подкл.",
     "ЦОП",
+    "подкл.",
+    "откл.",
     "Другое"
   ];
   TextEditingController _lsController;
@@ -85,7 +85,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
         textAlign: TextAlign.center,
       ),
       content: Container(
-        height: 480.0,
+        height: 520.0,
         padding: EdgeInsets.all(16.0),
         child: Form(
           onChanged: () {

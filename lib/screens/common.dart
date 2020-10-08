@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
 import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
@@ -69,6 +70,8 @@ class LoadingView extends StatelessWidget {
 }
 
 mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
+  static final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
+
   Document currentDocument;
   String currentDirectory;
 
@@ -122,6 +125,7 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
 
   Future<File> _showSaveDialog() async {
     final res = await showSavePanel(
+      suggestedFileName: getSuggestedName('.json'),
       initialDirectory: currentDirectory,
       confirmButtonText: 'Сохранить',
       allowedFileTypes: [
@@ -136,5 +140,12 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
     final savePath = res.paths[0];
     currentDirectory = path.dirname(savePath);
     return File(path.setExtension(savePath, ".json"));
+  }
+
+  String getSuggestedName(String ext) {
+    String fmtDate(DateTime d) => _dateFormat.format(d);
+    return currentDocument.savePath == null
+        ? "Заявки ${fmtDate(currentDocument.updateDate)}$ext"
+        : path.basenameWithoutExtension(currentDocument.savePath.path);
   }
 }
