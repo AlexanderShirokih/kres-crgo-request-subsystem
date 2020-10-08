@@ -163,14 +163,14 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
               Navigator.pop(
                 context,
                 RequestEntity(
-                  name: _nameController.text,
-                  additionalInfo: _additionalController.text,
-                  address: _addressController.text,
-                  counterInfo: _counterController.text,
+                  name: _sanitize(_nameController.text),
+                  additionalInfo: _sanitize(_additionalController.text),
+                  address: _sanitize(_addressController.text),
+                  counterInfo: _sanitize(_counterController.text),
                   accountId: _lsController.text.isNotEmpty
                       ? int.parse(_lsController.text)
                       : null,
-                  reqType: _requestTypeController.text,
+                  reqType: _sanitize(_requestTypeController.text),
                   fullReqType: context
                       .repository<ConfigRepository>()
                       .getFullRequestName(_requestTypeController.text),
@@ -181,6 +181,10 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
           ),
       ],
     );
+  }
+
+  String _sanitize(String value) {
+    return value.replaceAll(RegExp(r"[\n\r]"), "");
   }
 
   Iterable<Widget> _createInputField(

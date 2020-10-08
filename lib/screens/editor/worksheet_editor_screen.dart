@@ -90,6 +90,14 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                         ).then((edited) {
                           if (edited != null)
                             setState(() {
+                              // If previous value was selected then update
+                              // selection references
+                              final old = _worksheet.requests[index];
+                              if (_selectionList.contains(old)) {
+                                _selectionList
+                                  ..remove(old)
+                                  ..add(edited);
+                              }
                               _worksheet.requests[index] = edited;
                             });
                         });

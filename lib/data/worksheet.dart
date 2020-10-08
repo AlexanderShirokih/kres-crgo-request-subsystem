@@ -57,7 +57,7 @@ class Worksheet {
         'name': name,
         'mainEmployee': mainEmployee?.toJson(),
         'chiefEmployee': chiefEmployee?.toJson(),
-        'membersEmployee': membersEmployee.map((e) => e.toJson()).toList(),
+        'membersEmployee': membersEmployee.where((e) => e != null).map((e) => e.toJson()).toList(),
         'date': date?.millisecondsSinceEpoch,
         'requests': requests.map((r) => r.toJson()).toList(),
         'workTypes': workTypes.toList(),
