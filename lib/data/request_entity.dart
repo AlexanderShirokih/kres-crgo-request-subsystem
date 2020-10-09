@@ -24,6 +24,9 @@ class RequestEntity extends Equatable {
   /// Electrical counter info
   final String counterInfo;
 
+  /// Request reason
+  final String reason;
+
   const RequestEntity({
     @required this.name,
     @required this.address,
@@ -32,6 +35,7 @@ class RequestEntity extends Equatable {
     this.accountId,
     this.reqType,
     this.fullReqType,
+    this.reason,
   })  : assert(name != null),
         assert(address != null),
         assert(counterInfo != null),
@@ -46,6 +50,7 @@ class RequestEntity extends Equatable {
         fullReqType: data['fullReqType'],
         additionalInfo: data['additionalInfo'],
         counterInfo: data['counterInfo'],
+        reason: data['reason'],
       );
 
   /// Converts [RequestEntity] to JSON representation
@@ -57,6 +62,7 @@ class RequestEntity extends Equatable {
         'fullReqType': fullReqType,
         'additionalInfo': additionalInfo,
         'counterInfo': counterInfo,
+        'reason': reason,
       };
 
   factory RequestEntity.empty() => RequestEntity(
@@ -76,6 +82,7 @@ class RequestEntity extends Equatable {
     String fullReqType,
     String counterInfo,
     String additionalInfo,
+    String reason,
   }) =>
       RequestEntity(
         accountId: accountId ?? this.accountId,
@@ -85,6 +92,7 @@ class RequestEntity extends Equatable {
         additionalInfo: additionalInfo ?? this.additionalInfo,
         counterInfo: counterInfo ?? this.counterInfo,
         fullReqType: fullReqType ?? this.reqType,
+        reason: reason ?? this.reason,
       );
 
   @override
@@ -96,5 +104,6 @@ class RequestEntity extends Equatable {
         fullReqType,
         additionalInfo,
         counterInfo,
+        reason,
       ];
 }

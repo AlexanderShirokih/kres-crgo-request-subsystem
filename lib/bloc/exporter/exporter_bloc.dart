@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:kres_requests2/data/process_result.dart';
 import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -37,23 +38,22 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
         return;
       }
 
-      final file = await fileChooser();
-      if (file == null) {
+      final filePath = await fileChooser();
+      if (filePath == null) {
         yield ExporterClosingState(isCompleted: false);
         return;
       }
 
       final tempFile = await _saveToTempFile();
-      final isOk = await _runExporter(file, tempFile.path);
+
+      final result = await _runExporter(filePath, tempFile.path);
       await tempFile.delete();
 
-      if (isOk) {
-        yield ExporterClosingState(isCompleted: true);
+      if (result.hasError()) {
+        yield ExporterErrorState(result.createException());
       } else {
-        yield ExporterErrorState();
+        yield ExporterClosingState(isCompleted: true);
       }
-
-      return;
     }
   }
 
@@ -71,10 +71,14 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
     return await tempFile.writeAsString(encoded);
   }
 
-  Future<bool> _runExporter(String exportDestination, String sourceFile) =>
-      Process.run(File(exporterExecutable).absolute.path, [
-        '-pdf',
-        exportDestination,
-        sourceFile
-      ]).then((result) => result.exitCode == 0);
+  Future<RequestsProcessResult> _runExporter(
+          String exportDestination, String sourceFile) =>
+      Process.run(File(exporterExecutable).absolute.path,
+          ['-pdf', sourceFile, exportDestination]).then(
+        (result) => result.exitCode == 0
+            ? RequestsProcessResult.fromJson(
+                jsonDecode(result.stdout), (d) => "")
+            : RequestsProcessResult(
+                error: 'Ошибка экспорта!\n${result.stderr}'),
+      );
 }

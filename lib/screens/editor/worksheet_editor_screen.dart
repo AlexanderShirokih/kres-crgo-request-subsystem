@@ -93,7 +93,8 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                               // If previous value was selected then update
                               // selection references
                               final old = _worksheet.requests[index];
-                              if (_selectionList.contains(old)) {
+                              if (_selectionList != null &&
+                                  _selectionList.contains(old)) {
                                 _selectionList
                                   ..remove(old)
                                   ..add(edited);
@@ -363,6 +364,7 @@ class _RequestItemView extends StatelessWidget {
                         fontSize: 18.0,
                       ),
                     ),
+                    ..._printRequestReason(request, context),
                   ],
                 ),
               ),
@@ -397,5 +399,21 @@ class _RequestItemView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Iterable<Widget> _printRequestReason(
+    RequestEntity request,
+    BuildContext context,
+  ) {
+    if (request.reason != null && request.reason.isNotEmpty) {
+      return [
+        const SizedBox(height: 16.0),
+        Text(
+          request.reason,
+          style: Theme.of(context).textTheme.caption.copyWith(fontSize: 16.0),
+        ),
+      ];
+    }
+    return <Widget>[];
   }
 }

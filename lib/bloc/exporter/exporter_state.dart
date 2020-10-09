@@ -15,8 +15,12 @@ class ExporterMissingState extends ExporterState {
 }
 
 class ExporterErrorState extends ExporterState {
+  final ExporterProcessException exception;
+
+  const ExporterErrorState(this.exception);
+
   @override
-  List<Object> get props => [];
+  List<Object> get props => [exception];
 }
 
 class ExporterClosingState extends ExporterState {

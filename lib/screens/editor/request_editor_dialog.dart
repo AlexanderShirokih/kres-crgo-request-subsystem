@@ -174,6 +174,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
                   fullReqType: context
                       .repository<ConfigRepository>()
                       .getFullRequestName(_requestTypeController.text),
+                  reason: _request.reason,
                 ),
               );
             },

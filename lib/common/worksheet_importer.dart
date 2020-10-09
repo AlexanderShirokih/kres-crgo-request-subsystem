@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:kres_requests2/data/process_result.dart';
+import 'package:meta/meta.dart';
+import 'package:path/path.dart' as path;
+
 import 'package:kres_requests2/core/counters_importer.dart';
 import 'package:kres_requests2/data/document.dart';
 import 'package:kres_requests2/data/request_entity.dart';
 import 'package:kres_requests2/data/worksheet.dart';
-import 'package:meta/meta.dart';
-import 'package:path/path.dart' as path;
 
 class ImporterException implements Exception {
   final String message;
@@ -66,14 +68,18 @@ class RequestsWorksheetImporter extends WorksheetImporter {
         File(importerExecutablePath).absolute.path,
         ['-parse', filePath],
       )
-          .then((ProcessResult result) => result.exitCode != 0
-              ? {"error": "Parsing error!\n${result.stderr}"}
-              : jsonDecode(result.stdout))
+          .then(
+        (ProcessResult result) => result.exitCode != 0
+            ? RequestsProcessResult(error: "Parsing error!\n${result.stderr}")
+            : RequestsProcessResult.fromJson(
+                jsonDecode(result.stdout),
+                (d) => (d as List<dynamic>)
+                    .map((e) => RequestEntity.fromJson(e))
+                    .toList()),
+      )
           .then((value) {
-        if (value['error'] != null) throw (value['error']);
-        return (value['data'] as List<dynamic>)
-            .map((e) => RequestEntity.fromJson(e))
-            .toList();
+        if (value.hasError()) throw (value.createException());
+        return value.data;
       });
 }
 

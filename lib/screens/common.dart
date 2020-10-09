@@ -139,13 +139,15 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
 
     final savePath = res.paths[0];
     currentDirectory = path.dirname(savePath);
-    return File(path.setExtension(savePath, ".json"));
+
+    if (path.extension(savePath) != '.json') return File('$savePath.json');
+    return File(savePath);
   }
 
   String getSuggestedName(String ext) {
     String fmtDate(DateTime d) => _dateFormat.format(d);
     return currentDocument.savePath == null
         ? "Заявки ${fmtDate(currentDocument.updateDate)}$ext"
-        : path.basenameWithoutExtension(currentDocument.savePath.path);
+        : "${path.basenameWithoutExtension(currentDocument.savePath.path)}$ext";
   }
 }

@@ -2,6 +2,7 @@ import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:kres_requests2/data/worksheet.dart';
+import 'package:kres_requests2/screens/common.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:kres_requests2/repo/settings_repository.dart';
@@ -35,8 +36,13 @@ class ExportToPDFDialog extends StatelessWidget {
           child: Builder(
             builder: (context) => BlocConsumer<ExporterBloc, ExporterState>(
               builder: (context, state) {
+                if (state is ExporterErrorState && state.exception != null) {
+                  return ErrorView(
+                    errorDescription: state.exception.error,
+                    stackTrace: state.exception.stackTrace,
+                  );
+                }
                 return Center(
-                  // TODO:
                   child: CircularProgressIndicator(),
                 );
               },
@@ -48,7 +54,8 @@ class ExportToPDFDialog extends StatelessWidget {
                   Navigator.of(context)
                       .pop('Ошибка: Модуль экспорта файлов отсутcтвует');
                 } else if (state is ExporterErrorState) {
-                  Navigator.of(context).pop('Ну удалось экспортировать файл');
+                  if (state.exception == null)
+                    Navigator.of(context).pop('Не удалось экспортировать файл');
                 }
               },
             ),
@@ -72,6 +79,8 @@ class ExportToPDFDialog extends StatelessWidget {
 
     if (res.canceled) return null;
 
-    return path.setExtension(res.paths[0], '.pdf');
+    final exportPath = res.paths[0];
+    if (path.extension(exportPath) != '.pdf') return '$exportPath.pdf';
+    return exportPath;
   }
 }

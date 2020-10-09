@@ -58,6 +58,10 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
         ),
       ),
       appBar: AppBar(
+        leading: IconButton(
+          icon: FaIcon(FontAwesomeIcons.arrowLeft),
+          onPressed: () => Navigator.maybePop(context),
+        ),
         title: Text('Редактирование - ${_getDocumentTitle()}'),
         actions: [
           _createActionButton(
