@@ -51,7 +51,7 @@ class ErrorView extends StatelessWidget {
 class LoadingView extends StatelessWidget {
   final String label;
 
-  const LoadingView(this.label) : assert(label != null);
+  const LoadingView(this.label);
 
   @override
   Widget build(BuildContext context) => Center(
@@ -61,7 +61,8 @@ class LoadingView extends StatelessWidget {
             CircularProgressIndicator(),
             const SizedBox(height: 18.0),
             Text(
-              label,
+              label ?? "...",
+              textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headline6,
             ),
           ],

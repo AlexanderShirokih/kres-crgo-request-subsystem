@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:kres_requests2/data/process_result.dart';
+import 'package:kres_requests2/core/request_processor.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as path;
 
 import 'package:kres_requests2/core/counters_importer.dart';
 import 'package:kres_requests2/data/document.dart';
-import 'package:kres_requests2/data/request_entity.dart';
 import 'package:kres_requests2/data/worksheet.dart';
 
 class ImporterException implements Exception {
@@ -31,55 +29,20 @@ abstract class WorksheetImporter {
 class ImporterProcessMissingException implements Exception {}
 
 class RequestsWorksheetImporter extends WorksheetImporter {
-  final String importerExecutablePath;
+  final AbstractRequestProcessor requestProcessor;
 
   const RequestsWorksheetImporter({
-    @required this.importerExecutablePath,
-  }) : assert(importerExecutablePath != null);
-
-  String _getWorksheetName(String filePath) =>
-      path.basenameWithoutExtension(filePath);
-
-  Future<bool> _checkExporter() => File(importerExecutablePath).exists();
+    @required this.requestProcessor,
+  }) : assert(requestProcessor != null);
 
   @override
   Future<Document> importDocument(String filePath) =>
-      _checkExporter().then((isExists) {
+      requestProcessor.isAvailable().then((isExists) {
         if (!isExists) throw ImporterProcessMissingException();
-      }).then(
-        (value) => _importRequests(filePath)
-            .then(
-              (requests) => requests.isEmpty
-                  ? null
-                  : [
-                      Worksheet(
-                        name: _getWorksheetName(filePath),
-                        requests: requests,
-                      )
-                    ],
-            )
-            .then(
-              (worksheets) =>
-                  worksheets == null ? null : Document(worksheets: worksheets),
-            ),
-      );
-
-  Future<List<RequestEntity>> _importRequests(String filePath) => Process.run(
-        File(importerExecutablePath).absolute.path,
-        ['-parse', filePath],
-      )
-          .then(
-        (ProcessResult result) => result.exitCode != 0
-            ? RequestsProcessResult(error: "Parsing error!\n${result.stderr}")
-            : RequestsProcessResult.fromJson(
-                jsonDecode(result.stdout),
-                (d) => (d as List<dynamic>)
-                    .map((e) => RequestEntity.fromJson(e))
-                    .toList()),
-      )
-          .then((value) {
-        if (value.hasError()) throw (value.createException());
-        return value.data;
+      }).then((value) async {
+        final result = await requestProcessor.importRequests(filePath);
+        if (result.hasError()) throw result.createException();
+        return result.data;
       });
 }
 

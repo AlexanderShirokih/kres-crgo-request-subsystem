@@ -12,10 +12,9 @@ class ExportToPDFDialog extends StatelessWidget {
   final List<Worksheet> worksheets;
   final String suggestedExportBasename;
 
-  const ExportToPDFDialog(
-    this.worksheets,
-    this.suggestedExportBasename,
-  )   : assert(worksheets != null),
+  const ExportToPDFDialog(this.worksheets,
+      this.suggestedExportBasename,)
+      : assert(worksheets != null),
         assert(suggestedExportBasename != null);
 
   @override
@@ -27,38 +26,38 @@ class ExportToPDFDialog extends StatelessWidget {
         height: 300.0,
         child: BlocProvider.value(
           value: ExporterBloc(
-            exporterExecutable: context
-                .repository<SettingsRepository>()
-                .requestsImporterExecutable,
+            settings: context.repository<SettingsRepository>(),
             fileChooser: _showFileChooser,
             worksheets: worksheets,
           ),
           child: Builder(
-            builder: (context) => BlocConsumer<ExporterBloc, ExporterState>(
-              builder: (context, state) {
-                if (state is ExporterErrorState && state.exception != null) {
-                  return ErrorView(
-                    errorDescription: state.exception.error,
-                    stackTrace: state.exception.stackTrace,
-                  );
-                }
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              },
-              listener: (context, state) {
-                if (state is ExporterClosingState) {
-                  Navigator.of(context)
-                      .pop(state.isCompleted ? 'Экспорт завершён' : null);
-                } else if (state is ExporterMissingState) {
-                  Navigator.of(context)
-                      .pop('Ошибка: Модуль экспорта файлов отсутcтвует');
-                } else if (state is ExporterErrorState) {
-                  if (state.exception == null)
-                    Navigator.of(context).pop('Не удалось экспортировать файл');
-                }
-              },
-            ),
+            builder: (context) =>
+                BlocConsumer<ExporterBloc, ExporterState>(
+                  builder: (context, state) {
+                    if (state is ExporterErrorState &&
+                        state.exception != null) {
+                      return ErrorView(
+                        errorDescription: state.exception.error,
+                        stackTrace: state.exception.stackTrace,
+                      );
+                    }
+                    if (state is ExporterIdle) {
+                      return LoadingView(state.message);
+                    } else
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                  },
+                  listener: (context, state) {
+                    if (state is ExporterClosingState) {
+                      Navigator.of(context)
+                          .pop(state.isCompleted ? 'Экспорт завершён' : null);
+                    } else if (state is ExporterMissingState) {
+                      Navigator.of(context)
+                          .pop('Ошибка: Модуль экспорта файлов отсутcтвует');
+                    }
+                  },
+                ),
           ),
         ),
       ),

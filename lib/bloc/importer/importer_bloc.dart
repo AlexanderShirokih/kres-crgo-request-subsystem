@@ -6,8 +6,9 @@ import 'package:bloc/bloc.dart';
 import 'package:path/path.dart' as p;
 import 'package:equatable/equatable.dart';
 
-import 'package:kres_requests2/common/worksheet_importer.dart';
 import 'package:kres_requests2/data/document.dart';
+import 'package:kres_requests2/core/process_result.dart';
+import 'package:kres_requests2/common/worksheet_importer.dart';
 
 part 'importer_event.dart';
 
@@ -67,9 +68,13 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
     );
 
     yield await state.catchError((e, s) {
-      return e is ImporterProcessMissingException
-          ? ImporterProccessMissingState()
-          : ImportErrorState(e, s);
+      if (e is ImporterProcessMissingException) {
+        return ImporterProccessMissingState();
+      } else if (e is RequestsProcessException) {
+        ImportErrorState(e.error, e.stackTrace);
+      } else {
+        ImportErrorState(e.toString(), s.toString());
+      }
     });
   }
 }

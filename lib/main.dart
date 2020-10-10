@@ -9,6 +9,7 @@ import 'package:kres_requests2/repo/employees_repository.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/repo/config_repository.dart';
 import 'package:kres_requests2/screens/startup/startup_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens/common.dart';
 
@@ -44,8 +45,8 @@ class MyApp extends StatelessWidget {
   Future<dynamic> _loadRepositories() async => [
         RepositoryProvider.value(value: ConfigRepository()),
         RepositoryProvider.value(
-          value: SettingsRepository.fromJson(
-            jsonDecode(await File("config.json").readAsString()),
+          value: SettingsRepository.fromPreferences(
+            await SharedPreferences.getInstance(),
           ),
         ),
         RepositoryProvider.value(

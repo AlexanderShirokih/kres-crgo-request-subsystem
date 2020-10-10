@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/common/worksheet_importer.dart';
+import 'package:kres_requests2/core/request_processor.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/data/document.dart';
 
@@ -21,9 +22,12 @@ class RequestsImporterScreen extends BaseImporterScreen {
       RequestsImporterScreen(
         targetDocument: targetDocument,
         importer: RequestsWorksheetImporter(
-          importerExecutablePath: context
-              .repository<SettingsRepository>()
-              .requestsImporterExecutable,
+          requestProcessor: RequestProcessorImpl(
+            context
+                .repository<SettingsRepository>()
+                .requestsProcessorExecutable
+                .absolute,
+          ),
         ),
         initialDirectory: initialDirectory,
       );

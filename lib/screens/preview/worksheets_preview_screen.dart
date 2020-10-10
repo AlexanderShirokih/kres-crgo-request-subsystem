@@ -11,6 +11,7 @@ import 'package:kres_requests2/data/worksheet.dart';
 import 'package:kres_requests2/screens/common.dart';
 
 import 'exporter_dialogs.dart';
+import 'print_dialog.dart';
 
 class WorksheetsPreviewScreen extends StatefulWidget {
   final Document document;
@@ -111,9 +112,7 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen>
                   label: 'Печать',
                   tooltip: 'Отправить выбранные листы на печать',
                   onPressed: hasPrintableWorksheets()
-                      ? () {
-                          // TODO: Print
-                        }
+                      ? () => _showPrintDialog(context)
                       : null,
                 ),
               ],
@@ -157,6 +156,22 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen>
           selectedWorksheets,
           getSuggestedName(".pdf"),
         ),
+      ).then(
+        (resultMessage) {
+          if (resultMessage != null)
+            Scaffold.of(context).showSnackBar(
+              SnackBar(
+                content: Text(resultMessage),
+                duration: Duration(seconds: 6),
+              ),
+            );
+        },
+      );
+
+  Future _showPrintDialog(BuildContext context) => showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => PrintDialog(selectedWorksheets),
       ).then(
         (resultMessage) {
           if (resultMessage != null)

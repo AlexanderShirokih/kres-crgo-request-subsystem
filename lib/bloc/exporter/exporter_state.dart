@@ -4,9 +4,13 @@ abstract class ExporterState extends Equatable {
   const ExporterState();
 }
 
-class ExporterInitial extends ExporterState {
+class ExporterIdle extends ExporterState {
+  final String message;
+
+  const ExporterIdle({this.message});
+
   @override
-  List<Object> get props => [];
+  List<Object> get props => [message];
 }
 
 class ExporterMissingState extends ExporterState {
@@ -15,7 +19,7 @@ class ExporterMissingState extends ExporterState {
 }
 
 class ExporterErrorState extends ExporterState {
-  final ExporterProcessException exception;
+  final RequestsProcessException exception;
 
   const ExporterErrorState(this.exception);
 
@@ -32,4 +36,18 @@ class ExporterClosingState extends ExporterState {
 
   @override
   List<Object> get props => [];
+}
+
+class ExporterListPrintersState extends ExporterState {
+  final String preferredPrinter;
+  final List<String> availablePrinters;
+
+  const ExporterListPrintersState(
+      this.preferredPrinter, this.availablePrinters);
+
+  @override
+  List<Object> get props => [
+        preferredPrinter,
+        availablePrinters,
+      ];
 }

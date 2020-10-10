@@ -7,21 +7,69 @@ import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
 import org.apache.pdfbox.pdmodel.font.PDFont
 import org.apache.pdfbox.pdmodel.font.PDType0Font
+import org.apache.pdfbox.printing.PDFPageable
 import ru.aleshi.requests.data.RequestItem
 import ru.aleshi.requests.data.Worksheet
 import java.awt.Color
+import java.awt.print.PrinterJob
 import java.nio.file.Files
 import java.nio.file.Paths
+import javax.print.PrintService
+import javax.print.attribute.HashPrintRequestAttributeSet
+import javax.print.attribute.standard.Sides
 
 
 class PdfExporter(
-    private val destinationPath: String,
     private val sourcePath: String
 ) {
 
     private val loader = PdfExporter::class.java.classLoader
 
-    fun export() {
+
+    fun print(printer: PrintService, noLists: Boolean) {
+        val worksheets = loadWorksheets()
+
+        val ordersDoc = PDDocument().apply {
+            writeOrders(
+                this, worksheets, PDType0Font.load(
+                    this,
+                    loader.getResourceAsStream("fonts/Roboto-Regular.ttf"), false
+                )
+            )
+        }
+
+        val listsDoc =
+            if (noLists) null else PDDocument().apply {
+                writeLists(
+                    this, worksheets, PDType0Font.load(
+                        this,
+                        loader.getResourceAsStream("fonts/Roboto-Regular.ttf"), false
+                    )
+                )
+            }
+
+        ordersDoc.let { orders ->
+            PrinterJob.getPrinterJob().apply {
+                setPageable(PDFPageable(orders))
+                jobName = "Распоряжения"
+                printService = printer
+                print(HashPrintRequestAttributeSet().apply {
+                    add(Sides.TWO_SIDED_SHORT_EDGE)
+                })
+            }
+        }
+
+        listsDoc?.let { lists ->
+            PrinterJob.getPrinterJob().apply {
+                setPageable(PDFPageable(lists))
+                jobName = "Списки работ"
+                printService = printer
+                print()
+            }
+        }
+    }
+
+    fun export(destinationPath: String) {
         val worksheets = loadWorksheets()
         val target = PDDocument()
         val font = PDType0Font.load(
@@ -41,7 +89,7 @@ class PdfExporter(
 
         for (worksheet in worksheets) {
             writeFirstPage(target, target.importPage(orderTemplate.getPage(0)), font, worksheet)
-            writeSecondPage(target, target.importPage(orderTemplate.getPage(1)), font, worksheet);
+            writeSecondPage(target, target.importPage(orderTemplate.getPage(1)), font, worksheet)
         }
     }
 
@@ -62,7 +110,7 @@ class PdfExporter(
 
     private fun writeHeading(content: PDPageContentStream, worksheet: Worksheet, font: PDFont) {
         content.writeTextAt(174.0f, 435.0f, worksheet.mainEmployee.getNameWithGroup(), font)
-        content.writeTextAt(164.0f, 409.0f, worksheet.membersEmployee.joinToString { it.name }, font)
+        content.writeTextAt(164.0f, 409.0f, worksheet.membersEmployee.joinToString { it.getNameWithGroup() }, font)
         content.writeMultiline(
             baseX = 278.0f,
             baseY = 383.0f,
@@ -110,7 +158,7 @@ class PdfExporter(
                 baseX = 60f,
                 baseY = baseY - i * lineSpacing,
                 font = font,
-                position = i + 1,
+                position = i + startPosition,
                 address = request.address
             )
         }
@@ -143,7 +191,7 @@ class PdfExporter(
             font = font,
             fontSize = 6.0f,
             lineSpacing = 7.0f
-        );
+        )
     }
 
     private fun writeLists(target: PDDocument, worksheets: Array<Worksheet>, font: PDFont) {
@@ -173,7 +221,7 @@ class PdfExporter(
                 "Призводитель работ: ${worksheet.mainEmployee.name}",
                 font,
                 10.0f
-            );
+            )
 
             val members =
                 if (worksheet.membersEmployee.isEmpty()) "--" else worksheet.membersEmployee
