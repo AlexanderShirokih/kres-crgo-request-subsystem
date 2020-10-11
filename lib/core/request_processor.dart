@@ -24,6 +24,10 @@ abstract class AbstractRequestProcessor {
   Future<RequestsProcessResult> exportToPdf(
       List<Worksheet> worksheets, String destinationPath);
 
+  /// Exports all [worksheets] (as lists) to Excel XLSX file to [destinationPath]
+  Future<RequestsProcessResult> exportToXlsx(
+      List<Worksheet> worksheets, String destinationPath);
+
   /// Imports worksheet previously exported to XLS by Mega-billing app
   Future<RequestsProcessResult<Document>> importRequests(String filePath);
 
@@ -65,11 +69,20 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
 
   @override
   Future<RequestsProcessResult> exportToPdf(
-      List<Worksheet> worksheets, String destinationPath) async {
+          List<Worksheet> worksheets, String destinationPath) =>
+      _doExport(worksheets, "pdf", destinationPath);
+
+  @override
+  Future<RequestsProcessResult> exportToXlsx(
+          List<Worksheet> worksheets, String destinationPath) =>
+      _doExport(worksheets, "xlsx", destinationPath);
+
+  Future<RequestsProcessResult> _doExport(
+      List<Worksheet> worksheets, String format, String destinationPath) async {
     final tempFile = await _saveToTempFile(worksheets);
 
     return await Process.run(_requestProcessorFile.path,
-            ['-pdf', tempFile.path, destinationPath])
+            ['-export-$format', tempFile.path, destinationPath])
         .then(
           (result) =>
               _decodeProcessResult(result, (d) => "", 'Ошибка экспорта!'),

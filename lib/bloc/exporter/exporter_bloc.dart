@@ -13,16 +13,20 @@ part 'exporter_event.dart';
 
 part 'exporter_state.dart';
 
+enum ExportFormat { Pdf, Excel }
+
 class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
   final SettingsRepository settings;
   final List<Worksheet> worksheets;
   final Future<String> Function() fileChooser;
+  final ExportFormat exportFormat;
 
   final AbstractRequestProcessor _requestProcessor;
 
   ExporterBloc({
     @required this.settings,
     @required this.worksheets,
+    this.exportFormat,
     this.fileChooser,
   })  : assert(settings != null),
         assert(worksheets != null),
@@ -113,12 +117,22 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
 
     yield ExporterIdle(message: 'Экспорт файла');
 
-    final result = await _requestProcessor.exportToPdf(worksheets, filePath);
+    final result = await _runExporter(filePath);
 
     if (result.hasError()) {
       yield ExporterErrorState(result.createException());
     } else {
       yield ExporterClosingState(isCompleted: true);
     }
+  }
+
+  Future<RequestsProcessResult> _runExporter(String savePath) {
+    switch (exportFormat) {
+      case ExportFormat.Pdf:
+        return _requestProcessor.exportToPdf(worksheets, savePath);
+      case ExportFormat.Excel:
+        return _requestProcessor.exportToXlsx(worksheets, savePath);
+    }
+    throw ('Unknown exporter format');
   }
 }

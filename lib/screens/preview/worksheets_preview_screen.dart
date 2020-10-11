@@ -9,6 +9,7 @@ import 'package:kres_requests2/data/document.dart';
 import 'package:kres_requests2/data/employee.dart';
 import 'package:kres_requests2/data/worksheet.dart';
 import 'package:kres_requests2/screens/common.dart';
+import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 
 import 'exporter_dialogs.dart';
 import 'print_dialog.dart';
@@ -99,11 +100,22 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen>
                 ),
                 _buildActionBarItem(
                   context: context,
+                  icon: FontAwesomeIcons.fileExcel,
+                  label: 'Экспорт в Excel',
+                  tooltip:
+                      'Сохранить выбранные листы в формате Книга Microsoft '
+                      'Excel 2007-365 (Только списки работ)',
+                  onPressed: hasPrintableWorksheets()
+                      ? () => _showExportDialog(context, ExportFormat.Excel)
+                      : null,
+                ),
+                _buildActionBarItem(
+                  context: context,
                   icon: FontAwesomeIcons.filePdf,
                   label: 'Экспорт в PDF',
                   tooltip: 'Сохранить выбранные листы в формате PDF',
                   onPressed: hasPrintableWorksheets()
-                      ? () => _showExportDialog(context)
+                      ? () => _showExportDialog(context, ExportFormat.Pdf)
                       : null,
                 ),
                 _buildActionBarItem(
@@ -149,12 +161,14 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen>
         ),
       );
 
-  Future _showExportDialog(BuildContext context) => showDialog<String>(
+  Future _showExportDialog(BuildContext context, ExportFormat format) =>
+      showDialog<String>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => ExportToPDFDialog(
+        builder: (_) => ExporterDialog(
+          format,
           selectedWorksheets,
-          getSuggestedName(".pdf"),
+          getSuggestedName,
         ),
       ).then(
         (resultMessage) {

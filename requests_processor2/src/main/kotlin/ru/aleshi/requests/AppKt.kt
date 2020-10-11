@@ -1,11 +1,14 @@
 package ru.aleshi.requests
 
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.apache.commons.lang3.exception.ExceptionUtils
 import ru.aleshi.requests.core.PdfExporter
 import ru.aleshi.requests.core.RequestParser
+import ru.aleshi.requests.core.XlsxExporter
 import ru.aleshi.requests.data.ProcessResult
-import java.lang.IllegalArgumentException
+import ru.aleshi.requests.data.Worksheet
+import java.nio.file.Files
 import java.nio.file.Paths
 import javax.print.PrintServiceLookup
 import javax.print.attribute.HashPrintRequestAttributeSet
@@ -17,11 +20,12 @@ object AppKt {
         loadResult {
             if (args.isNotEmpty()) {
                 when (args[0]) {
-                    "-pdf" -> PdfExporter(sourcePath = args[1]).export(args[2])
+                    "-export-pdf" -> PdfExporter(loadWorksheets(args[1])).export(args[2])
+                    "-export-xlsx" -> XlsxExporter(loadWorksheets(args[1])).export(args[2])
                     "-parse" -> RequestParser.parse(filePath = Paths.get(args[1]))
                     "-list-printers" -> getAvailablePrinters()
                     "-print" -> printDocument(
-                        sourcePath = args[1],
+                        worksheets = loadWorksheets(args[1]),
                         printerName = args[2],
                         noLists = args.size > 3 && args[3] == "-no-lists"
                     )
@@ -47,6 +51,11 @@ object AppKt {
         println(GsonBuilder().setPrettyPrinting().create().toJson(result))
     }
 
+    private fun loadWorksheets(sourcePath: String): Array<Worksheet> {
+        val reader = Files.newBufferedReader(Paths.get(sourcePath))
+        return Gson().fromJson(reader, Array<Worksheet>::class.java)
+    }
+
     private fun getAvailablePrinters(): List<String> {
         val attrSet = HashPrintRequestAttributeSet().apply {
             add(Sides.TWO_SIDED_SHORT_EDGE)
@@ -57,12 +66,12 @@ object AppKt {
             .map { it.name }
     }
 
-    private fun printDocument(sourcePath: String, printerName: String, noLists: Boolean): Boolean {
+    private fun printDocument(worksheets: Array<Worksheet>, printerName: String, noLists: Boolean): Boolean {
         val printer = PrintServiceLookup
             .lookupPrintServices(null, null)
             .first { it.name == printerName }
 
-        PdfExporter(sourcePath = sourcePath).print(printer, noLists)
+        PdfExporter(worksheets).print(printer, noLists)
         return true
     }
 }

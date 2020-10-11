@@ -1,6 +1,5 @@
 package ru.aleshi.requests.core
 
-import com.google.gson.Gson
 import org.apache.commons.lang3.text.WordUtils
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
@@ -12,23 +11,17 @@ import ru.aleshi.requests.data.RequestItem
 import ru.aleshi.requests.data.Worksheet
 import java.awt.Color
 import java.awt.print.PrinterJob
-import java.nio.file.Files
-import java.nio.file.Paths
 import javax.print.PrintService
 import javax.print.attribute.HashPrintRequestAttributeSet
 import javax.print.attribute.standard.Sides
 
 
-class PdfExporter(
-    private val sourcePath: String
-) {
+class PdfExporter(private val worksheets: Array<Worksheet>) {
 
     private val loader = PdfExporter::class.java.classLoader
 
 
     fun print(printer: PrintService, noLists: Boolean) {
-        val worksheets = loadWorksheets()
-
         val ordersDoc = PDDocument().apply {
             writeOrders(
                 this, worksheets, PDType0Font.load(
@@ -70,7 +63,6 @@ class PdfExporter(
     }
 
     fun export(destinationPath: String) {
-        val worksheets = loadWorksheets()
         val target = PDDocument()
         val font = PDType0Font.load(
             target,
@@ -300,10 +292,4 @@ class PdfExporter(
         showText(text)
         endText()
     }
-
-    private fun loadWorksheets(): Array<Worksheet> {
-        val reader = Files.newBufferedReader(Paths.get(sourcePath))
-        return Gson().fromJson(reader, Array<Worksheet>::class.java)
-    }
-
 }
