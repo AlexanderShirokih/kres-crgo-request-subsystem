@@ -7,6 +7,8 @@ import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 import 'package:kres_requests2/common/worksheet_importer.dart';
 import 'package:kres_requests2/data/document.dart';
 
+import '../common.dart';
+
 class NativeImporterScreen extends BaseImporterScreen {
   final String initialDirectory;
   final Document targetDocument;
@@ -20,7 +22,7 @@ class NativeImporterScreen extends BaseImporterScreen {
           title: 'Импорт файла',
           importer: NativeWorksheetImporter(tableChooser: multiTableChooser),
           targetDocument: targetDocument,
-          mainWidgetBuilder: (_) => _NativeImportWidget(),
+          mainWidgetBuilder: (_) => LoadingView('Ожидание выбора файла...'),
           forceFileSelection: true,
         );
 
@@ -42,22 +44,6 @@ class NativeImporterScreen extends BaseImporterScreen {
     if (res.canceled) return null;
 
     return res.paths[0];
-  }
-}
-
-class _NativeImportWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(),
-          const SizedBox(height: 12.0),
-          Text('Ожидание выбора файла...'),
-        ],
-      ),
-    );
   }
 }
 

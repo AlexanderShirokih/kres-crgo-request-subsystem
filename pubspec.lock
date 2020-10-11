@@ -366,6 +366,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.7.3"
+  window_control:
+    dependency: "direct main"
+    description:
+      path: window_control
+      relative: true
+    source: path
+    version: "0.0.1"
   xdg_directories:
     dependency: transitive
     description:
@@ -382,4 +389,4 @@ packages:
     version: "4.5.1"
 sdks:
   dart: ">=2.10.0-110 <=2.11.0-161.0.dev"
-  flutter: ">=1.16.0 <2.0.0"
+  flutter: ">=1.20.0 <2.0.0"

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kres_requests2/screens/title_bar.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:path/path.dart' as path;
@@ -49,7 +51,15 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
       : currentDocument.savePath.path;
 
   @override
+  void dispose() {
+    TitleBarBindings.instance.unregisterClosingCallback();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    TitleBarBindings.instance.registerClosingCallback(
+        () => _showExitConfirmationDialog(context));
     return Scaffold(
       endDrawer: Container(
         width: 420.0,
@@ -253,7 +263,7 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
         title: Text('Сохранить документ перед выходом?'),
         actionsPadding: EdgeInsets.only(right: 24.0, bottom: 12.0),
         actions: [
-          FlatButton(
+          OutlinedButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text('Отмена'),
           ),
