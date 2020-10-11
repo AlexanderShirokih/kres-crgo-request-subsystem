@@ -11,12 +11,10 @@ class TitleBarBindings {
   Future<bool> Function() onAppClosing;
 
   void registerClosingCallback(Future<bool> Function() onAppClosing) {
-    print("Register callback");
     this.onAppClosing = onAppClosing;
   }
 
   void unregisterClosingCallback() {
-    print("Unregister callback");
     onAppClosing = null;
   }
 }
@@ -59,10 +57,8 @@ class TitleBar extends StatelessWidget {
                       hoverColor: Colors.red[300],
                       onPressed: () {
                         final callback = TitleBarBindings.instance.onAppClosing;
-                        print("CALLBACK is ${callback != null}");
                         if (callback != null) {
                           callback().then((shouldClose) {
-                            print("SHOULD CLOSE = $shouldClose");
                             if (shouldClose) {
                               WindowControl.closeWindow();
                             }
