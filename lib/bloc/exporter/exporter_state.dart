@@ -19,12 +19,12 @@ class ExporterMissingState extends ExporterState {
 }
 
 class ExporterErrorState extends ExporterState {
-  final RequestsProcessException exception;
+  final ErrorWrapper error;
 
-  const ExporterErrorState(this.exception);
+  const ExporterErrorState(this.error);
 
   @override
-  List<Object> get props => [exception];
+  List<Object> get props => [error];
 }
 
 class ExporterClosingState extends ExporterState {

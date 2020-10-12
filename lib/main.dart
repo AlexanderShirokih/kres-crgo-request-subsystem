@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
       );
 
   Future<dynamic> _loadRepositories() async => [
-        RepositoryProvider.value(value: ConfigRepository()),
+        RepositoryProvider.value(value: await ConfigRepository.create()),
         RepositoryProvider.value(
           value: SettingsRepository.fromPreferences(
             await SharedPreferences.getInstance(),

@@ -6,9 +6,10 @@ import 'package:bloc/bloc.dart';
 import 'package:path/path.dart' as p;
 import 'package:equatable/equatable.dart';
 
-import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/data/process_result.dart';
+// TODO: Replace domain layer with repository
 import 'package:kres_requests2/domain/worksheet_importer.dart';
+import 'package:kres_requests2/models/optional_data.dart';
+import 'package:kres_requests2/models/document.dart';
 
 part 'importer_event.dart';
 
@@ -70,7 +71,7 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
     yield await state.catchError((e, s) {
       if (e is ImporterProcessMissingException) {
         return ImporterProccessMissingState();
-      } else if (e is RequestsProcessException) {
+      } else if (e is ErrorWrapper) {
         ImportErrorState(e.error, e.stackTrace);
       } else {
         ImportErrorState(e.toString(), s.toString());

@@ -9,12 +9,12 @@ abstract class ExporterInitialEvent extends ExporterEvent {
 }
 
 class ExporterErrorEvent extends ExporterEvent {
-  final RequestsProcessException exception;
+  final ErrorWrapper error;
 
-  const ExporterErrorEvent(this.exception);
+  const ExporterErrorEvent(this.error);
 
   @override
-  List<Object> get props => [exception];
+  List<Object> get props => [error];
 }
 
 class ExporterShowSaveDialogEvent extends ExporterInitialEvent {

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:meta/meta.dart';
 
 import 'package:kres_requests2/domain/counters_importer.dart';
-import 'package:kres_requests2/data/request_processor.dart';
+import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 
@@ -29,19 +29,20 @@ abstract class WorksheetImporter {
 class ImporterProcessMissingException implements Exception {}
 
 class RequestsWorksheetImporter extends WorksheetImporter {
-  final AbstractRequestProcessor requestProcessor;
+  final RequestsRepository requestsRepository;
 
   const RequestsWorksheetImporter({
-    @required this.requestProcessor,
-  }) : assert(requestProcessor != null);
+    @required this.requestsRepository,
+  }) : assert(requestsRepository != null);
 
   @override
   Future<Document> importDocument(String filePath) =>
-      requestProcessor.isAvailable().then((isExists) {
+      requestsRepository.isAvailable().then((isExists) {
         if (!isExists) throw ImporterProcessMissingException();
       }).then((value) async {
-        final result = await requestProcessor.importRequests(filePath);
-        if (result.hasError()) throw result.createException();
+        final result = await requestsRepository.importRequests(filePath);
+        // TODO : Catch this error
+        if (result.hasError()) throw result.error;
         return result.data;
       });
 }

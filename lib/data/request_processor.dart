@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:kres_requests2/models/optional_data.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-import 'package:kres_requests2/data/process_result.dart';
+import 'package:kres_requests2/data/process_executor.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/models/document.dart';
@@ -17,37 +18,36 @@ abstract class AbstractRequestProcessor {
 
   /// Prints all [worksheets] on [printerName]
   /// If [noLists] is `true` only order pages will be printed
-  Future<RequestsProcessResult<bool>> printWorksheets(
+  Future<OptionalData<bool>> printWorksheets(
       List<Worksheet> worksheets, String printerName, bool noLists);
 
   /// Exports all [worksheets] to PDF file to [destinationPath]
-  Future<RequestsProcessResult> exportToPdf(
+  Future<OptionalData> exportToPdf(
       List<Worksheet> worksheets, String destinationPath);
 
   /// Exports all [worksheets] (as lists) to Excel XLSX file to [destinationPath]
-  Future<RequestsProcessResult> exportToXlsx(
+  Future<OptionalData> exportToXlsx(
       List<Worksheet> worksheets, String destinationPath);
 
   /// Imports worksheet previously exported to XLS by Mega-billing app
-  Future<RequestsProcessResult<Document>> importRequests(String filePath);
+  Future<OptionalData<Document>> importRequests(String filePath);
 
   /// Gets all available printers that can handle document printing
-  Future<RequestsProcessResult<List<String>>> listPrinters();
+  Future<OptionalData<List<String>>> listPrinters();
 }
 
 class RequestProcessorImpl extends AbstractRequestProcessor {
-  static const  _kRequestsExec = 'requests/bin/requests2.bat';
-  final File _javaPath;
+  final ProcessExecutor _requestsProcessExecutor;
 
-  const RequestProcessorImpl(this._javaPath)
-      : assert(_javaPath != null);
-
-  @override
-  Future<bool> isAvailable() => _javaPath.exists();
+  const RequestProcessorImpl(this._requestsProcessExecutor)
+      : assert(_requestsProcessExecutor != null);
 
   @override
-  Future<RequestsProcessResult<List<String>>> listPrinters() =>
-      Process.run(_requestProcessorFile.path, ['-list-printers']).then(
+  Future<bool> isAvailable() => _requestsProcessExecutor.isAvailable();
+
+  @override
+  Future<OptionalData<List<String>>> listPrinters() =>
+      _requestsProcessExecutor.runProcess(['-list-printers']).then(
         (result) => _decodeProcessResult<List<String>>(
             result,
             (d) => (d as List<dynamic>).cast<String>(),
@@ -55,11 +55,12 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
       );
 
   @override
-  Future<RequestsProcessResult<bool>> printWorksheets(
+  Future<OptionalData<bool>> printWorksheets(
       List<Worksheet> worksheets, String printerName, bool noLists) async {
     final tempFile = await _saveToTempFile(worksheets);
 
-    return await Process.run(_requestProcessorFile.path,
+    return await _requestsProcessExecutor
+        .runProcess(
             ['-print', tempFile.path, printerName, if (noLists) '-no-lists'])
         .then(
           (result) => _decodeProcessResult(
@@ -69,21 +70,21 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
   }
 
   @override
-  Future<RequestsProcessResult> exportToPdf(
+  Future<OptionalData> exportToPdf(
           List<Worksheet> worksheets, String destinationPath) =>
       _doExport(worksheets, "pdf", destinationPath);
 
   @override
-  Future<RequestsProcessResult> exportToXlsx(
+  Future<OptionalData> exportToXlsx(
           List<Worksheet> worksheets, String destinationPath) =>
       _doExport(worksheets, "xlsx", destinationPath);
 
-  Future<RequestsProcessResult> _doExport(
+  Future<OptionalData> _doExport(
       List<Worksheet> worksheets, String format, String destinationPath) async {
     final tempFile = await _saveToTempFile(worksheets);
 
-    return await Process.run(_requestProcessorFile.path,
-            ['-export-$format', tempFile.path, destinationPath])
+    return await _requestsProcessExecutor
+        .runProcess(['-export-$format', tempFile.path, destinationPath])
         .then(
           (result) =>
               _decodeProcessResult(result, (d) => "", 'Ошибка экспорта!'),
@@ -92,9 +93,9 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
   }
 
   @override
-  Future<RequestsProcessResult<Document>> importRequests(String filePath) =>
-      Process.run(_requestProcessorFile.path, ['-parse', filePath])
-          .then((ProcessResult result) => _decodeProcessResult(
+  Future<OptionalData<Document>> importRequests(String filePath) =>
+      _requestsProcessExecutor.runProcess(['-parse', filePath]).then(
+          (ProcessResult result) => _decodeProcessResult(
                 result,
                 (d) => Document(worksheets: [
                   Worksheet(
@@ -119,12 +120,17 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
     return await tempFile.writeAsString(encoded);
   }
 
-  RequestsProcessResult<T> _decodeProcessResult<T>(ProcessResult result,
+  OptionalData<T> _decodeProcessResult<T>(ProcessResult result,
           T Function(dynamic) dataConsumer, String errorMsg) =>
       result.exitCode == 0
-          ? RequestsProcessResult.fromJson(
-              jsonDecode(result.stdout), dataConsumer)
-          : RequestsProcessResult(error: '$errorMsg\n${result.stderr}');
+          ? _createFromProcessResult(jsonDecode(result.stdout), dataConsumer)
+          : OptionalData<T>(error: ErrorWrapper(errorMsg, result.stderr));
+
+  OptionalData<T> _createFromProcessResult<T>(
+          Map<String, dynamic> json, T Function(dynamic) resultBuilder) =>
+      OptionalData(
+          data: json['data'] != null ? resultBuilder(json['data']) : null,
+          error: ErrorWrapper(json['error'], json['stackTrace']));
 
   String _getWorksheetName(String filePath) =>
       path.basenameWithoutExtension(filePath);

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/data/document.dart';
-import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 
-import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
+import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/repo/settings_repository.dart';
+import 'package:kres_requests2/screens/settings/settings_screen.dart';
 import 'package:kres_requests2/screens/startup/startup_screen_button.dart';
 import 'package:kres_requests2/screens/editor/worksheet_master_screen.dart';
+import 'package:kres_requests2/screens/importer/native_import_screen.dart';
+import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 
 /// Shows startup wizard
 class StartupScreen extends StatelessWidget {
@@ -13,6 +16,19 @@ class StartupScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: Text('Начало работы'),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton(
+                icon: FaIcon(FontAwesomeIcons.cog),
+                onPressed: () => Navigator.push(
+                  context,
+                  SettingsScreen.createRoute(
+                      context.repository<SettingsRepository>()),
+                ),
+              ),
+            ),
+          ],
         ),
         body: Center(
           child: Column(

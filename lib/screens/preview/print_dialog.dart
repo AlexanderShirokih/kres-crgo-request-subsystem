@@ -4,6 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/repo/config_repository.dart';
+import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/screens/common.dart';
 
@@ -23,6 +25,10 @@ class PrintDialog extends StatelessWidget {
           value: ExporterBloc(
             settings: context.repository<SettingsRepository>(),
             worksheets: worksheets,
+            requestsRepository: RequestsRepository(
+              context.repository<SettingsRepository>(),
+              context.repository<ConfigRepository>(),
+            ),
           ),
           child: Builder(
             builder: (context) => BlocConsumer(
@@ -35,11 +41,10 @@ class PrintDialog extends StatelessWidget {
                   );
                 } else if (state is ExporterIdle) {
                   return LoadingView(state.message);
-                } else if (state is ExporterErrorState &&
-                    state.exception != null) {
+                } else if (state is ExporterErrorState && state.error != null) {
                   return ErrorView(
-                    errorDescription: state.exception.error,
-                    stackTrace: state.exception.stackTrace,
+                    errorDescription: state.error.error,
+                    stackTrace: state.error.stackTrace,
                   );
                 } else
                   return Center(

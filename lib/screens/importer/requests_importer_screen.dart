@@ -5,9 +5,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 
-// TODO: Replace data and domain layer with repository
+// TODO: Replace domain layer with repository
 import 'package:kres_requests2/domain/worksheet_importer.dart';
-import 'package:kres_requests2/data/request_processor.dart';
+
+import 'package:kres_requests2/repo/config_repository.dart';
+import 'package:kres_requests2/repo/requests_repository.dart';
 
 import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/models/document.dart';
@@ -25,11 +27,9 @@ class RequestsImporterScreen extends BaseImporterScreen {
       RequestsImporterScreen(
         targetDocument: targetDocument,
         importer: RequestsWorksheetImporter(
-          requestProcessor: RequestProcessorImpl(
-            context
-                .repository<SettingsRepository>()
-                .requestsProcessorExecutable
-                .absolute,
+          requestsRepository: RequestsRepository(
+            context.repository<SettingsRepository>(),
+            context.repository<ConfigRepository>(),
           ),
         ),
         initialDirectory: initialDirectory,
