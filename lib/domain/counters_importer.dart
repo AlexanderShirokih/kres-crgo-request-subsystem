@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:kres_requests2/common/worksheet_importer.dart';
-import 'package:kres_requests2/data/request_entity.dart';
+import 'package:kres_requests2/domain/worksheet_importer.dart';
+import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/repo/config_repository.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 

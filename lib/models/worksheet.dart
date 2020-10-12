@@ -1,6 +1,7 @@
-import 'package:kres_requests2/data/employee.dart';
-import 'package:kres_requests2/data/request_entity.dart';
 import 'package:meta/meta.dart';
+
+import 'package:kres_requests2/models/employee.dart';
+import 'package:kres_requests2/models/request_entity.dart';
 
 /// Contains info about single working document
 class Worksheet {
@@ -57,7 +58,10 @@ class Worksheet {
         'name': name,
         'mainEmployee': mainEmployee?.toJson(),
         'chiefEmployee': chiefEmployee?.toJson(),
-        'membersEmployee': membersEmployee.where((e) => e != null).map((e) => e.toJson()).toList(),
+        'membersEmployee': membersEmployee
+            .where((e) => e != null)
+            .map((e) => e.toJson())
+            .toList(),
         'date': date?.millisecondsSinceEpoch,
         'requests': requests.map((r) => r.toJson()).toList(),
         'workTypes': workTypes.toList(),

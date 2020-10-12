@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:kres_requests2/data/employee.dart';
+import 'package:kres_requests2/models/employee.dart';
 import 'package:kres_requests2/repo/employees_repository.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/repo/config_repository.dart';

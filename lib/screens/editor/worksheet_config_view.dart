@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/data/employee.dart';
-import 'package:kres_requests2/data/worksheet.dart';
-import 'package:kres_requests2/repo/employees_repository.dart';
+
 import 'package:intl/intl.dart';
+
+import 'package:kres_requests2/models/employee.dart';
+import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/repo/employees_repository.dart';
 import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
 class WorksheetConfigView extends StatefulWidget {

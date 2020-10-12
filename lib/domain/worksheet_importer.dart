@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:kres_requests2/core/request_processor.dart';
 import 'package:meta/meta.dart';
 
-import 'package:kres_requests2/core/counters_importer.dart';
-import 'package:kres_requests2/data/document.dart';
-import 'package:kres_requests2/data/worksheet.dart';
+import 'package:kres_requests2/domain/counters_importer.dart';
+import 'package:kres_requests2/data/request_processor.dart';
+import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/models/worksheet.dart';
 
 class ImporterException implements Exception {
   final String message;

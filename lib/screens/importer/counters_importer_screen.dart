@@ -4,8 +4,9 @@ import 'package:file_chooser/file_chooser.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-import 'package:kres_requests2/common/worksheet_importer.dart';
-import 'package:kres_requests2/data/document.dart';
+// TODO: Replcae domain layer with repository
+import 'package:kres_requests2/domain/worksheet_importer.dart';
+import 'package:kres_requests2/models/document.dart';
 
 import 'base_importer_screen.dart';
 

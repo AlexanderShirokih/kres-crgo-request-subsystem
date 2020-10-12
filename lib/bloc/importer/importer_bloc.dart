@@ -6,9 +6,9 @@ import 'package:bloc/bloc.dart';
 import 'package:path/path.dart' as p;
 import 'package:equatable/equatable.dart';
 
-import 'package:kres_requests2/data/document.dart';
-import 'package:kres_requests2/core/process_result.dart';
-import 'package:kres_requests2/common/worksheet_importer.dart';
+import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/data/process_result.dart';
+import 'package:kres_requests2/domain/worksheet_importer.dart';
 
 part 'importer_event.dart';
 

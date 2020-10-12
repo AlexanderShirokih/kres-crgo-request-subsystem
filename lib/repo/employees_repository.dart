@@ -1,4 +1,4 @@
-import 'package:kres_requests2/data/employee.dart';
+import 'package:kres_requests2/models/employee.dart';
 
 class EmployeesRepository {
   final List<Employee> _allEmployees;

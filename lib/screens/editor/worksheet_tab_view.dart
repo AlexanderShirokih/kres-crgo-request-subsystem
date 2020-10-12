@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/common/worksheet_creation_mode.dart';
-import 'package:kres_requests2/data/worksheet.dart';
+
+// TODO: Replace domain layer with repository
+import 'package:kres_requests2/domain/worksheet_creation_mode.dart';
+import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
 class AddNewWorkSheetTabView extends StatefulWidget {

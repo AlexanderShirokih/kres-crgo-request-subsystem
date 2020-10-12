@@ -1,11 +1,13 @@
 import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:kres_requests2/data/worksheet.dart';
 
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
-import 'package:kres_requests2/common/worksheet_importer.dart';
-import 'package:kres_requests2/data/document.dart';
+
+// TODO: Replace domain layer with repository
+import 'package:kres_requests2/domain/worksheet_importer.dart';
+import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/models/document.dart';
 
 import '../common.dart';
 

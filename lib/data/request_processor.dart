@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-import 'package:kres_requests2/core/process_result.dart';
-import 'package:kres_requests2/data/request_entity.dart';
-import 'package:kres_requests2/data/worksheet.dart';
-import 'package:kres_requests2/data/document.dart';
+import 'package:kres_requests2/data/process_result.dart';
+import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/models/document.dart';
 
 abstract class AbstractRequestProcessor {
   const AbstractRequestProcessor();
@@ -36,13 +36,14 @@ abstract class AbstractRequestProcessor {
 }
 
 class RequestProcessorImpl extends AbstractRequestProcessor {
-  final File _requestProcessorFile;
+  static const  _kRequestsExec = 'requests/bin/requests2.bat';
+  final File _javaPath;
 
-  const RequestProcessorImpl(this._requestProcessorFile)
-      : assert(_requestProcessorFile != null);
+  const RequestProcessorImpl(this._javaPath)
+      : assert(_javaPath != null);
 
   @override
-  Future<bool> isAvailable() => _requestProcessorFile.exists();
+  Future<bool> isAvailable() => _javaPath.exists();
 
   @override
   Future<RequestsProcessResult<List<String>>> listPrinters() =>

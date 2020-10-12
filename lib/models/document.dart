@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:kres_requests2/data/worksheet.dart';
+import 'package:kres_requests2/models/worksheet.dart';
 
 /// Contains info about whole set of work blanks for special date
 class Document {

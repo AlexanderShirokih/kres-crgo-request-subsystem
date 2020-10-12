@@ -5,7 +5,7 @@ import 'package:path/path.dart' as path;
 import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
 
-import 'package:kres_requests2/data/document.dart';
+import 'package:kres_requests2/models/document.dart';
 
 class ErrorView extends StatelessWidget {
   final String errorDescription;

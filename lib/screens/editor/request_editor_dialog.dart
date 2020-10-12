@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:kres_requests2/data/request_entity.dart';
+import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/repo/config_repository.dart';
 
 import '../copyable_textformfield.dart';

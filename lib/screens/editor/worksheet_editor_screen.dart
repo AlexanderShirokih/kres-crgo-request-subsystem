@@ -3,9 +3,10 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/data/document.dart';
-import 'package:kres_requests2/data/request_entity.dart';
-import 'package:kres_requests2/data/worksheet.dart';
+
+import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/editor/reorderable_list_view.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 

@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-import 'package:kres_requests2/common/worksheet_importer.dart';
-import 'package:kres_requests2/data/document.dart';
+// TODO: Replace domain layer with repository
+import 'package:kres_requests2/domain/worksheet_importer.dart';
+import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/screens/common.dart';
 
 abstract class BaseImporterScreen extends StatelessWidget {

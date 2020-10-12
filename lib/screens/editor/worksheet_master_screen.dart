@@ -7,11 +7,12 @@ import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:path/path.dart' as path;
 
-import 'package:kres_requests2/common/worksheet_creation_mode.dart';
-import 'package:kres_requests2/common/worksheet_importer.dart';
-import 'package:kres_requests2/core/counters_importer.dart';
-import 'package:kres_requests2/data/document.dart';
-import 'package:kres_requests2/data/worksheet.dart';
+// TODO: Replace domain layer with repository
+import 'package:kres_requests2/domain/worksheet_creation_mode.dart';
+import 'package:kres_requests2/domain/worksheet_importer.dart';
+import 'package:kres_requests2/domain/counters_importer.dart';
+import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/repo/config_repository.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
@@ -58,8 +59,8 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
 
   @override
   Widget build(BuildContext context) {
-    TitleBarBindings.instance.registerClosingCallback(
-        () => _showExitConfirmationDialog(context));
+    TitleBarBindings.instance
+        .registerClosingCallback(() => _showExitConfirmationDialog(context));
     return Scaffold(
       endDrawer: Container(
         width: 420.0,

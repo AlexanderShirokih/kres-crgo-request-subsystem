@@ -1,13 +1,15 @@
 import 'dart:async';
 
-import 'package:kres_requests2/core/process_result.dart';
-import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import 'package:kres_requests2/data/worksheet.dart';
-import 'package:kres_requests2/core/request_processor.dart';
+// TODO: Replace data layer with repository
+import 'package:kres_requests2/data/process_result.dart';
+import 'package:kres_requests2/data/request_processor.dart';
+
+import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/repo/settings_repository.dart';
 
 part 'exporter_event.dart';
 
@@ -31,7 +33,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
   })  : assert(settings != null),
         assert(worksheets != null),
         _requestProcessor =
-            RequestProcessorImpl(settings.requestsProcessorExecutable.absolute),
+            RequestProcessorImpl(settings.javaPath),
         super(ExporterIdle()) {
     if (fileChooser != null)
       add(ExporterShowSaveDialogEvent());
