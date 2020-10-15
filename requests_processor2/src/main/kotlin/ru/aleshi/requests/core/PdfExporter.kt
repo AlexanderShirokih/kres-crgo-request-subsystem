@@ -249,7 +249,7 @@ class PdfExporter(private val worksheets: Array<Worksheet>) {
         content: PDPageContentStream
     ) = content.apply {
         writeTextAt(if (position < 10) 58.0f else 55.0f, 723.0f - yOffset, position.toString(), font, 10.0f)
-        writeTextAt(76.0f, 730.0f - yOffset, request.accountId.toString().padStart(6, '0'), font, 10.0f)
+        writeTextAt(76.0f, 730.0f - yOffset, (request.accountId?.toString()?.padStart(6, '0') ?: "--"), font, 10.0f)
         writeTextAt(120.0f, 730.0f - yOffset, request.name.take(31), font, 9.0f)
         writeTextAt(280.0f, 730.0f - yOffset, request.address, font, 9.0f)
         writeTextAt(480.0f, 731.0f - yOffset, request.reqType, font, 10.0f)
