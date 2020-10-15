@@ -1,17 +1,42 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:collection';
 
 import 'package:flutter/services.dart';
 
+typedef WindowClosingCallback = Future<bool> Function();
+
 class WindowControl {
-  static const MethodChannel _channel = const MethodChannel('window_control');
+  static WindowControl _instance;
 
-  static Future<bool> closeWindow() => exit(0);
+  Queue<WindowClosingCallback> _onClosingCallbacks = Queue();
 
-  static Future<bool> minWindow() => _channel.invokeMethod<bool>('minWindow');
+  static WindowControl get instance {
+    if (_instance == null) _instance = WindowControl();
+    return _instance;
+  }
 
-  static Future<bool> toggleMaxWindow() =>
-      _channel.invokeMethod<bool>('toogleMaxWindow');
+  WindowControl() {
+    MethodChannel('window_control')..setMethodCallHandler(_onMethodCall);
+  }
 
-  static Future<bool> startDrag() => _channel.invokeMethod<bool>('startDrag');
+  Future<dynamic> _onMethodCall(MethodCall call) {
+    print("onMethodCall");
+    switch (call.method) {
+      case "onWindowClosing":
+        if (_onClosingCallbacks.isEmpty) return Future.value(true);
+        return _onClosingCallbacks.last();
+    }
+
+    throw ("Unexpected method was called: ${call.method}");
+  }
+
+  void addOnWindowClosingCallback(WindowClosingCallback onClosingCallback) {
+    if (!_onClosingCallbacks.contains(onClosingCallback)) {
+      _onClosingCallbacks.add(onClosingCallback);
+    }
+  }
+
+  void removeOnWindowClosingCallback(WindowClosingCallback onClosingCallback) {
+    _onClosingCallbacks.remove(onClosingCallback);
+  }
 }

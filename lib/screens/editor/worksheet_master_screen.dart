@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/screens/title_bar.dart';
-import 'package:kres_requests2/screens/common.dart';
-import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:path/path.dart' as path;
+
+import 'package:window_control/window_listener.dart';
 
 // TODO: Replace domain layer with repository
 import 'package:kres_requests2/domain/worksheet_creation_mode.dart';
@@ -14,9 +13,11 @@ import 'package:kres_requests2/domain/counters_importer.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/repo/config_repository.dart';
+import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_tab_view.dart';
+import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 import 'package:kres_requests2/screens/preview/worksheets_preview_screen.dart';
@@ -52,15 +53,7 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
       : currentDocument.savePath.path;
 
   @override
-  void dispose() {
-    TitleBarBindings.instance.unregisterClosingCallback();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    TitleBarBindings.instance
-        .registerClosingCallback(() => _showExitConfirmationDialog(context));
     return Scaffold(
       endDrawer: Container(
         width: 420.0,
@@ -101,22 +94,25 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
         ],
       ),
       body: Builder(
-        builder: (ctx) => WillPopScope(
-          onWillPop: () => _showExitConfirmationDialog(ctx),
-          child: Row(
-            children: [
-              _createPageController(),
-              Expanded(
-                child: Container(
-                  height: double.maxFinite,
-                  child: WorkSheetEditorView(
-                    document: currentDocument,
-                    worksheet: currentDocument.active,
-                    onDocumentsChanged: () => setState(() {}),
+        builder: (ctx) => WindowListener(
+          onWindowClosing: () => _showExitConfirmationDialog(ctx),
+          child: WillPopScope(
+            onWillPop: () => _showExitConfirmationDialog(ctx),
+            child: Row(
+              children: [
+                _createPageController(),
+                Expanded(
+                  child: Container(
+                    height: double.maxFinite,
+                    child: WorkSheetEditorView(
+                      document: currentDocument,
+                      worksheet: currentDocument.active,
+                      onDocumentsChanged: () => setState(() {}),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

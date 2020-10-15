@@ -126,13 +126,6 @@ bool Win32Window::CreateAndShow(const std::wstring& title,
     return false;
   }
 
-  SetMenu(window, NULL);
-  LONG lStyle = GetWindowLong(window, GWL_STYLE);
-  lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_DLGFRAME);
-  SetWindowLong(window, GWL_STYLE, lStyle);
-  LONG flags = SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER;
-  SetWindowPos(window, NULL, 0, 0, 0, 0, flags);
-
   return OnCreate();
 }
 

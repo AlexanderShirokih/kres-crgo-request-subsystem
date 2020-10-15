@@ -1,7 +1,8 @@
 #include "include/window_control/window_control_plugin.h"
 
-// This must be included before many other Windows headers.
 #include <windows.h>
+
+#include <flutter/method_result_functions.h>
 
 #include <flutter/method_channel.h>
 
@@ -15,90 +16,60 @@ namespace {
 
     public: static void RegisterWithRegistrar(flutter::PluginRegistrarWindows * registrar);
 
-    WindowControlPlugin();
+    WindowControlPlugin(std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel);
 
     virtual~WindowControlPlugin();
 
     private:
-      // Called when a method is called on this plugin's channel from Dart.
-      void HandleMethodCall(
-        const flutter::MethodCall < flutter::EncodableValue > & method_call,
-          std::unique_ptr < flutter::MethodResult < flutter::EncodableValue >> result);
+      std::optional<LRESULT> HandleWinProcMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+
+      std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> controlChannel;
   };
 
   // static
   void WindowControlPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrarWindows * registrar) {
     auto channel =
-      std::make_unique < flutter::MethodChannel < flutter::EncodableValue >> (
+      std::make_unique <flutter::MethodChannel<flutter::EncodableValue>> (
         registrar -> messenger(), "window_control", &
         flutter::StandardMethodCodec::GetInstance());
 
-    auto plugin = std::make_unique < WindowControlPlugin > ();
+    auto plugin = std::make_unique<WindowControlPlugin>(std::move(channel));
 
-    channel -> SetMethodCallHandler([plugin_pointer = plugin.get()](
-      const auto & call, auto result) {
-      plugin_pointer -> HandleMethodCall(call, std::move(result));
+    registrar -> RegisterTopLevelWindowProcDelegate([pluginRef = plugin.get()]
+    (HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+        return pluginRef->HandleWinProcMessage(hwnd, message, wparam, lparam);
     });
-
     registrar -> AddPlugin(std::move(plugin));
   }
 
-  WindowControlPlugin::WindowControlPlugin() {}
+  WindowControlPlugin::WindowControlPlugin
+  (std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel):
+   controlChannel(std::move(channel)) {}
 
   WindowControlPlugin::~WindowControlPlugin() {}
 
-  void WindowControlPlugin::HandleMethodCall(
-    const flutter::MethodCall < flutter::EncodableValue > & method_call,
-      std::unique_ptr < flutter::MethodResult < flutter::EncodableValue >> result) {
-    auto methodName = method_call.method_name();
+  std::optional<LRESULT> WindowControlPlugin::HandleWinProcMessage(
+    HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
 
-    if (methodName.compare("closeWindow") == 0) {
-      HWND hWnd = GetActiveWindow();
-      SendMessage(hWnd, WM_CLOSE, 0, NULL);
-      flutter::EncodableValue response(true);
-      result -> Success( & response);
-    } else if (methodName.compare("minWindow") == 0) {
-      HWND hWnd = GetActiveWindow();
-      ShowWindow(hWnd, SW_MINIMIZE);
-      flutter::EncodableValue response(true);
-      result -> Success( & response);
-    } else if (methodName.compare("toogleMaxWindow") == 0) {
-      HWND hWnd = GetActiveWindow();
-      HWND hWndScreen = GetDesktopWindow();
-      RECT window;
-      RECT screen;
+        if(message == WM_CLOSE) {
+            auto result_handler = std::make_unique<flutter::MethodResultFunctions<>>(
+                [hwnd](const flutter::EncodableValue* result) {
+                   bool shouldCloseWindow = std::get<bool>(*result);
+                   if(shouldCloseWindow) {
+                        PostMessage(hwnd, WM_DESTROY, NULL, NULL);
+                   }
+                 },
+                    nullptr, nullptr);
 
-      GetWindowRect(hWnd, &window);
-      GetWindowRect(hWndScreen, &screen);
+            controlChannel->InvokeMethod("onWindowClosing", nullptr, std::move(result_handler));
 
-      auto isMaximized =
-        (window.left == screen.left) &&
-        (window.right == screen.right) &&
-        (window.top == screen.top);
+            return std::optional<LRESULT>(0);
+        }
 
-       if(isMaximized) {
-         ShowWindow(hWnd, SW_SHOWDEFAULT);
-       }
-       else {
-        ShowWindow(hWnd, SW_SHOWMAXIMIZED);
-//        RECT workArea;
-//       	SystemParametersInfo( SPI_GETWORKAREA, 0, &workArea, 0);
-//        SetWindowPos(hWnd, NULL, workArea.left, workArea.top, workArea.right, workArea.bottom, NULL);
-       }
+        return std::optional<LRESULT>();
+   }
 
-      flutter::EncodableValue response(true);
-      result -> Success( & response);
-    } else if (methodName.compare("startDrag") == 0) {
-      HWND hWnd = GetActiveWindow();
-      ReleaseCapture();
-      SendMessage(hWnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
-      flutter::EncodableValue response(true);
-      result -> Success( & response);
-    } else {
-      result -> NotImplemented();
-    }
-  }
 } // namespace
 
 void WindowControlPluginRegisterWithRegistrar(
