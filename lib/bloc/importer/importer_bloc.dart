@@ -30,11 +30,19 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
   }
 
   @override
+  void onError(Object error, StackTrace stackTrace) {
+    add(ImportErrorEvent(error?.toString(), stackTrace?.toString()));
+    super.onError(error, stackTrace);
+  }
+
+  @override
   Stream<ImporterState> mapEventToState(ImporterEvent event) async* {
     if (event is ImportEvent) {
       yield* _doWorksheetImport(event);
     } else if (event is InitialEvent) {
       yield ImporterInitialState();
+    } else if (event is ImportErrorEvent) {
+      yield ImportErrorState(event.error, event.stackTrace);
     }
   }
 
@@ -72,9 +80,9 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
       if (e is ImporterProcessMissingException) {
         return ImporterProccessMissingState();
       } else if (e is ErrorWrapper) {
-        ImportErrorState(e.error, e.stackTrace);
+        return ImportErrorState(e.error, e.stackTrace);
       } else {
-        ImportErrorState(e.toString(), s.toString());
+        return ImportErrorState(e.toString(), s.toString());
       }
     });
   }

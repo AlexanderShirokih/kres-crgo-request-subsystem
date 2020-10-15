@@ -17,11 +17,14 @@ class JavaProcessExecutor extends ProcessExecutor {
 
   @override
   Future<ProcessResult> runProcess(List<String> args) async {
-    // TODO: Properly catach error
     final javaBin = _getJavaExecutable();
 
     if (!await _isJavaBinariesExists(javaBin)) {
-      throw ('Java executable is not exists!');
+      throw ('Java executable does not exists!');
+    }
+
+    if (!await Directory(javaProcessInfo.appHome).exists()) {
+      throw ('Requests processor module does not exists!');
     }
 
     final res =
@@ -30,15 +33,13 @@ class JavaProcessExecutor extends ProcessExecutor {
   }
 
   File _getJavaExecutable() => Platform.isWindows
-      ? File('$javaHome/bin/java.exe')
-      : File('$javaHome/bin/java');
+      ? File('$javaHome/bin/javaw.exe')
+      : File('$javaHome/bin/javaw');
 
   @override
   Future<bool> isAvailable() => _isJavaBinariesExists(_getJavaExecutable());
 
-  Future<bool> _isJavaBinariesExists(File javaBin) {
-    return javaBin.exists();
-  }
+  Future<bool> _isJavaBinariesExists(File javaBin) => javaBin.exists();
 
   Future<List<String>> _buildArgs(List<String> args) async {
     final classPath = await _resolveClasspath();

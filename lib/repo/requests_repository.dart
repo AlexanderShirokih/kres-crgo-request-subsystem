@@ -30,23 +30,32 @@ class RequestsRepository {
   /// If [noLists] is `true` only order pages will be printed
   Future<OptionalData<bool>> printWorksheets(
           List<Worksheet> worksheets, String printerName, bool noLists) =>
-      _requestProcessor.printWorksheets(worksheets, printerName, noLists);
+      _requestProcessor
+          .printWorksheets(worksheets, printerName, noLists)
+          .catchError((e, s) => OptionalData.ofError<bool>(e, s));
 
   /// Exports all [worksheets] to PDF file to [destinationPath]
   Future<OptionalData> exportToPdf(
           List<Worksheet> worksheets, String destinationPath) =>
-      _requestProcessor.exportToPdf(worksheets, destinationPath);
+      _requestProcessor
+          .exportToPdf(worksheets, destinationPath)
+          .catchError((e, s) => OptionalData.ofError(e, s));
 
   /// Exports all [worksheets] (as lists) to Excel XLSX file to [destinationPath]
   Future<OptionalData> exportToXlsx(
           List<Worksheet> worksheets, String destinationPath) =>
-      _requestProcessor.exportToXlsx(worksheets, destinationPath);
+      _requestProcessor
+          .exportToXlsx(worksheets, destinationPath)
+          .catchError((e, s) => OptionalData.ofError(e, s));
 
   /// Imports worksheet previously exported to XLS by Mega-billing app
   Future<OptionalData<Document>> importRequests(String filePath) =>
-      _requestProcessor.importRequests(filePath);
+      _requestProcessor
+          .importRequests(filePath)
+          .catchError((e, s) => OptionalData.ofError<Document>(e, s));
 
   /// Gets all available printers that can handle document printing
-  Future<OptionalData<List<String>>> listPrinters() =>
-      _requestProcessor.listPrinters();
+  Future<OptionalData<List<String>>> listPrinters() => _requestProcessor
+      .listPrinters()
+      .catchError((e, s) => OptionalData.ofError<List<String>>(e, s));
 }

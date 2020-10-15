@@ -21,3 +21,13 @@ class ImportEvent extends ImporterEvent {
   @override
   List<Object> get props => [attachPath];
 }
+
+class ImportErrorEvent extends ImporterEvent {
+  final String error;
+  final String stackTrace;
+
+  const ImportErrorEvent(this.error, this.stackTrace);
+
+  @override
+  List<Object> get props => [error, stackTrace];
+}

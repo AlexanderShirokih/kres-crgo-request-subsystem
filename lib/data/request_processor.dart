@@ -63,7 +63,7 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
         .runProcess(
             ['-print', tempFile.path, printerName, if (noLists) '-no-lists'])
         .then(
-          (result) => _decodeProcessResult(
+          (result) => _decodeProcessResult<bool>(
               result, (d) => d as bool, 'Ошибка отправки задания!'),
         )
         .whenComplete(() => tempFile.delete());
@@ -95,7 +95,7 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
   @override
   Future<OptionalData<Document>> importRequests(String filePath) =>
       _requestsProcessExecutor.runProcess(['-parse', filePath]).then(
-          (ProcessResult result) => _decodeProcessResult(
+          (ProcessResult result) => _decodeProcessResult<Document>(
                 result,
                 (d) => Document(worksheets: [
                   Worksheet(

@@ -10,7 +10,6 @@ class ErrorWrapper extends Equatable {
   List<Object> get props => [error, stackTrace];
 
   bool isNotEmpty() => error.isNotEmpty || stackTrace.isNotEmpty;
-
 }
 
 class OptionalData<T> extends Equatable {
@@ -19,6 +18,14 @@ class OptionalData<T> extends Equatable {
 
   const OptionalData({this.data, this.error})
       : assert(data != null || error != null);
+
+  static OptionalData ofError<T>(Object errorObject, StackTrace stackTrace) =>
+      OptionalData<T>(
+        error: ErrorWrapper(
+          errorObject?.toString() ?? "Unknown error",
+          stackTrace?.toString() ?? "no stack trace",
+        ),
+      );
 
   bool hasError() => error != null && error.isNotEmpty();
 
