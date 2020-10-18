@@ -71,8 +71,6 @@ class LoadingView extends StatelessWidget {
 }
 
 mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
-  static final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
-
   Document currentDocument;
   String currentDirectory;
 
@@ -81,11 +79,13 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
     bool changePath,
   ) async {
     if (currentDocument.savePath == null || changePath) {
-      final newSavePath = await _showSaveDialog();
+      final newSavePath =
+          await showSaveDialog(currentDocument, currentDirectory);
       if (newSavePath == null) return null;
 
       setState(() {
-        currentDocument.savePath = newSavePath;
+        // TODO: Remove this method
+        currentDocument.savePath = File(newSavePath);
       });
     }
 
@@ -123,32 +123,29 @@ mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
           },
         );
   }
+}
 
-  Future<File> _showSaveDialog() async {
-    final res = await showSavePanel(
-      suggestedFileName: getSuggestedName('.json'),
-      initialDirectory: currentDirectory,
-      confirmButtonText: 'Сохранить',
-      allowedFileTypes: [
-        FileTypeFilterGroup(
-          label: "Документ заявок",
-          fileExtensions: ["json"],
-        )
-      ],
-    );
-    if (res.canceled) return null;
+Future<String> showSaveDialog(
+    Document currentDoc, String currentDirectory) async {
+  final res = await showSavePanel(
+    suggestedFileName: getSuggestedName(currentDoc, '.json'),
+    initialDirectory: currentDirectory,
+    confirmButtonText: 'Сохранить',
+    allowedFileTypes: [
+      FileTypeFilterGroup(
+        label: "Документ заявок",
+        fileExtensions: ["json"],
+      )
+    ],
+  );
+  return res.canceled ? null : res.paths[0];
+}
 
-    final savePath = res.paths[0];
-    currentDirectory = path.dirname(savePath);
+final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
 
-    if (path.extension(savePath) != '.json') return File('$savePath.json');
-    return File(savePath);
-  }
-
-  String getSuggestedName(String ext) {
-    String fmtDate(DateTime d) => _dateFormat.format(d);
-    return currentDocument.savePath == null
-        ? "Заявки ${fmtDate(currentDocument.updateDate)}$ext"
-        : "${path.basenameWithoutExtension(currentDocument.savePath.path)}$ext";
-  }
+String getSuggestedName(Document currentDocument, String ext) {
+  String fmtDate(DateTime d) => _dateFormat.format(d);
+  return currentDocument.savePath == null
+      ? "Заявки ${fmtDate(currentDocument.updateDate)}$ext"
+      : "${path.basenameWithoutExtension(currentDocument.savePath.path)}$ext";
 }

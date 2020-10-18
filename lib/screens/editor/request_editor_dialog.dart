@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:kres_requests2/models/request_entity.dart';
-import 'package:kres_requests2/repo/config_repository.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
 
 import '../copyable_textformfield.dart';
 
@@ -172,7 +172,8 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
                       : null,
                   reqType: _sanitize(_requestTypeController.text),
                   fullReqType: context
-                      .repository<ConfigRepository>()
+                      .repository<RepositoryModule>()
+                      .getConfigRepository()
                       .getFullRequestName(_requestTypeController.text),
                   reason: _request.reason,
                 ),

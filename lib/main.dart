@@ -1,16 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:kres_requests2/models/employee.dart';
-import 'package:kres_requests2/repo/employees_repository.dart';
-import 'package:kres_requests2/repo/settings_repository.dart';
-import 'package:kres_requests2/repo/config_repository.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/startup/startup_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_control/window_control.dart';
 
 import 'screens/common.dart';
@@ -24,7 +18,7 @@ class MyApp extends StatelessWidget {
     // Warm up [WindowControl] instance
     WindowControl.instance;
 
-    return FutureBuilder<dynamic>(
+    return FutureBuilder<RepositoryModule>(
       future: _loadRepositories(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -33,8 +27,8 @@ class MyApp extends StatelessWidget {
             child: ErrorView(errorDescription: snapshot.error.toString()),
           );
         } else if (snapshot.hasData) {
-          return MultiRepositoryProvider(
-            providers: snapshot.data,
+          return RepositoryProvider.value(
+            value: snapshot.data,
             child: MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'Заявки КРЭС 2.0',
@@ -49,20 +43,6 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  Future<dynamic> _loadRepositories() async => [
-        RepositoryProvider.value(value: await ConfigRepository.create()),
-        RepositoryProvider.value(
-          value: SettingsRepository.fromPreferences(
-            await SharedPreferences.getInstance(),
-          ),
-        ),
-        RepositoryProvider.value(
-          value: EmployeesRepository(
-            (jsonDecode(await File("employees.json").readAsString())
-                    as List<dynamic>)
-                .map((e) => Employee.fromJson(e))
-                .toList(),
-          ),
-        )
-      ];
+  Future<RepositoryModule> _loadRepositories() =>
+      RepositoryModule.buildRepositoryModule();
 }

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/repo/settings_repository.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/settings/settings_screen.dart';
 import 'package:kres_requests2/screens/startup/startup_screen_button.dart';
 import 'package:kres_requests2/screens/editor/worksheet_master_screen.dart';
@@ -24,7 +24,7 @@ class StartupScreen extends StatelessWidget {
                 onPressed: () => Navigator.push(
                   context,
                   SettingsScreen.createRoute(
-                      context.repository<SettingsRepository>()),
+                      context.repository<RepositoryModule>()),
                 ),
               ),
             ),
@@ -45,7 +45,11 @@ class StartupScreen extends StatelessWidget {
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => NativeImporterScreen(),
+                    builder: (_) => NativeImporterScreen(
+                      importerRepository: context
+                          .repository<RepositoryModule>()
+                          .getNativeImporterRepository(),
+                    ),
                   ),
                 ).then((resultDocument) {
                   if (resultDocument != null)

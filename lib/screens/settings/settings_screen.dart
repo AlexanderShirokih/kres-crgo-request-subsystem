@@ -4,6 +4,7 @@ import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -11,9 +12,9 @@ class SettingsScreen extends StatefulWidget {
 
   const SettingsScreen({Key key, this.settingsRepository}) : super(key: key);
 
-  static Route createRoute(SettingsRepository settingsRepository) =>
-      MaterialPageRoute(
-        builder: (_) => SettingsScreen(settingsRepository: settingsRepository),
+  static Route createRoute(RepositoryModule reposModule) => MaterialPageRoute(
+        builder: (_) => SettingsScreen(
+            settingsRepository: reposModule.getSettingsRepository()),
       );
 
   @override

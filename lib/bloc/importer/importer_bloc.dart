@@ -6,8 +6,8 @@ import 'package:bloc/bloc.dart';
 import 'package:path/path.dart' as p;
 import 'package:equatable/equatable.dart';
 
-// TODO: Replace domain layer with repository
-import 'package:kres_requests2/domain/worksheet_importer.dart';
+import 'package:kres_requests2/repo/requests_repository.dart';
+import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/models/optional_data.dart';
 import 'package:kres_requests2/models/document.dart';
 
@@ -16,14 +16,16 @@ part 'importer_event.dart';
 part 'importer_state.dart';
 
 class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
-  final WorksheetImporter importer;
+  final WorksheetImporterRepository importerRepository;
   final Document targetDocument;
   final Future<String> Function() fileChooser;
+  final dynamic importerParams;
 
   ImporterBloc({
     this.targetDocument,
-    @required this.importer,
+    @required this.importerRepository,
     @required this.fileChooser,
+    @required this.importerParams,
     @required bool forceFileChooser,
   }) : super(ImporterInitialState()) {
     if (forceFileChooser) add(ImportEvent());
@@ -64,20 +66,25 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
 
     yield ImportLoadingState(file);
 
-    Future<ImporterState> state = importer.importDocument(file).then(
-      (importedDocument) {
+    Future<ImporterState> state =
+        importerRepository.importDocument(file, importerParams).then(
+      (OptionalData<Document> importedDocument) {
         if (importedDocument == null) return ImportEmptyState();
 
-        final newTarget = targetDocument == null
-            ? (importedDocument..savePath = File(file))
-            : _copyToTarget(importedDocument);
+        if (importedDocument.hasError()) {
+          throw importedDocument.error;
+        }
+
+        final document = importedDocument.data;
+        final newTarget =
+            targetDocument == null ? document : _copyToTarget(document);
 
         return WorksheetReadyState(newTarget);
       },
     );
 
     yield await state.catchError((e, s) {
-      if (e is ImporterProcessMissingException) {
+      if (e is ImporterProcessorMissingException) {
         return ImporterProccessMissingState();
       } else if (e is ErrorWrapper) {
         return ImportErrorState(e.error, e.stackTrace);

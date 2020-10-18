@@ -1,27 +1,15 @@
-import 'package:kres_requests2/data/java_process_executor.dart';
-import 'package:kres_requests2/data/models/java_process_info.dart';
+import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/data/request_processor.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/optional_data.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/repo/settings_repository.dart';
 
-import 'config_repository.dart';
+class ImporterProcessorMissingException implements Exception {}
 
-class RequestsRepository {
+class RequestsRepository extends WorksheetImporterRepository {
   final AbstractRequestProcessor _requestProcessor;
 
-  // TODO: Create module instead of calling constructors every time
-  RequestsRepository(
-    SettingsRepository settings,
-    ConfigRepository configs,
-  ) : _requestProcessor = RequestProcessorImpl(
-          JavaProcessExecutor(
-            javaHome: settings.javaPath,
-            javaProcessInfo:
-                JavaProcessInfo.fromMap(configs.getRequestsProcessInfoData()),
-          ),
-        );
+  RequestsRepository(this._requestProcessor);
 
   /// Checks that the request processor is ready for doing work
   Future<bool> isAvailable() => _requestProcessor.isAvailable();
@@ -49,10 +37,13 @@ class RequestsRepository {
           .catchError((e, s) => OptionalData.ofError(e, s));
 
   /// Imports worksheet previously exported to XLS by Mega-billing app
-  Future<OptionalData<Document>> importRequests(String filePath) =>
-      _requestProcessor
+  @override
+  Future<OptionalData<Document>> importDocument(String filePath, dynamic _) =>
+      isAvailable().then((isExists) {
+        if (!isExists) throw ImporterProcessorMissingException();
+      }).then((value) => _requestProcessor
           .importRequests(filePath)
-          .catchError((e, s) => OptionalData.ofError<Document>(e, s));
+          .catchError((e, s) => OptionalData.ofError<Document>(e, s)));
 
   /// Gets all available printers that can handle document printing
   Future<OptionalData<List<String>>> listPrinters() => _requestProcessor

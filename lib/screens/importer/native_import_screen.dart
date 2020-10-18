@@ -2,27 +2,24 @@ import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
+import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
-
-// TODO: Replace domain layer with repository
-import 'package:kres_requests2/domain/worksheet_importer.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/models/document.dart';
-
-import '../common.dart';
 
 class NativeImporterScreen extends BaseImporterScreen {
   final String initialDirectory;
   final Document targetDocument;
+  final NativeImporterRepository importerRepository;
 
   NativeImporterScreen({
-    MultiTableChooser multiTableChooser,
+    @required this.importerRepository,
     this.targetDocument,
     this.initialDirectory,
-  })  : assert((targetDocument != null) == (multiTableChooser != null)),
-        super(
+  }) : super(
           title: 'Импорт файла',
-          importer: NativeWorksheetImporter(tableChooser: multiTableChooser),
+          importerRepository: importerRepository,
           targetDocument: targetDocument,
           mainWidgetBuilder: (_) => LoadingView('Ожидание выбора файла...'),
           forceFileSelection: true,
@@ -46,6 +43,14 @@ class NativeImporterScreen extends BaseImporterScreen {
     if (res.canceled) return null;
 
     return res.paths[0];
+  }
+
+  @override
+  dynamic getImporterParams(BuildContext context) {
+    return (List<Worksheet> tables) async => showDialog<List<Worksheet>>(
+          context: context,
+          builder: (_) => SelectWorksheetsDialog(tables),
+        );
   }
 }
 

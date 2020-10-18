@@ -3,25 +3,32 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_chooser/file_chooser.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-// TODO: Replcae domain layer with repository
-import 'package:kres_requests2/domain/worksheet_importer.dart';
 import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
+import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 
 import 'base_importer_screen.dart';
 
 class CountersImporterScreen extends BaseImporterScreen {
   final String initialDirectory;
 
+  @override
+  dynamic getImporterParams(BuildContext context) {
+    return (List<String> tables) async => showDialog<String>(
+          context: context,
+          builder: (_) => _TableSelectionDialog(tables),
+        );
+  }
+
   CountersImporterScreen({
     @required Document targetDocument,
-    @required WorksheetImporter importer,
+    @required CountersImporterRepository importerRepository,
     this.initialDirectory,
   }) : super(
           title: 'Импорт списка счетчиков на замену',
           targetDocument: targetDocument,
           mainWidgetBuilder: (_) => _CountersImporterIdleView(),
-          importer: importer,
+          importerRepository: importerRepository,
           forceFileSelection: false,
         );
 
@@ -73,4 +80,32 @@ class _CountersImporterIdleView extends StatelessWidget {
           ],
         ),
       );
+}
+
+class _TableSelectionDialog extends StatelessWidget {
+  final List<String> choices;
+
+  const _TableSelectionDialog(this.choices) : assert(choices != null);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Выберите таблицу для импорта'),
+      content: SizedBox(
+        width: 300.0,
+        height: 440.0,
+        child: ListView(
+          children: choices
+              .map(
+                (e) => ListTile(
+                  leading: FaIcon(FontAwesomeIcons.table),
+                  title: Text(e),
+                  onTap: () => Navigator.pop(context, e),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+  }
 }

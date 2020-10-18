@@ -1,13 +1,11 @@
 import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:kres_requests2/repo/config_repository.dart';
-import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:path/path.dart' as path;
 
+import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/common.dart';
-import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 
 extension on ExportFormat {
@@ -47,13 +45,9 @@ class ExporterDialog extends StatelessWidget {
         child: BlocProvider.value(
           value: ExporterBloc(
             exportFormat: exportFormat,
-            settings: context.repository<SettingsRepository>(),
+            repositoryModule: context.repository<RepositoryModule>(),
             fileChooser: _showFileChooser,
             worksheets: worksheets,
-            requestsRepository: RequestsRepository(
-              context.repository<SettingsRepository>(),
-              context.repository<ConfigRepository>(),
-            ),
           ),
           child: Builder(
             builder: (context) => BlocConsumer<ExporterBloc, ExporterState>(

@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:path/path.dart' as path;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:window_control/window_listener.dart';
 
-// TODO: Replace domain layer with repository
-import 'package:kres_requests2/domain/worksheet_creation_mode.dart';
-import 'package:kres_requests2/domain/worksheet_importer.dart';
-import 'package:kres_requests2/domain/counters_importer.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
+import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/repo/config_repository.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
+import 'package:kres_requests2/screens/editor/worksheet_editor_screen.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_tab_view.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';
@@ -22,102 +19,119 @@ import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 import 'package:kres_requests2/screens/preview/worksheets_preview_screen.dart';
 
-import 'worksheet_editor_screen.dart';
+class WorksheetMasterScreen extends StatelessWidget {
+  final WorksheetMasterBloc _worksheetBloc;
 
-class WorksheetMasterScreen extends StatefulWidget {
-  final Document document;
+  WorksheetMasterScreen({Document document})
+      : _worksheetBloc =
+            WorksheetMasterBloc(document, savePathChooser: showSaveDialog);
 
-  const WorksheetMasterScreen({this.document});
-
-  @override
-  _WorksheetMasterScreenState createState() =>
-      _WorksheetMasterScreenState(document);
-}
-
-class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
-    with DocumentSaverMixin<WorksheetMasterScreen> {
-  @override
-  Document currentDocument;
-
-  @override
-  String currentDirectory;
-
-  _WorksheetMasterScreenState(Document currentDocument)
-      : this.currentDocument = currentDocument ??= Document.empty(),
-        currentDirectory = currentDocument.savePath == null
-            ? './'
-            : path.dirname(currentDocument.savePath.path);
-
-  String _getDocumentTitle() => currentDocument.savePath == null
+  String _getDocumentTitle(Document document) => document.savePath == null
       ? "Несохранённый документ"
-      : currentDocument.savePath.path;
+      : document.savePath.path;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      endDrawer: Container(
-        width: 420.0,
-        child: Drawer(
-          child: WorksheetConfigView(currentDocument.active),
+  Widget build(BuildContext context) => Scaffold(
+        endDrawer: _buildEndDrawer(),
+        appBar: _buildAppBar(),
+        body: BlocConsumer<WorksheetMasterBloc, WorksheetMasterState>(
+          cubit: _worksheetBloc,
+          listener: (context, state) {
+            if (state is WorksheetMasterPopState) {
+              Navigator.pop(context);
+            } else if (state is WorksheetMasterSavingState) {
+              _handleSavingState(context, state);
+            } else if (state is WorksheetMasterShowImporterState) {
+              _onShowImporterScreen(context, state);
+            }
+          },
+          builder: (context, state) => _buildBody(context, state),
         ),
-      ),
-      appBar: AppBar(
-        leading: IconButton(
-          icon: FaIcon(FontAwesomeIcons.arrowLeft),
-          onPressed: () => Navigator.maybePop(context),
+      );
+
+  Widget _buildBody(BuildContext context, WorksheetMasterState state) =>
+      WindowListener(
+        onWindowClosing: () =>
+            _showExitConfirmationDialog(state.currentDocument, context),
+        child: WillPopScope(
+          onWillPop: () =>
+              _showExitConfirmationDialog(state.currentDocument, context),
+          child: Row(
+            children: [
+              _createPageController(context, state.currentDocument),
+              Expanded(
+                child: Container(
+                  height: double.maxFinite,
+                  child: WorkSheetEditorView(
+                    document: state.currentDocument,
+                    worksheet: state.currentDocument.active,
+                    onDocumentsChanged: () => _worksheetBloc
+                        .add(WorksheetMasterRefreshDocumentStateEvent()),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        title: Text('Редактирование - ${_getDocumentTitle()}'),
+      );
+
+  Widget _buildEndDrawer() =>
+      BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
+        cubit: _worksheetBloc,
+        builder: (context, state) => Container(
+          width: 420.0,
+          child: Drawer(
+            child: WorksheetConfigView(state.currentDocument.active),
+          ),
+        ),
+      );
+
+  AppBar _buildAppBar() => AppBar(
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: FaIcon(FontAwesomeIcons.arrowLeft),
+            onPressed: () => Navigator.maybePop(context),
+          ),
+        ),
+        title: BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
+          cubit: _worksheetBloc,
+          builder: (_, state) => Text(
+              'Редактирование - ${_getDocumentTitle(state.currentDocument)}'),
+        ),
         actions: [
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.save),
             tooltip: "Сохранить",
-            onPressed: (ctx) => saveDocument(ctx, false),
+            onPressed: (_) => _worksheetBloc.add(WorksheetMasterEventSave()),
           ),
           const SizedBox(width: 24.0),
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.solidSave),
             tooltip: "Сохранить как (копия)",
-            onPressed: (ctx) => saveDocument(ctx, true),
+            onPressed: (_) =>
+                _worksheetBloc.add(WorksheetMasterEventSave(changePath: true)),
           ),
           const SizedBox(width: 24.0),
-          IconButton(
-            icon: FaIcon(FontAwesomeIcons.fileExport),
-            tooltip: "Вывод",
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => WorksheetsPreviewScreen(currentDocument),
+          Builder(
+            builder: (context) => IconButton(
+              icon: FaIcon(FontAwesomeIcons.fileExport),
+              tooltip: "Вывод",
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
+                    cubit: _worksheetBloc,
+                    builder: (context, state) =>
+                        WorksheetsPreviewScreen(state.currentDocument),
+                  ),
+                ),
               ),
             ),
           ),
           const SizedBox(width: 24.0),
         ],
-      ),
-      body: Builder(
-        builder: (ctx) => WindowListener(
-          onWindowClosing: () => _showExitConfirmationDialog(ctx),
-          child: WillPopScope(
-            onWillPop: () => _showExitConfirmationDialog(ctx),
-            child: Row(
-              children: [
-                _createPageController(),
-                Expanded(
-                  child: Container(
-                    height: double.maxFinite,
-                    child: WorkSheetEditorView(
-                      document: currentDocument,
-                      worksheet: currentDocument.active,
-                      onDocumentsChanged: () => setState(() {}),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+      );
 
   Widget _createActionButton({
     Widget icon,
@@ -132,7 +146,7 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
         ),
       );
 
-  Widget _createPageController() {
+  Widget _createPageController(BuildContext context, Document currentDocument) {
     Widget withClosure(Worksheet current, Widget Function(Worksheet) closure) =>
         closure(current);
 
@@ -150,16 +164,19 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
       height: double.maxFinite,
       child: ListView.builder(
         itemCount: currentDocument.worksheets.length + 1,
-        itemBuilder: (_, index) => index == currentDocument.worksheets.length
-            ? AddNewWorkSheetTabView(_handleAddNewScreen)
+        itemBuilder: (context, index) => index ==
+                currentDocument.worksheets.length
+            ? AddNewWorkSheetTabView((worksheetCreationMode) =>
+                _worksheetBloc.add(
+                    WorksheetMasterAddNewWorksheetEvent(worksheetCreationMode)))
             : withClosure(
                 currentDocument.worksheets[index],
                 (current) => WorkSheetTabView(
                   worksheet: current,
                   isActive: current == currentDocument.active,
-                  onSelect: () => setState(() {
-                    currentDocument.active = current;
-                  }),
+                  onSelect: () => _worksheetBloc.add(
+                      WorksheetMasterWorksheetActionEvent(
+                          current, WorksheetAction.makeActive)),
                   onRemove: currentDocument.worksheets.length == 1
                       ? null
                       : () {
@@ -172,12 +189,14 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
                               ),
                             ).then((result) {
                               if (result)
-                                setState(() =>
-                                    currentDocument.removeWorksheet(current));
+                                _worksheetBloc.add(
+                                    WorksheetMasterWorksheetActionEvent(
+                                        current, WorksheetAction.remove));
                             });
                           } else
-                            setState(
-                                () => currentDocument.removeWorksheet(current));
+                            _worksheetBloc.add(
+                                WorksheetMasterWorksheetActionEvent(
+                                    current, WorksheetAction.remove));
                         },
                 ),
               ),
@@ -185,55 +204,72 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
     );
   }
 
-  void _handleAddNewScreen(WorksheetCreationMode mode) {
-    switch (mode) {
-      case WorksheetCreationMode.Import:
+  void _handleSavingState(
+      BuildContext context, WorksheetMasterSavingState state) {
+    final scaffold = Scaffold.of(context, nullOk: true);
+    void showSnackbar(String message, Duration duration) =>
+        scaffold?.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: duration,
+          ),
+        );
+
+    scaffold?.removeCurrentSnackBar();
+    if (state.error != null) {
+      print("${state.error.error}\n${state.error.stackTrace}");
+      showSnackbar(
+        'Не удалось сохранить! ${state.error.error}',
+        const Duration(seconds: 6),
+      );
+    } else if (state.saved) {
+      showSnackbar(
+        'Документ сохранён',
+        const Duration(seconds: 2),
+      );
+    } else {
+      showSnackbar('Сохранение...', const Duration(seconds: 20));
+    }
+  }
+
+  void _onShowImporterScreen(
+      BuildContext context, WorksheetMasterShowImporterState state) {
+    switch (state.importerType) {
+      case WorksheetImporterType.requestsImporter:
         _navigateToImporter(
           context,
           RequestsImporterScreen.fromContext(
-            initialDirectory: currentDirectory,
+            initialDirectory: state.currentDirectory,
+            targetDocument: state.currentDocument,
             context: context,
-            targetDocument: currentDocument,
           ),
         );
         break;
-      case WorksheetCreationMode.ImportCounters:
+      //
+      case WorksheetImporterType.countersImporter:
         _navigateToImporter(
           context,
           CountersImporterScreen(
-            targetDocument: currentDocument,
-            initialDirectory: currentDirectory,
-            importer: CountersWorksheetImporter(
-              importer:
-                  CountersImporter(context.repository<ConfigRepository>()),
-              tableChooser: (tables) => showDialog<String>(
-                context: context,
-                builder: (_) => _TableSelectionDialog(tables),
-              ),
-            ),
+            initialDirectory: state.currentDirectory,
+            targetDocument: state.currentDocument,
+            importerRepository: context
+                .repository<RepositoryModule>()
+                .getCountersImporterRepository(),
           ),
         );
         break;
-      case WorksheetCreationMode.ImportNative:
+      case WorksheetImporterType.nativeImporter:
         _navigateToImporter(
           context,
           NativeImporterScreen(
-            targetDocument: currentDocument,
-            initialDirectory: currentDirectory,
-            multiTableChooser: (tables) => showDialog<List<Worksheet>>(
-              context: context,
-              builder: (_) => SelectWorksheetsDialog(tables),
-            ),
+            initialDirectory: state.currentDirectory,
+            targetDocument: state.currentDocument,
+            importerRepository: context
+                .repository<RepositoryModule>()
+                .getNativeImporterRepository(),
           ),
         );
         break;
-      // TODO: Implement feature
-      case WorksheetCreationMode.EmptyRaid:
-      case WorksheetCreationMode.Empty:
-      default:
-        setState(() {
-          currentDocument.active = currentDocument.addEmptyWorksheet();
-        });
     }
   }
 
@@ -242,16 +278,13 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
         context,
         MaterialPageRoute(builder: (_) => importerScreen),
       ).then(
-        (resultDoc) => setState(() {
-          if (resultDoc != null) {
-            currentDocument = resultDoc;
-            currentDocument.active = currentDocument.worksheets.last;
-          }
-        }),
+        (resultDoc) =>
+            _worksheetBloc.add(WorksheetMasterImportResultsEvent(resultDoc)),
       );
 
-  Future<bool> _showExitConfirmationDialog(BuildContext context) async {
-    if (currentDocument.isEmpty) return true;
+  Future<bool> _showExitConfirmationDialog(
+      Document document, BuildContext context) async {
+    if (document.isEmpty) return true;
 
     return await showDialog<bool>(
       context: context,
@@ -273,40 +306,11 @@ class _WorksheetMasterScreenState extends State<WorksheetMasterScreen>
           RaisedButton(
             color: Theme.of(ctx).primaryColor,
             textColor: Theme.of(ctx).primaryTextTheme.bodyText2.color,
-            onPressed: () => saveDocument(ctx, false).then(
-              (save) => Navigator.pop(ctx, save != null),
-            ),
+            onPressed: () => _worksheetBloc
+                .add(WorksheetMasterEventSave(popAfterSave: true)),
             child: Text('Да'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _TableSelectionDialog extends StatelessWidget {
-  final List<String> choices;
-
-  const _TableSelectionDialog(this.choices) : assert(choices != null);
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Выберите таблицу для импорта'),
-      content: SizedBox(
-        width: 300.0,
-        height: 440.0,
-        child: ListView(
-          children: choices
-              .map(
-                (e) => ListTile(
-                  leading: FaIcon(FontAwesomeIcons.table),
-                  title: Text(e),
-                  onTap: () => Navigator.pop(context, e),
-                ),
-              )
-              .toList(),
-        ),
       ),
     );
   }

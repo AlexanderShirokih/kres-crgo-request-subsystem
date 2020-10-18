@@ -3,18 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_chooser/file_chooser.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-
-// TODO: Replace domain layer with repository
-import 'package:kres_requests2/domain/worksheet_importer.dart';
-
-import 'package:kres_requests2/repo/config_repository.dart';
-import 'package:kres_requests2/repo/requests_repository.dart';
-
-import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/models/document.dart';
-
-import 'base_importer_screen.dart';
+import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
+import 'package:kres_requests2/repo/requests_repository.dart';
+import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 
 class RequestsImporterScreen extends BaseImporterScreen {
   final String initialDirectory;
@@ -26,24 +19,20 @@ class RequestsImporterScreen extends BaseImporterScreen {
   }) =>
       RequestsImporterScreen(
         targetDocument: targetDocument,
-        importer: RequestsWorksheetImporter(
-          requestsRepository: RequestsRepository(
-            context.repository<SettingsRepository>(),
-            context.repository<ConfigRepository>(),
-          ),
-        ),
+        requestsRepository:
+            context.repository<RepositoryModule>().getRequestsRepository(),
         initialDirectory: initialDirectory,
       );
 
   RequestsImporterScreen({
     @required Document targetDocument,
-    @required WorksheetImporter importer,
+    @required RequestsRepository requestsRepository,
     this.initialDirectory,
   }) : super(
           title: 'Импорт заявок',
           targetDocument: targetDocument,
           mainWidgetBuilder: (_) => _RequestsImporterIdleView(),
-          importer: importer,
+          importerRepository: requestsRepository,
           forceFileSelection: false,
         );
 
@@ -64,6 +53,9 @@ class RequestsImporterScreen extends BaseImporterScreen {
 
     return res.canceled ? null : res.paths[0];
   }
+
+  @override
+  dynamic getImporterParams(BuildContext context) => null;
 }
 
 class _RequestsImporterIdleView extends StatelessWidget {

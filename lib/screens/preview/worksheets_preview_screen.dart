@@ -168,7 +168,7 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen>
         builder: (_) => ExporterDialog(
           format,
           selectedWorksheets,
-          getSuggestedName,
+          (ext) => getSuggestedName(currentDocument, ext),
         ),
       ).then(
         (resultMessage) {
@@ -468,7 +468,7 @@ class WorksheetCard extends StatelessWidget {
           );
 
   Widget _printWorksheetStatus(BuildContext context) {
-    final errors = worksheet.validate().toList();
+    final errors = worksheet.validate().take(3).toList();
 
     if (errors.isEmpty) {
       return Row(

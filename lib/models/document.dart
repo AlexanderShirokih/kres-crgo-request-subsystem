@@ -103,4 +103,21 @@ class Document {
   }
 
   bool get isEmpty => _worksheets.every((worksheet) => worksheet.isEmpty);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Document &&
+          runtimeType == other.runtimeType &&
+          savePath == other.savePath &&
+          _worksheets == other._worksheets &&
+          updateDate == other.updateDate &&
+          _activeWorksheet == other._activeWorksheet;
+
+  @override
+  int get hashCode =>
+      savePath.hashCode ^
+      _worksheets.hashCode ^
+      updateDate.hashCode ^
+      _activeWorksheet.hashCode;
 }

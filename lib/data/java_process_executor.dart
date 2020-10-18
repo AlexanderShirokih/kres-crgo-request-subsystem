@@ -6,7 +6,7 @@ import 'package:meta/meta.dart';
 import 'models/java_process_info.dart';
 
 class JavaProcessExecutor extends ProcessExecutor {
-  final String javaHome;
+  final String Function() javaHome;
   final JavaProcessInfo javaProcessInfo;
 
   const JavaProcessExecutor({
@@ -33,8 +33,8 @@ class JavaProcessExecutor extends ProcessExecutor {
   }
 
   File _getJavaExecutable() => Platform.isWindows
-      ? File('$javaHome/bin/javaw.exe')
-      : File('$javaHome/bin/javaw');
+      ? File('${javaHome()}/bin/javaw.exe')
+      : File('${javaHome()}/bin/javaw');
 
   @override
   Future<bool> isAvailable() => _isJavaBinariesExists(_getJavaExecutable());
@@ -51,7 +51,6 @@ class JavaProcessExecutor extends ProcessExecutor {
     final appHome = Directory(javaProcessInfo.appHome);
 
     if (!await appHome.exists()) {
-      // TODO: catch this error
       throw ('Java app home folder "${appHome.absolute.path} is not exists"');
     }
 

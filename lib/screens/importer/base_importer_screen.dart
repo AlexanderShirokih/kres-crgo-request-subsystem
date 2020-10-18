@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-// TODO: Replace domain layer with repository
-import 'package:kres_requests2/domain/worksheet_importer.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/screens/common.dart';
 
 abstract class BaseImporterScreen extends StatelessWidget {
   final String title;
-  final WorksheetImporter importer;
+  final WorksheetImporterRepository importerRepository;
   final Document targetDocument;
   final WidgetBuilder mainWidgetBuilder;
   final bool forceFileSelection;
 
   const BaseImporterScreen({
     @required this.title,
-    @required this.importer,
+    @required this.importerRepository,
     @required this.targetDocument,
     @required this.mainWidgetBuilder,
     @required this.forceFileSelection,
   })  : assert(title != null),
-        assert(importer != null),
+        assert(importerRepository != null),
         assert(mainWidgetBuilder != null);
 
   Future<String> showOpenDialog(BuildContext context);
+
+  dynamic getImporterParams(BuildContext context);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -33,10 +34,11 @@ abstract class BaseImporterScreen extends StatelessWidget {
         ),
         body: BlocProvider.value(
           value: ImporterBloc(
-            importer: importer,
+            importerRepository: importerRepository,
             fileChooser: () => showOpenDialog(context),
             targetDocument: targetDocument,
             forceFileChooser: forceFileSelection,
+            importerParams: getImporterParams(context),
           ),
           child: Builder(
             builder: (ctx) => BlocConsumer<ImporterBloc, ImporterState>(
