@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/employee.dart';
 import 'package:kres_requests2/models/worksheet.dart';
@@ -24,9 +25,7 @@ class WorksheetsPreviewScreen extends StatefulWidget {
       _WorksheetsPreviewScreenState(document);
 }
 
-class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen>
-    with DocumentSaverMixin {
-  @override
+class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
   Document currentDocument;
 
   List<Worksheet> selectedWorksheets;
@@ -91,13 +90,6 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen>
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                _buildActionBarItem(
-                  context: context,
-                  icon: FontAwesomeIcons.save,
-                  label: 'Сохранить',
-                  tooltip: 'Сохранить файл',
-                  onPressed: () => saveDocument(context, false),
-                ),
                 _buildActionBarItem(
                   context: context,
                   icon: FontAwesomeIcons.fileExcel,

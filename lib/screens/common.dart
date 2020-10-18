@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
 import 'package:file_chooser/file_chooser.dart';
@@ -68,61 +66,6 @@ class LoadingView extends StatelessWidget {
           ],
         ),
       );
-}
-
-mixin DocumentSaverMixin<T extends StatefulWidget> on State<T> {
-  Document currentDocument;
-  String currentDirectory;
-
-  Future<String> saveDocument(
-    BuildContext context,
-    bool changePath,
-  ) async {
-    if (currentDocument.savePath == null || changePath) {
-      final newSavePath =
-          await showSaveDialog(currentDocument, currentDirectory);
-      if (newSavePath == null) return null;
-
-      setState(() {
-        // TODO: Remove this method
-        currentDocument.savePath = File(newSavePath);
-      });
-    }
-
-    final scaffold = Scaffold.of(context, nullOk: true);
-
-    void showSnackbar(String message, Duration duration) =>
-        scaffold?.showSnackBar(
-          SnackBar(
-            content: Text(message),
-            duration: duration,
-          ),
-        );
-
-    showSnackbar('Сохранение...', const Duration(seconds: 20));
-
-    return currentDocument
-        .save()
-        .then((_) {
-          scaffold?.removeCurrentSnackBar();
-          showSnackbar(
-            'Документ сохранён',
-            const Duration(seconds: 2),
-          );
-        })
-        .then((_) => currentDocument.savePath.path)
-        .catchError(
-          (e, s) {
-            print("$e\n$s");
-            scaffold?.removeCurrentSnackBar();
-            showSnackbar(
-              'Не удалось сохранить! $e',
-              const Duration(seconds: 6),
-            );
-            return null;
-          },
-        );
-  }
 }
 
 Future<String> showSaveDialog(
