@@ -46,12 +46,6 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
             mode: WorksheetCreationMode.Empty,
           ),
           _buildItemTile(
-            title: 'Пустой лист рейда',
-            tooltip: 'Добавить пустой лист для создания рейда',
-            icon: FontAwesomeIcons.file,
-            mode: WorksheetCreationMode.EmptyRaid,
-          ),
-          _buildItemTile(
             title: 'Импорт из другого документа',
             tooltip: 'Добавить листы из другого документа',
             icon: FontAwesomeIcons.fileImport,

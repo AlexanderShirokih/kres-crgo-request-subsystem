@@ -23,32 +23,31 @@ class WorksheetMasterBloc
   WorksheetMasterBloc(Document document, {@required this.savePathChooser})
       : assert(savePathChooser != null),
         super(
-        WorksheetMasterIdleState(
-            document ??= Document.empty(),
-            (document?.savePath == null
-                ? './'
-                : path.dirname(document.savePath.path))),
-      );
+          WorksheetMasterIdleState(
+              document ??= Document.empty(),
+              (document?.savePath == null
+                  ? './'
+                  : path.dirname(document.savePath.path))),
+        );
 
   @override
   Stream<WorksheetMasterState> mapEventToState(
       WorksheetMasterEvent event) async* {
     if (event is WorksheetMasterSaveEvent) {
       yield* _keepSearchingState(
-              () => _saveDocument(event.changePath, event.popAfterSave));
+          () => _saveDocument(event.changePath, event.popAfterSave));
     } else if (event is WorksheetMasterAddNewWorksheetEvent) {
       yield* _createNewWorksheet(event.mode);
     } else if (event is WorksheetMasterImportResultsEvent) {
       yield* _handleImporterResult(event.importedDocument);
     } else if (event is WorksheetMasterWorksheetActionEvent) {
       yield* _keepSearchingState(
-              () =>
-              _handleWorksheetAction(event.targetWorksheet, event.action));
+          () => _handleWorksheetAction(event.targetWorksheet, event.action));
     } else if (event is WorksheetMasterSearchEvent) {
       yield* _toggleSearchMode(event);
     } else if (event is WorksheetMasterRefreshDocumentStateEvent) {
-      yield* _keepSearchingState(() =>
-          Stream.value(WorksheetMasterIdleState(
+      yield* _keepSearchingState(
+          () => Stream.value(WorksheetMasterIdleState(
               state.currentDocument, state.currentDirectory)),
           rebuildSearch: true);
     }
@@ -78,12 +77,12 @@ class WorksheetMasterBloc
     }
   }
 
-  Stream<WorksheetMasterState> _saveDocument(bool changePath,
-      bool popAfterSave) async* {
+  Stream<WorksheetMasterState> _saveDocument(
+      bool changePath, bool popAfterSave) async* {
     var currentDirectory = state.currentDirectory;
     if (state.currentDocument.savePath == null || changePath) {
       final savePath =
-      await savePathChooser(state.currentDocument, state.currentDirectory);
+          await savePathChooser(state.currentDocument, state.currentDirectory);
       if (savePath == null) return;
       currentDirectory = path.dirname(savePath);
 
@@ -137,8 +136,6 @@ class WorksheetMasterBloc
           WorksheetImporterType.nativeImporter,
         );
         return;
-    // TODO: Implement feature
-      case WorksheetCreationMode.EmptyRaid:
       case WorksheetCreationMode.Empty:
       default:
         state.currentDocument.active =
@@ -158,8 +155,8 @@ class WorksheetMasterBloc
     }
   }
 
-  Stream<WorksheetMasterState> _handleWorksheetAction(Worksheet targetWorksheet,
-      WorksheetAction action) async* {
+  Stream<WorksheetMasterState> _handleWorksheetAction(
+      Worksheet targetWorksheet, WorksheetAction action) async* {
     switch (action) {
       case WorksheetAction.remove:
         state.currentDocument.removeWorksheet(targetWorksheet);
@@ -191,18 +188,17 @@ class WorksheetMasterBloc
   }
 
   // TODO: Create a sort of DocumentRepository and move this method to it
-  Map<Worksheet, List<RequestEntity>> _filterRequests(Document document,
-      String searchText) {
+  Map<Worksheet, List<RequestEntity>> _filterRequests(
+      Document document, String searchText) {
     if (searchText == null || searchText.isEmpty)
       return <Worksheet, List<RequestEntity>>{};
     searchText = searchText.toLowerCase();
 
     return Map.fromIterable(document.worksheets,
         key: (worksheet) => worksheet,
-        value: (worksheet) =>
-            worksheet.requests.where((RequestEntity request) {
+        value: (worksheet) => worksheet.requests.where((RequestEntity request) {
               return (request.accountId?.toString()?.padLeft(6, '0') ?? '')
-                  .contains(searchText) ||
+                      .contains(searchText) ||
                   request.name.toLowerCase().contains(searchText) ||
                   request.address.toLowerCase().contains(searchText) ||
                   request.counterInfo.toLowerCase().contains(searchText) ||

@@ -91,9 +91,6 @@ class Document {
       _activeWorksheet = _worksheets.length - 1;
   }
 
-  // TODO: Implement raid creation
-  Worksheet addEmptyRaidWorksheet() => throw UnimplementedError();
-
   /// Saves [Document] instance to [savePath]
   Future save() async {
     if (savePath == null) throw ('savePath == null!');
