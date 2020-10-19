@@ -53,9 +53,16 @@ mixin CopyableTextMixin {
 class CopyableTextField extends StatefulWidget {
   final ValueChanged<String> onSubmitted;
   final TextEditingController controller;
+  final void Function(String) onChanged;
+  final bool autofocus;
 
-  const CopyableTextField({Key key, this.onSubmitted, this.controller})
-      : super(key: key);
+  const CopyableTextField({
+    Key key,
+    this.onSubmitted,
+    this.controller,
+    this.onChanged,
+    this.autofocus = false,
+  }) : super(key: key);
 
   @override
   _CopyableTextFieldState createState() => _CopyableTextFieldState();
@@ -87,6 +94,8 @@ class _CopyableTextFieldState extends State<CopyableTextField>
       focusNode: _focus,
       onKey: (RawKeyEvent e) => handleKeyEvent(e, controller),
       child: TextField(
+        autofocus: widget.autofocus,
+        onChanged: widget.onChanged,
         onSubmitted: widget.onSubmitted,
         controller: controller,
       ),

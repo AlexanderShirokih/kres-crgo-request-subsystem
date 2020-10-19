@@ -104,15 +104,18 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
 class WorkSheetTabView extends StatefulWidget {
   final Worksheet worksheet;
   final bool isActive;
+  final int filteredItemsCount;
   final void Function() onSelect;
   final void Function() onRemove;
 
   const WorkSheetTabView({
+    @required this.filteredItemsCount,
     @required this.worksheet,
     @required this.isActive,
     @required this.onSelect,
     @required this.onRemove,
-  })  : assert(worksheet != null),
+  })  : assert(filteredItemsCount != null),
+        assert(worksheet != null),
         assert(isActive != null),
         assert(onSelect != null);
 
@@ -152,6 +155,12 @@ class _WorkSheetTabViewState extends State<WorkSheetTabView> {
                 vertical: 6.0,
               ),
               onTap: widget.onSelect,
+              leading: widget.filteredItemsCount > 0
+                  ? Chip(
+                      backgroundColor: Colors.yellow,
+                      label: Text(widget.filteredItemsCount.toString()),
+                    )
+                  : null,
               title: _isEditable
                   ? CopyableTextField(
                       controller: _controller,

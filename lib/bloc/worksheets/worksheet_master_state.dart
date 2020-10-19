@@ -29,15 +29,16 @@ class WorksheetMasterIdleState extends WorksheetMasterState {
 }
 
 class WorksheetMasterSavingState extends WorksheetMasterState {
-  final bool saved;
+  final bool completed;
   final ErrorWrapper error;
 
   const WorksheetMasterSavingState(Document currentDocument,
-      String currentDirectory, {this.saved, this.error})
+      String currentDirectory,
+      {this.completed, this.error})
       : super(currentDocument, currentDirectory);
 
   @override
-  List<Object> get props => [...super.props, saved, error];
+  List<Object> get props => [...super.props, completed, error];
 }
 
 enum WorksheetImporterType {
@@ -50,10 +51,26 @@ class WorksheetMasterShowImporterState extends WorksheetMasterState {
   final WorksheetImporterType importerType;
 
   const WorksheetMasterShowImporterState(Document currentDocument,
-      String currentDirectory, this.importerType,)
-      : super(currentDocument, currentDirectory);
+      String currentDirectory,
+      this.importerType,) : super(currentDocument, currentDirectory);
 
   @override
-  List<Object> get props =>
-      [...super.props, importerType];
+  List<Object> get props => [...super.props, importerType];
+}
+
+class WorksheetMasterSearchingState extends WorksheetMasterState {
+  final WorksheetMasterSearchEvent sourceEvent;
+  final Map<Worksheet, List<RequestEntity>> filteredItems;
+
+  const WorksheetMasterSearchingState(Document currentDocument,
+      String currentDirectory, {
+        @required this.sourceEvent,
+        @required this.filteredItems,
+      })
+      : assert(sourceEvent != null),
+        assert(filteredItems != null),
+        super(currentDocument, currentDirectory);
+
+  @override
+  List<Object> get props => super.props + [filteredItems, sourceEvent];
 }

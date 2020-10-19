@@ -16,12 +16,14 @@ import 'worksheet_move_dialog.dart';
 class WorkSheetEditorView extends StatefulWidget {
   final Document document;
   final Worksheet worksheet;
+  final List<RequestEntity> highlighted;
   final void Function() onDocumentsChanged;
 
   const WorkSheetEditorView({
     @required this.document,
     @required this.worksheet,
     @required this.onDocumentsChanged,
+    @required this.highlighted,
   })  : assert(document != null),
         assert(worksheet != null),
         assert(onDocumentsChanged != null);
@@ -50,10 +52,22 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
     _controller.dispose();
   }
 
+  List<RequestEntity> _buildRequestsList() {
+    if (widget.highlighted == null) return _worksheet.requests;
+
+    final output = [...widget.highlighted];
+    for (final request in _worksheet.requests) {
+      if (!output.contains(request)) output.add(request);
+    }
+    return output;
+  }
+
   @override
   Widget build(BuildContext context) {
     _worksheet = widget.worksheet;
     if (_worksheet.isEmpty) _selectionList = null;
+
+    final requests = _buildRequestsList();
 
     return Stack(
       children: [
@@ -70,50 +84,62 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                     if (newIndex > oldIndex) {
                       newIndex -= 1;
                     }
-                    final item = _worksheet.requests.removeAt(oldIndex);
-                    _worksheet.requests.insert(newIndex, item);
+
+                    // We shouldn't modify [requests] list directly because it's
+                    // just a copy of [_worksheet.requests]
+
+                    // Transform shadow list indices to original indices
+                    final toRemove = requests[oldIndex];
+                    final toInsertAfter = requests[newIndex];
+
+                    final idx = _worksheet.requests.indexOf(toInsertAfter);
+                    _worksheet.requests.remove(toRemove);
+                    _worksheet.requests.insert(idx, toRemove);
                   }),
                   children: List.generate(
-                    _worksheet.requests.length,
+                    requests.length,
                     (index) => GestureDetector(
-                      key: Key(_worksheet.requests[index].toString() +
+                      key: Key(requests[index].toString() +
                           Random().nextInt(100000).toString()),
                       onLongPress: () => setState(() {
-                        _selectionList = {_worksheet.requests[index]};
+                        _selectionList = {requests[index]};
                       }),
                       onDoubleTap: () {
                         showDialog(
                           context: context,
                           barrierDismissible: false,
                           builder: (_) => RequestEditorDialog(
-                            editingRequest: _worksheet.requests[index],
+                            editingRequest: requests[index],
                           ),
                         ).then((edited) {
                           if (edited != null)
                             setState(() {
                               // If previous value was selected then update
                               // selection references
-                              final old = _worksheet.requests[index];
+                              final old = requests[index];
                               if (_selectionList != null &&
                                   _selectionList.contains(old)) {
                                 _selectionList
                                   ..remove(old)
                                   ..add(edited);
                               }
-                              _worksheet.requests[index] = edited;
+                              final oldIdx = _worksheet.requests.indexOf(old);
+                              _worksheet.requests[oldIdx] = edited;
                             });
+                          widget.onDocumentsChanged();
                         });
                       },
                       child: _RequestItemView(
                         position: index + 1,
                         isSelected: _isSelected
-                            ? _selectionList
-                                .contains(_worksheet.requests[index])
+                            ? _selectionList.contains(requests[index])
                             : null,
-                        request: _worksheet.requests[index],
-                        key: ValueKey(_worksheet.requests[index].accountId),
+                        isHighlighted: widget.highlighted != null &&
+                            widget.highlighted.contains(requests[index]),
+                        request: requests[index],
+                        key: ValueKey(requests[index].accountId),
                         onChanged: (isSelected) => setState(() {
-                          final value = _worksheet.requests[index];
+                          final value = requests[index];
                           if (isSelected) {
                             _selectionList.add(value);
                           } else {
@@ -140,7 +166,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                     builder: (_) => RequestEditorDialog()).then((created) {
                   if (created != null) {
                     setState(() {
-                      _worksheet.requests.add(created);
+                      requests.add(created);
                     });
                   }
                 });
@@ -292,6 +318,8 @@ class _RequestItemView extends StatelessWidget {
   final int position;
   final RequestEntity request;
 
+  final bool isHighlighted;
+
   // true - selected, false - not selected, null - not in selection mode
   final bool isSelected;
 
@@ -300,6 +328,7 @@ class _RequestItemView extends StatelessWidget {
   const _RequestItemView({
     @required this.position,
     @required this.isSelected,
+    @required this.isHighlighted,
     @required this.request,
     @required this.onChanged,
     Key key,
@@ -315,6 +344,7 @@ class _RequestItemView extends StatelessWidget {
         if (isSelected != null) onChanged(!isSelected);
       },
       child: Card(
+        color: isHighlighted ? Colors.yellow : Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Row(

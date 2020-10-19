@@ -12,11 +12,13 @@ class NativeImporterScreen extends BaseImporterScreen {
   final String initialDirectory;
   final Document targetDocument;
   final NativeImporterRepository importerRepository;
+  final bool importAll;
 
   NativeImporterScreen({
     @required this.importerRepository,
     this.targetDocument,
     this.initialDirectory,
+    this.importAll = false,
   }) : super(
           title: 'Импорт файла',
           importerRepository: importerRepository,
@@ -47,10 +49,12 @@ class NativeImporterScreen extends BaseImporterScreen {
 
   @override
   dynamic getImporterParams(BuildContext context) {
-    return (List<Worksheet> tables) async => showDialog<List<Worksheet>>(
-          context: context,
-          builder: (_) => SelectWorksheetsDialog(tables),
-        );
+    return (List<Worksheet> tables) async => importAll
+        ? Future<List<Worksheet>>.value(tables)
+        : showDialog<List<Worksheet>>(
+            context: context,
+            builder: (_) => SelectWorksheetsDialog(tables),
+          );
   }
 }
 

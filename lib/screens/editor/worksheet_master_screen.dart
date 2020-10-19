@@ -11,6 +11,7 @@ import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
+import 'package:kres_requests2/screens/editor/search_box.dart';
 import 'package:kres_requests2/screens/editor/worksheet_editor_screen.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_tab_view.dart';
@@ -45,7 +46,25 @@ class WorksheetMasterScreen extends StatelessWidget {
               _onShowImporterScreen(context, state);
             }
           },
-          builder: (context, state) => _buildBody(context, state),
+          builder: (context, state) {
+            if (state is WorksheetMasterSearchingState) {
+              return Stack(children: [
+                Positioned.fill(child: _buildBody(context, state)),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12.0, right: 12.0),
+                    child: SearchBox(
+                      textWatcher: (String searchText) => _worksheetBloc
+                          .add(WorksheetMasterSearchEvent(searchText)),
+                    ),
+                  ),
+                ),
+              ]);
+            } else {
+              return _buildBody(context, state);
+            }
+          },
         ),
       );
 
@@ -58,7 +77,7 @@ class WorksheetMasterScreen extends StatelessWidget {
               _showExitConfirmationDialog(state.currentDocument, context),
           child: Row(
             children: [
-              _createPageController(context, state.currentDocument),
+              _createPageController(context, state),
               Expanded(
                 child: Container(
                   height: double.maxFinite,
@@ -67,6 +86,9 @@ class WorksheetMasterScreen extends StatelessWidget {
                     worksheet: state.currentDocument.active,
                     onDocumentsChanged: () => _worksheetBloc
                         .add(WorksheetMasterRefreshDocumentStateEvent()),
+                    highlighted: state is WorksheetMasterSearchingState
+                        ? state.filteredItems[state.currentDocument.active]
+                        : null,
                   ),
                 ),
               ),
@@ -100,16 +122,22 @@ class WorksheetMasterScreen extends StatelessWidget {
         ),
         actions: [
           _createActionButton(
+            icon: FaIcon(FontAwesomeIcons.search),
+            tooltip: "Поиск",
+            onPressed: (_) => _worksheetBloc.add(WorksheetMasterSearchEvent()),
+          ),
+          const SizedBox(width: 24.0),
+          _createActionButton(
             icon: FaIcon(FontAwesomeIcons.save),
             tooltip: "Сохранить",
-            onPressed: (_) => _worksheetBloc.add(WorksheetMasterEventSave()),
+            onPressed: (_) => _worksheetBloc.add(WorksheetMasterSaveEvent()),
           ),
           const SizedBox(width: 24.0),
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.solidSave),
             tooltip: "Сохранить как (копия)",
             onPressed: (_) =>
-                _worksheetBloc.add(WorksheetMasterEventSave(changePath: true)),
+                _worksheetBloc.add(WorksheetMasterSaveEvent(changePath: true)),
           ),
           const SizedBox(width: 24.0),
           Builder(
@@ -146,7 +174,8 @@ class WorksheetMasterScreen extends StatelessWidget {
         ),
       );
 
-  Widget _createPageController(BuildContext context, Document currentDocument) {
+  Widget _createPageController(
+      BuildContext context, WorksheetMasterState state) {
     Widget withClosure(Worksheet current, Widget Function(Worksheet) closure) =>
         closure(current);
 
@@ -163,21 +192,24 @@ class WorksheetMasterScreen extends StatelessWidget {
       ),
       height: double.maxFinite,
       child: ListView.builder(
-        itemCount: currentDocument.worksheets.length + 1,
+        itemCount: state.currentDocument.worksheets.length + 1,
         itemBuilder: (context, index) => index ==
-                currentDocument.worksheets.length
+                state.currentDocument.worksheets.length
             ? AddNewWorkSheetTabView((worksheetCreationMode) =>
                 _worksheetBloc.add(
                     WorksheetMasterAddNewWorksheetEvent(worksheetCreationMode)))
             : withClosure(
-                currentDocument.worksheets[index],
+                state.currentDocument.worksheets[index],
                 (current) => WorkSheetTabView(
                   worksheet: current,
-                  isActive: current == currentDocument.active,
+                  filteredItemsCount: state is WorksheetMasterSearchingState
+                      ? state.filteredItems[current]?.length ?? 0
+                      : 0,
+                  isActive: current == state.currentDocument.active,
                   onSelect: () => _worksheetBloc.add(
                       WorksheetMasterWorksheetActionEvent(
                           current, WorksheetAction.makeActive)),
-                  onRemove: currentDocument.worksheets.length == 1
+                  onRemove: state.currentDocument.worksheets.length == 1
                       ? null
                       : () {
                           if (!current.isEmpty) {
@@ -222,7 +254,7 @@ class WorksheetMasterScreen extends StatelessWidget {
         'Не удалось сохранить! ${state.error.error}',
         const Duration(seconds: 6),
       );
-    } else if (state.saved) {
+    } else if (state.completed) {
       showSnackbar(
         'Документ сохранён',
         const Duration(seconds: 2),
@@ -307,7 +339,7 @@ class WorksheetMasterScreen extends StatelessWidget {
             color: Theme.of(ctx).primaryColor,
             textColor: Theme.of(ctx).primaryTextTheme.bodyText2.color,
             onPressed: () => _worksheetBloc
-                .add(WorksheetMasterEventSave(popAfterSave: true)),
+                .add(WorksheetMasterSaveEvent(popAfterSave: true)),
             child: Text('Да'),
           ),
         ],

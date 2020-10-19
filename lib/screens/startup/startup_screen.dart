@@ -9,6 +9,7 @@ import 'package:kres_requests2/screens/startup/startup_screen_button.dart';
 import 'package:kres_requests2/screens/editor/worksheet_master_screen.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
+import 'package:window_control/window_listener.dart';
 
 /// Shows startup wizard
 class StartupScreen extends StatelessWidget {
@@ -30,49 +31,53 @@ class StartupScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              StartupScreenButton(
-                label: 'Создать новый документ',
-                iconData: FontAwesomeIcons.plus,
-                onPressed: () => _runWorksheetEditorScreen(context, null),
-              ),
-              StartupScreenButton(
-                label: 'Открыть документ',
-                iconData: FontAwesomeIcons.folderOpen,
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => NativeImporterScreen(
-                      importerRepository: context
-                          .repository<RepositoryModule>()
-                          .getNativeImporterRepository(),
+        body: WindowListener(
+          onWindowClosing: () => Future.value(true),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                StartupScreenButton(
+                  label: 'Создать новый документ',
+                  iconData: FontAwesomeIcons.plus,
+                  onPressed: () => _runWorksheetEditorScreen(context, null),
+                ),
+                StartupScreenButton(
+                  label: 'Открыть документ',
+                  iconData: FontAwesomeIcons.folderOpen,
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => NativeImporterScreen(
+                        importAll: true,
+                        importerRepository: context
+                            .repository<RepositoryModule>()
+                            .getNativeImporterRepository(),
+                      ),
                     ),
-                  ),
-                ).then((resultDocument) {
-                  if (resultDocument != null)
-                    return _runWorksheetEditorScreen(context, resultDocument);
-                }),
-              ),
-              StartupScreenButton(
-                label: 'Импорт заявок',
-                iconData: FontAwesomeIcons.fileImport,
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (ctx) => RequestsImporterScreen.fromContext(
-                      context: ctx,
-                      targetDocument: Document(worksheets: []),
+                  ).then((resultDocument) {
+                    if (resultDocument != null)
+                      return _runWorksheetEditorScreen(context, resultDocument);
+                  }),
+                ),
+                StartupScreenButton(
+                  label: 'Импорт заявок',
+                  iconData: FontAwesomeIcons.fileImport,
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => RequestsImporterScreen.fromContext(
+                        context: ctx,
+                        targetDocument: Document(worksheets: []),
+                      ),
                     ),
-                  ),
-                ).then((resultDocument) {
-                  if (resultDocument != null)
-                    return _runWorksheetEditorScreen(context, resultDocument);
-                }),
-              ),
-            ],
+                  ).then((resultDocument) {
+                    if (resultDocument != null)
+                      return _runWorksheetEditorScreen(context, resultDocument);
+                  }),
+                ),
+              ],
+            ),
           ),
         ),
       );

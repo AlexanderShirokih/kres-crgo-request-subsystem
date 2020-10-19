@@ -6,13 +6,13 @@ abstract class WorksheetMasterEvent extends Equatable {
 
 /// Event that used when user wants to save current document
 /// [changePath] If `true` 'Save as' behaviour will be used.
-/// [popAfterSave] If `true` that `WorksheetMasterPopState` will triggered
+/// [popAfterSave] If `true` that [WorksheetMasterPopState] will triggered
 /// after file have saved.
-class WorksheetMasterEventSave extends WorksheetMasterEvent {
+class WorksheetMasterSaveEvent extends WorksheetMasterEvent {
   final bool changePath;
   final bool popAfterSave;
 
-  const WorksheetMasterEventSave(
+  const WorksheetMasterSaveEvent(
       {this.changePath = false, this.popAfterSave = false})
       : assert(changePath != null),
         assert(popAfterSave != null);
@@ -42,6 +42,16 @@ class WorksheetMasterImportResultsEvent extends WorksheetMasterEvent {
 class WorksheetMasterRefreshDocumentStateEvent extends WorksheetMasterEvent {
   @override
   List<Object> get props => [];
+}
+
+class WorksheetMasterSearchEvent extends WorksheetMasterEvent {
+
+  final String searchText;
+
+  WorksheetMasterSearchEvent([this.searchText]);
+
+  @override
+  List<Object> get props => [searchText];
 }
 
 enum WorksheetAction { remove, makeActive }
