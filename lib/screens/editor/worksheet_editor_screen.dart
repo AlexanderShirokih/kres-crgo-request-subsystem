@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/screens/editor/reorderable_list_view.dart';
+import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
+import 'package:kres_requests2/screens/editor/reorderable_list_view.dart';
+import 'package:kres_requests2/screens/editor/request_item_view.dart';
 
 import 'request_editor_dialog.dart';
 import 'worksheet_move_dialog.dart';
@@ -41,10 +42,33 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
   _WorkSheetEditorViewState(this._document, this._worksheet);
 
   Set<RequestEntity> _selectionList;
+  Map<RequestEntity, int> _groupList;
+
+  int _lastGroupIndex = 0;
 
   bool get _isSelected => _selectionList != null;
 
   int get _selectedCount => _selectionList.fold(0, (prev, val) => prev + 1);
+
+  int get _singleGroup {
+    if (_groupList == null || !_isSelected) return null;
+
+    final filtered = _selectionList
+        .map((e) => _groupList[e])
+        .where((e) => e != null)
+        .toSet();
+
+    return filtered.length == 1 ? filtered.single : null;
+  }
+
+  Set<RequestEntity> getAllByGroup(int group) {
+    if (_groupList == null || !_isSelected) return {};
+
+    return _groupList.entries
+        .where((e) => e.value == group)
+        .map((e) => e.key)
+        .toSet();
+  }
 
   @override
   void dispose() {
@@ -129,8 +153,12 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                           widget.onDocumentsChanged();
                         });
                       },
-                      child: _RequestItemView(
+                      child: RequestItemView(
+                        defaultGroupIndex: _lastGroupIndex,
                         position: index + 1,
+                        groupIndex: _groupList != null
+                            ? _groupList[requests[index]] ?? 0
+                            : 0,
                         isSelected: _isSelected
                             ? _selectionList.contains(requests[index])
                             : null,
@@ -146,6 +174,16 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                             _selectionList.remove(value);
                           }
                           if (_selectionList.isEmpty) _selectionList = null;
+                        }),
+                        groupChangeCallback: (newGroup) => setState(() {
+                          _lastGroupIndex = newGroup;
+                          if (_groupList == null) {
+                            _groupList = {requests[index]: newGroup};
+                          } else if (newGroup == 0) {
+                            _groupList.remove(requests[index]);
+                          } else {
+                            _groupList[requests[index]] = newGroup;
+                          }
                         }),
                       ),
                     ),
@@ -211,6 +249,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
       );
 
   Widget _createSelectionContextMenu() {
+    final singleGroup = _singleGroup;
     return Row(
       children: [
         IconButton(
@@ -234,11 +273,25 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
             FontAwesomeIcons.checkSquare,
             color: Theme.of(context).primaryIconTheme.color,
           ),
-          tooltip: "Выбрать всё",
+          tooltip: "Выбрать все",
           onPressed: () => setState(() {
             _selectionList = _worksheet.requests.toSet();
           }),
         ),
+        if (singleGroup != null) ...[
+          const SizedBox(width: 24.0),
+          IconButton(
+            icon: FaIcon(
+              FontAwesomeIcons.highlighter,
+              color: Theme.of(context).primaryIconTheme.color,
+            ),
+            tooltip:
+                "Выбрать все этой группы (${_translateGroupName(singleGroup)})",
+            onPressed: () => setState(() {
+              _selectionList = getAllByGroup(singleGroup);
+            }),
+          ),
+        ],
         Expanded(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -293,6 +346,10 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
       ).then((hasChanges) {
         if (hasChanges != null) {
           setState(() {
+            if (_groupList != null) {
+              for (final selected in _selectionList)
+                _groupList.remove(selected);
+            }
             _selectionList = null;
           });
           widget.onDocumentsChanged();
@@ -312,139 +369,16 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
         tooltip: tooltip,
         onPressed: onPressed,
       );
-}
 
-class _RequestItemView extends StatelessWidget {
-  final int position;
-  final RequestEntity request;
+  final _groupNames = [
+    'белый',
+    'зелёный',
+    'красный',
+    'фиолет.',
+    'оранж.',
+    'синий',
+    'бирюз.'
+  ];
 
-  final bool isHighlighted;
-
-  // true - selected, false - not selected, null - not in selection mode
-  final bool isSelected;
-
-  final void Function(bool) onChanged;
-
-  const _RequestItemView({
-    @required this.position,
-    @required this.isSelected,
-    @required this.isHighlighted,
-    @required this.request,
-    @required this.onChanged,
-    Key key,
-  })  : assert(onChanged != null),
-        assert(position != null),
-        assert(request != null),
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        if (isSelected != null) onChanged(!isSelected);
-      },
-      child: Card(
-        color: isHighlighted ? Colors.yellow : Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (isSelected != null)
-                Checkbox(value: isSelected, onChanged: onChanged),
-              SizedBox(
-                width: 18.0,
-                child: Text(position.toString()),
-              ),
-              const SizedBox(width: 8.0),
-              Column(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    request.accountId?.toString()?.padLeft(6, '0') ?? "--",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 20.0,
-                    ),
-                  ),
-                  const SizedBox(height: 16.0),
-                  Text(request.reqType ?? "--"),
-                ],
-              ),
-              const SizedBox(width: 12.0),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: 380.0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      request.name,
-                      style: TextStyle(
-                        fontSize: 22.0,
-                      ),
-                    ),
-                    const SizedBox(height: 6.0),
-                    Text(
-                      request.address,
-                      style: TextStyle(
-                        fontSize: 18.0,
-                      ),
-                    ),
-                    ..._printRequestReason(request, context),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 24.0),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: 380.0,
-                  maxWidth: 420.0,
-                ),
-                child: Container(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        request.counterInfo,
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 10.0),
-                      Text(
-                        request.additionalInfo,
-                        style: TextStyle(fontSize: 16.0),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Iterable<Widget> _printRequestReason(
-    RequestEntity request,
-    BuildContext context,
-  ) {
-    if (request.reason != null && request.reason.isNotEmpty) {
-      return [
-        const SizedBox(height: 16.0),
-        Text(
-          request.reason,
-          style: Theme.of(context).textTheme.caption.copyWith(fontSize: 16.0),
-        ),
-      ];
-    }
-    return <Widget>[];
-  }
+  String _translateGroupName(int group) => _groupNames[group];
 }

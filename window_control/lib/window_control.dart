@@ -20,7 +20,6 @@ class WindowControl {
   }
 
   Future<dynamic> _onMethodCall(MethodCall call) {
-    print("onMethodCall");
     switch (call.method) {
       case "onWindowClosing":
         if (_onClosingCallbacks.isEmpty) return Future.value(true);

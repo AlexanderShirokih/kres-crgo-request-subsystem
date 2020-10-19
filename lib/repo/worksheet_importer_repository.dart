@@ -81,12 +81,13 @@ class NativeImporterRepository extends WorksheetImporterRepository {
       _chooseWorksheets0(document, tableChooser).then(
         (worksheets) => worksheets == null || worksheets.isEmpty
             ? null
-            : OptionalData<Document>(data: Document(worksheets: worksheets)),
+            : OptionalData<Document>(data: document.setWorksheets(worksheets)),
       );
 
   Future<List<Worksheet>> _chooseWorksheets0(
-          Document document, MultiTableChooser tableChooser) =>
-      document.worksheets.length == 1
-          ? Future.sync(() => document.worksheets)
-          : tableChooser(document.worksheets);
+      Document document, MultiTableChooser tableChooser) {
+    return document.worksheets.length == 1
+        ? Future.value(document.worksheets)
+        : tableChooser(document.worksheets);
+  }
 }

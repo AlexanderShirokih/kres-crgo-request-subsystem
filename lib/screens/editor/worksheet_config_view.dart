@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:kres_requests2/models/employee.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/repo/employees_repository.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
 class WorksheetConfigView extends StatefulWidget {
@@ -155,7 +156,8 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
   /// but exists in [Worksheet] data)
   List<Employee> _getAllEmployees(BuildContext context, [int minGroup]) {
     final w = widget.worksheet;
-    final repo = context.repository<EmployeesRepository>();
+    final repo =
+        context.repository<RepositoryModule>().getEmployeesRepository();
     final used = w.getUsedEmployee();
     final all = minGroup == null
         ? repo.getAllEmployees()

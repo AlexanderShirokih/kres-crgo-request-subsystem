@@ -117,4 +117,13 @@ class Document {
       _worksheets.hashCode ^
       updateDate.hashCode ^
       _activeWorksheet.hashCode;
+
+  Document setWorksheets(List<Worksheet> worksheets) {
+    if (worksheets == null || worksheets.isEmpty)
+      throw ('Cannot set empty worksheet list');
+
+    _worksheets.clear();
+    _worksheets.addAll(worksheets);
+    return this;
+  }
 }
