@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/repo/models/request_wrapper.dart';
 
 import 'package:window_control/window_listener.dart';
 
@@ -70,11 +71,11 @@ class WorksheetMasterScreen extends StatelessWidget {
 
   Widget _buildBody(BuildContext context, WorksheetMasterState state) =>
       WindowListener(
-        onWindowClosing: () =>
-            _showExitConfirmationDialog(state.currentDocument, context),
+        onWindowClosing: () => _showExitConfirmationDialog(
+            state.documentRepository.document, context),
         child: WillPopScope(
-          onWillPop: () =>
-              _showExitConfirmationDialog(state.currentDocument, context),
+          onWillPop: () => _showExitConfirmationDialog(
+              state.documentRepository.document, context),
           child: Row(
             children: [
               _createPageController(context, state),
@@ -82,13 +83,10 @@ class WorksheetMasterScreen extends StatelessWidget {
                 child: Container(
                   height: double.maxFinite,
                   child: WorkSheetEditorView(
-                    document: state.currentDocument,
-                    worksheet: state.currentDocument.active,
-                    onDocumentsChanged: () => _worksheetBloc
-                        .add(WorksheetMasterRefreshDocumentStateEvent()),
-                    highlighted: state is WorksheetMasterSearchingState
-                        ? state.filteredItems[state.currentDocument.active]
-                        : null,
+                    // TODO: Delegate repository creation to bloc
+                    documentRepository: state.documentRepository,
+                    // onWorksheetStructureChanged: () => _worksheetBloc
+                    //     .add(WorksheetMasterRefreshDocumentStateEvent()),
                   ),
                 ),
               ),
@@ -103,7 +101,8 @@ class WorksheetMasterScreen extends StatelessWidget {
         builder: (context, state) => Container(
           width: 420.0,
           child: Drawer(
-            child: WorksheetConfigView(state.currentDocument.active),
+            child:
+                WorksheetConfigView(state.documentRepository.document.active),
           ),
         ),
       );
@@ -118,7 +117,7 @@ class WorksheetMasterScreen extends StatelessWidget {
         title: BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
           cubit: _worksheetBloc,
           builder: (_, state) => Text(
-              'Редактирование - ${_getDocumentTitle(state.currentDocument)}'),
+              'Редактирование - ${_getDocumentTitle(state.documentRepository.document)}'),
         ),
         actions: [
           _createActionButton(
@@ -150,8 +149,8 @@ class WorksheetMasterScreen extends StatelessWidget {
                   builder: (_) =>
                       BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
                     cubit: _worksheetBloc,
-                    builder: (context, state) =>
-                        WorksheetsPreviewScreen(state.currentDocument),
+                    builder: (context, state) => WorksheetsPreviewScreen(
+                        state.documentRepository.document),
                   ),
                 ),
               ),
@@ -176,9 +175,6 @@ class WorksheetMasterScreen extends StatelessWidget {
 
   Widget _createPageController(
       BuildContext context, WorksheetMasterState state) {
-    Widget withClosure(Worksheet current, Widget Function(Worksheet) closure) =>
-        closure(current);
-
     return Container(
       width: 280.0,
       decoration: BoxDecoration(
@@ -191,49 +187,60 @@ class WorksheetMasterScreen extends StatelessWidget {
         ),
       ),
       height: double.maxFinite,
-      child: ListView.builder(
-        itemCount: state.currentDocument.worksheets.length + 1,
-        itemBuilder: (context, index) => index ==
-                state.currentDocument.worksheets.length
-            ? AddNewWorkSheetTabView((worksheetCreationMode) =>
-                _worksheetBloc.add(
-                    WorksheetMasterAddNewWorksheetEvent(worksheetCreationMode)))
-            : withClosure(
-                state.currentDocument.worksheets[index],
-                (current) => WorkSheetTabView(
-                  worksheet: current,
-                  filteredItemsCount: state is WorksheetMasterSearchingState
-                      ? state.filteredItems[current]?.length ?? 0
-                      : 0,
-                  isActive: current == state.currentDocument.active,
-                  onSelect: () => _worksheetBloc.add(
-                      WorksheetMasterWorksheetActionEvent(
-                          current, WorksheetAction.makeActive)),
-                  onRemove: state.currentDocument.worksheets.length == 1
-                      ? null
-                      : () {
-                          if (!current.isEmpty) {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              child: ConfirmationDialog(
-                                message: "Удалить страницу ${current.name}?",
-                              ),
-                            ).then((result) {
-                              if (result)
-                                _worksheetBloc.add(
-                                    WorksheetMasterWorksheetActionEvent(
-                                        current, WorksheetAction.remove));
-                            });
-                          } else
-                            _worksheetBloc.add(
-                                WorksheetMasterWorksheetActionEvent(
-                                    current, WorksheetAction.remove));
-                        },
+      child: StreamBuilder<Map<Worksheet, List<RequestWrapper>>>(
+          stream: state.documentRepository.requests,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return Center(child: Text('Нет данных :('));
+            return ListView(
+              children: [
+                ..._createTabs(
+                  context,
+                  snapshot.data,
+                  state.documentRepository.document.active,
                 ),
-              ),
-      ),
+                AddNewWorkSheetTabView(
+                  (worksheetCreationMode) => _worksheetBloc.add(
+                      WorksheetMasterAddNewWorksheetEvent(
+                          worksheetCreationMode)),
+                ),
+              ],
+            );
+          }),
     );
+  }
+
+  Iterable<Widget> _createTabs(BuildContext context,
+      Map<Worksheet, List<RequestWrapper>> data, Worksheet active) sync* {
+    for (final entry in data.entries) {
+      final worksheet = entry.key;
+      yield WorkSheetTabView(
+        worksheet: worksheet,
+        filteredItemsCount: entry.value
+            .fold(0, (acc, req) => req.isHighlighted ? acc + 1 : acc),
+        isActive: worksheet == active,
+        onSelect: () => _worksheetBloc.add(WorksheetMasterWorksheetActionEvent(
+            worksheet, WorksheetAction.makeActive)),
+        onRemove: data.length == 1
+            ? null
+            : () {
+                if (!entry.key.isEmpty) {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    child: ConfirmationDialog(
+                      message: "Удалить страницу ${worksheet.name}?",
+                    ),
+                  ).then((result) {
+                    if (result)
+                      _worksheetBloc.add(WorksheetMasterWorksheetActionEvent(
+                          worksheet, WorksheetAction.remove));
+                  });
+                } else
+                  _worksheetBloc.add(WorksheetMasterWorksheetActionEvent(
+                      worksheet, WorksheetAction.remove));
+              },
+      );
+    }
   }
 
   void _handleSavingState(
@@ -271,8 +278,8 @@ class WorksheetMasterScreen extends StatelessWidget {
         _navigateToImporter(
           context,
           RequestsImporterScreen.fromContext(
-            initialDirectory: state.currentDirectory,
-            targetDocument: state.currentDocument,
+            initialDirectory: state.documentRepository.currentDirectory,
+            targetDocument: state.documentRepository.document,
             context: context,
           ),
         );
@@ -282,8 +289,8 @@ class WorksheetMasterScreen extends StatelessWidget {
         _navigateToImporter(
           context,
           CountersImporterScreen(
-            initialDirectory: state.currentDirectory,
-            targetDocument: state.currentDocument,
+            initialDirectory: state.documentRepository.currentDirectory,
+            targetDocument: state.documentRepository.document,
             importerRepository: context
                 .repository<RepositoryModule>()
                 .getCountersImporterRepository(),
@@ -294,8 +301,8 @@ class WorksheetMasterScreen extends StatelessWidget {
         _navigateToImporter(
           context,
           NativeImporterScreen(
-            initialDirectory: state.currentDirectory,
-            targetDocument: state.currentDocument,
+            initialDirectory: state.documentRepository.currentDirectory,
+            targetDocument: state.documentRepository.document,
             importerRepository: context
                 .repository<RepositoryModule>()
                 .getNativeImporterRepository(),

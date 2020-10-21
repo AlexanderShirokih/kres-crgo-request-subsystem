@@ -49,7 +49,7 @@ class ErrorView extends StatelessWidget {
 class LoadingView extends StatelessWidget {
   final String label;
 
-  const LoadingView(this.label);
+  const LoadingView([this.label]);
 
   @override
   Widget build(BuildContext context) => Center(

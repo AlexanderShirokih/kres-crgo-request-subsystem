@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:kres_requests2/repo/document_repository.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 import 'package:equatable/equatable.dart';
 
 import 'package:kres_requests2/bloc/worksheets/worksheet_creation_mode.dart';
 import 'package:kres_requests2/models/optional_data.dart';
-import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/models/document.dart';
 
@@ -16,6 +15,7 @@ part 'worksheet_master_event.dart';
 
 part 'worksheet_master_state.dart';
 
+// TODO: Delegate Document modification logic to DocumentRepository
 class WorksheetMasterBloc
     extends Bloc<WorksheetMasterEvent, WorksheetMasterState> {
   final Future<String> Function(Document, String) savePathChooser;
@@ -24,11 +24,17 @@ class WorksheetMasterBloc
       : assert(savePathChooser != null),
         super(
           WorksheetMasterIdleState(
-              document ??= Document.empty(),
-              (document?.savePath == null
-                  ? './'
-                  : path.dirname(document.savePath.path))),
+              DocumentRepository(document ??= Document.empty())
+                ..currentDirectory = (document?.savePath == null
+                    ? './'
+                    : path.dirname(document.savePath.path))),
         );
+
+  @override
+  Future<Function> close() {
+    state.documentRepository.close();
+    return super.close();
+  }
 
   @override
   Stream<WorksheetMasterState> mapEventToState(
@@ -48,7 +54,7 @@ class WorksheetMasterBloc
     } else if (event is WorksheetMasterRefreshDocumentStateEvent) {
       yield* _keepSearchingState(
           () => Stream.value(WorksheetMasterIdleState(
-              state.currentDocument, state.currentDirectory)),
+              state.documentRepository..rebuildRequests())),
           rebuildSearch: true);
     }
   }
@@ -58,55 +64,50 @@ class WorksheetMasterBloc
       {bool rebuildSearch = false}) async* {
     if (state is WorksheetMasterSearchingState) {
       final searchState = state as WorksheetMasterSearchingState;
-      final filtered = searchState.filteredItems;
+      final searchText = searchState.searchText;
       yield* scope();
 
       if (rebuildSearch)
-        add(searchState.sourceEvent);
+        add(WorksheetMasterSearchEvent(searchText));
       else
         yield WorksheetMasterSearchingState(
-          state.currentDocument,
-          state.currentDirectory,
-          filteredItems: filtered,
-          sourceEvent: (state as WorksheetMasterSearchingState).sourceEvent,
+          state.documentRepository,
+          searchText: searchText,
         );
     } else {
       yield* scope();
-      yield WorksheetMasterIdleState(
-          state.currentDocument, state.currentDirectory);
+      yield WorksheetMasterIdleState(state.documentRepository);
     }
   }
 
   Stream<WorksheetMasterState> _saveDocument(
       bool changePath, bool popAfterSave) async* {
-    var currentDirectory = state.currentDirectory;
-    if (state.currentDocument.savePath == null || changePath) {
-      final savePath =
-          await savePathChooser(state.currentDocument, state.currentDirectory);
+    var currentDirectory = state.documentRepository.currentDirectory;
+    if (state.documentRepository.document.savePath == null || changePath) {
+      final savePath = await savePathChooser(
+          state.documentRepository.document, currentDirectory);
       if (savePath == null) return;
       currentDirectory = path.dirname(savePath);
 
-      state.currentDocument.savePath = path.extension(savePath) != '.json'
-          ? File('$savePath.json')
-          : File(savePath);
+      state.documentRepository.documentSavePath = savePath;
     }
 
     try {
-      yield WorksheetMasterSavingState(state.currentDocument, currentDirectory,
+      state.documentRepository.currentDirectory = currentDirectory;
+      yield WorksheetMasterSavingState(state.documentRepository,
           completed: false);
-      await state.currentDocument.save();
-      yield WorksheetMasterSavingState(state.currentDocument, currentDirectory,
+      await state.documentRepository.save();
+      yield WorksheetMasterSavingState(state.documentRepository,
           completed: true);
 
       if (popAfterSave) {
-        yield WorksheetMasterPopState(state.currentDocument, currentDirectory);
+        yield WorksheetMasterPopState(state.documentRepository);
       } else {
-        yield WorksheetMasterIdleState(state.currentDocument, currentDirectory);
+        yield WorksheetMasterIdleState(state.documentRepository);
       }
     } catch (e, s) {
       yield WorksheetMasterSavingState(
-        state.currentDocument,
-        currentDirectory,
+        state.documentRepository,
         error: ErrorWrapper(e.toString(), s.toString()),
       );
     }
@@ -117,33 +118,26 @@ class WorksheetMasterBloc
     switch (mode) {
       case WorksheetCreationMode.Import:
         yield WorksheetMasterShowImporterState(
-          state.currentDocument,
-          state.currentDirectory,
+          state.documentRepository,
           WorksheetImporterType.requestsImporter,
         );
         return;
       case WorksheetCreationMode.ImportCounters:
         yield WorksheetMasterShowImporterState(
-          state.currentDocument,
-          state.currentDirectory,
+          state.documentRepository,
           WorksheetImporterType.countersImporter,
         );
         return;
       case WorksheetCreationMode.ImportNative:
         yield WorksheetMasterShowImporterState(
-          state.currentDocument,
-          state.currentDirectory,
+          state.documentRepository,
           WorksheetImporterType.nativeImporter,
         );
         return;
       case WorksheetCreationMode.Empty:
       default:
-        state.currentDocument.active =
-            state.currentDocument.addEmptyWorksheet();
-        yield WorksheetMasterIdleState(
-          state.currentDocument,
-          state.currentDirectory,
-        );
+        state.documentRepository.addEmptyWorksheet();
+        yield WorksheetMasterIdleState(state.documentRepository);
     }
   }
 
@@ -151,7 +145,18 @@ class WorksheetMasterBloc
       Document importedDocument) async* {
     if (importedDocument != null) {
       importedDocument.active = importedDocument.worksheets.last;
-      yield WorksheetMasterIdleState(importedDocument, state.currentDirectory);
+
+      final isIdentical =
+          identical(state.documentRepository.document, importedDocument);
+
+      if (isIdentical) {
+        yield WorksheetMasterIdleState(
+            state.documentRepository..rebuildRequests());
+      } else {
+        state.documentRepository.close();
+        yield WorksheetMasterIdleState(DocumentRepository(importedDocument)
+          ..currentDirectory = state.documentRepository.currentDirectory);
+      }
     }
   }
 
@@ -159,50 +164,27 @@ class WorksheetMasterBloc
       Worksheet targetWorksheet, WorksheetAction action) async* {
     switch (action) {
       case WorksheetAction.remove:
-        state.currentDocument.removeWorksheet(targetWorksheet);
+        state.documentRepository.removeWorksheet(targetWorksheet);
         break;
       case WorksheetAction.makeActive:
-        state.currentDocument.active = targetWorksheet;
+        state.documentRepository.active = targetWorksheet;
         break;
     }
 
-    yield WorksheetMasterIdleState(
-        state.currentDocument, state.currentDirectory);
+    yield WorksheetMasterIdleState(state.documentRepository);
   }
 
   Stream<WorksheetMasterState> _toggleSearchMode(
       WorksheetMasterSearchEvent event) async* {
-    if (state is WorksheetMasterSearchingState && event.searchText == null)
-      yield WorksheetMasterIdleState(
-          state.currentDocument, state.currentDirectory);
-    else {
-      final filtered = _filterRequests(state.currentDocument, event.searchText);
+    state.documentRepository.setFilter(event.searchText);
 
+    if (state is WorksheetMasterSearchingState && event.searchText == null) {
+      yield WorksheetMasterIdleState(state.documentRepository);
+    } else {
       yield WorksheetMasterSearchingState(
-        state.currentDocument,
-        state.currentDirectory,
-        filteredItems: filtered,
-        sourceEvent: event,
+        state.documentRepository,
+        searchText: event.searchText,
       );
     }
-  }
-
-  // TODO: Create a sort of DocumentRepository and move this method to it
-  Map<Worksheet, List<RequestEntity>> _filterRequests(
-      Document document, String searchText) {
-    if (searchText == null || searchText.isEmpty)
-      return <Worksheet, List<RequestEntity>>{};
-    searchText = searchText.toLowerCase();
-
-    return Map.fromIterable(document.worksheets,
-        key: (worksheet) => worksheet,
-        value: (worksheet) => worksheet.requests.where((RequestEntity request) {
-              return (request.accountId?.toString()?.padLeft(6, '0') ?? '')
-                      .contains(searchText) ||
-                  request.name.toLowerCase().contains(searchText) ||
-                  request.address.toLowerCase().contains(searchText) ||
-                  request.counterInfo.toLowerCase().contains(searchText) ||
-                  request.additionalInfo.toLowerCase().contains(searchText);
-            }).toList());
   }
 }

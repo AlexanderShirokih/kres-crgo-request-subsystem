@@ -10,9 +10,10 @@ enum MoveMethod {
   Move,
 }
 
-class WorksheetMoveDialog extends StatefulWidget {
+// TODO: Don't touch Document directly. Use DocumentRepository instead
+class WorksheetMoveDialog extends StatelessWidget {
   final Document document;
-  final Set<RequestEntity> movingRequests;
+  final List<RequestEntity> movingRequests;
   final Worksheet sourceWorksheet;
   final MoveMethod moveMethod;
 
@@ -26,47 +27,25 @@ class WorksheetMoveDialog extends StatefulWidget {
         assert(document != null),
         assert(moveMethod != null);
 
-  @override
-  _WorksheetMoveDialogState createState() => _WorksheetMoveDialogState(
-        document,
-        sourceWorksheet,
-        movingRequests,
-        moveMethod,
-      );
-}
-
-class _WorksheetMoveDialogState extends State<WorksheetMoveDialog> {
-  final Set<RequestEntity> _movingRequests;
-  final Worksheet _sourceWorksheet;
-  final MoveMethod _moveMethod;
-  final Document _document;
-
-  _WorksheetMoveDialogState(
-    this._document,
-    this._sourceWorksheet,
-    this._movingRequests,
-    this._moveMethod,
-  );
-
   String _getTitle() {
-    switch (_moveMethod) {
+    switch (moveMethod) {
       case MoveMethod.Copy:
         return "Копирование заявок";
       case MoveMethod.Move:
         return "Перемещение заявок";
       default:
-        throw ("Unknown MoveMethod $_moveMethod");
+        throw ("Unknown MoveMethod $moveMethod");
     }
   }
 
   Iterable<Worksheet> _getTargetWorksheet() =>
-      _document.worksheets.where((worksheet) => worksheet != _sourceWorksheet);
+      document.worksheets.where((worksheet) => worksheet != sourceWorksheet);
 
   void _moveRequests(Worksheet targetWorksheet) {
-    targetWorksheet.requests.addAll(_movingRequests);
-    if (_moveMethod == MoveMethod.Move)
-      for (RequestEntity e in _movingRequests)
-        _sourceWorksheet.requests.remove(e);
+    targetWorksheet.requests.addAll(movingRequests);
+    if (moveMethod == MoveMethod.Move)
+      for (RequestEntity e in movingRequests)
+        sourceWorksheet.requests.remove(e);
   }
 
   @override
@@ -86,8 +65,8 @@ class _WorksheetMoveDialogState extends State<WorksheetMoveDialog> {
             ),
             _createListTile(FontAwesomeIcons.plus, "В новый лист", () {
               final target =
-                  _document.addEmptyWorksheet(name: _sourceWorksheet.name);
-              _document.active = target;
+                  document.addEmptyWorksheet(name: sourceWorksheet.name);
+              document.active = target;
               _moveRequests(target);
               Navigator.pop(context, true);
             })
