@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
+import 'package:intl/intl.dart';
 
 import 'package:kres_requests2/domain/importer_exception.dart';
 import 'package:kres_requests2/models/request_entity.dart';
@@ -49,7 +50,7 @@ class CountersImporter {
       try {
         final rawName = row[2].toString();
         final phoneMarker = rawName.indexOf('тел.: ');
-        final additional = row[6]?.toString();
+        final additional = _toString(row[6]);
         return RequestEntity(
           reqType: _kDefaultRequestName,
           fullReqType:
@@ -69,5 +70,14 @@ class CountersImporter {
         throw ImporterException('Ошибка формата в строке: $row', e);
       }
     }).toList();
+  }
+
+  String _toString(dynamic line) {
+    if (line == null) return null;
+    line = line.toString();
+
+    final DateFormat formatter = DateFormat('dd.MM.yyyy');
+    final date = DateTime.tryParse(line);
+    return date != null ? formatter.format(date) : line;
   }
 }

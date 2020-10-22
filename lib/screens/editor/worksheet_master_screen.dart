@@ -83,11 +83,7 @@ class WorksheetMasterScreen extends StatelessWidget {
                 child: Container(
                   height: double.maxFinite,
                   child: WorkSheetEditorView(
-                    // TODO: Delegate repository creation to bloc
-                    documentRepository: state.documentRepository,
-                    // onWorksheetStructureChanged: () => _worksheetBloc
-                    //     .add(WorksheetMasterRefreshDocumentStateEvent()),
-                  ),
+                      documentRepository: state.documentRepository),
                 ),
               ),
             ],
