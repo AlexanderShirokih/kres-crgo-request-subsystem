@@ -15,8 +15,8 @@ data class Employee(
         when (accessGroup) {
             1 -> "I"
             2 -> "II"
-            3 -> "III"
-            4 -> "VI"
+            3 -> "II"
+            4 -> "IV"
             5 -> "V"
             else -> accessGroup.toString()
         }
