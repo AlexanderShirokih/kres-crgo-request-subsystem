@@ -4,7 +4,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/credentials_manager.dart';
 import 'package:kres_requests2/data/models/credentials.dart';
-import 'package:kres_requests2/models/user.dart';
 import 'package:kres_requests2/repo/server_exception.dart';
 import 'package:kres_requests2/repo/users_repository.dart';
 
@@ -40,8 +39,8 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState> {
         .setCredentials(Credentials(event.login, event.password));
 
     try {
-      var user = await _usersRepository.getUserDetails();
-      yield AuthorizationFinished(user);
+      await _usersRepository.getUserDetails();
+      yield AuthorizationFinished();
     } on UnauthorizedException {
       // Empty string indicated authorization error
       yield AuthorizationFailed();

@@ -19,12 +19,10 @@ class AuthorizationProcessing extends AuthorizationState {
 
 /// State that used when authorization completed successfully
 class AuthorizationFinished extends AuthorizationState {
-  final User user;
-
-  const AuthorizationFinished(this.user) : assert(user != null);
+  const AuthorizationFinished();
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [];
 }
 
 /// State that used that authorization failed
