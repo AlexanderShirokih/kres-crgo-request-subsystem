@@ -49,7 +49,7 @@ class ErrorView extends StatelessWidget {
 class LoadingView extends StatelessWidget {
   final String label;
 
-  const LoadingView(this.label);
+  const LoadingView([this.label]);
 
   @override
   Widget build(BuildContext context) => Center(
@@ -68,6 +68,7 @@ class LoadingView extends StatelessWidget {
       );
 }
 
+/// TODO: Move code below to the separate module
 Future<String> showSaveDialog(
     Document currentDoc, String currentDirectory) async {
   final res = await showSavePanel(

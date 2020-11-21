@@ -1,9 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
 
+import 'package:kres_requests2/data/api_server.dart';
+import 'package:kres_requests2/data/credentials_manager.dart';
+import 'package:kres_requests2/repo/users_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:kres_requests2/models/employee.dart';
 import 'package:kres_requests2/data/java_process_executor.dart';
 import 'package:kres_requests2/data/models/java_process_info.dart';
 import 'package:kres_requests2/data/request_processor.dart';
@@ -23,11 +23,20 @@ class RepositoryModule {
   final CountersImporterRepository _countersRepository;
   final NativeImporterRepository _nativeImporterRepository;
 
-  static Future<RepositoryModule> buildRepositoryModule() async {
-    final settingsRepo = SettingsRepository.fromPreferences(
-      await SharedPreferences.getInstance(),
-    );
+  final ApiServer _apiServer;
+  final CredentialsManager _credentialsManager;
 
+  /// Builds new instance of `RepositoryModule`
+  static Future<RepositoryModule> buildRepositoryModule(
+    ApiServer apiServer,
+    CredentialsManager credentialsManager,
+    SharedPreferences sharedPreferences,
+  ) async {
+    assert(apiServer != null);
+    assert(credentialsManager != null);
+    assert(sharedPreferences != null);
+
+    final settingsRepo = SettingsRepository.fromPreferences(sharedPreferences);
     final configRepo = await ConfigRepository.create();
 
     final requestsRepo = RequestsRepository(
@@ -40,10 +49,12 @@ class RepositoryModule {
       ),
     );
 
+    // TODO: TEMPORARY DISABLED FEATURE
     final employeeRepo = EmployeesRepository(
-      (jsonDecode(await File("employees.json").readAsString()) as List<dynamic>)
-          .map((e) => Employee.fromJson(e))
-          .toList(),
+      // (jsonDecode(await File("employees.json").readAsString()) as List<dynamic>)
+      //     .map((e) => Employee.fromJson(e))
+      //     .toList(),
+      [],
     );
 
     final countersRepo = CountersImporterRepository(
@@ -59,6 +70,8 @@ class RepositoryModule {
       employeeRepo,
       countersRepo,
       nativeImporterRepo,
+      apiServer,
+      credentialsManager,
     );
   }
 
@@ -69,6 +82,8 @@ class RepositoryModule {
     this._employeeRepository,
     this._countersRepository,
     this._nativeImporterRepository,
+    this._apiServer,
+    this._credentialsManager,
   );
 
   RequestsRepository getRequestsRepository() => _requestsRepository;
@@ -84,4 +99,9 @@ class RepositoryModule {
 
   NativeImporterRepository getNativeImporterRepository() =>
       _nativeImporterRepository;
+
+  UsersRepository getUserRepository() =>
+      UsersRepository(_apiServer, _credentialsManager);
+
+  CredentialsManager getCredentialsManager() => _credentialsManager;
 }

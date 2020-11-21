@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+
 import 'package:kres_requests2/application_module.dart';
-
 import 'package:kres_requests2/data/credentials_manager.dart';
-
+import 'package:kres_requests2/data/models/credentials.dart';
 import 'package:kres_requests2/screens/auth/authorization_screen.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:window_control/window_control.dart';
 
+// Short entry point for debug purposes
 void main() => runApp(MyApp());
 
 /// Application root class
@@ -41,5 +42,13 @@ class MyApp extends StatelessWidget {
   }
 
   Future<ApplicationModule> _injectRootModule() =>
-      ApplicationModule().init(CredentialsManagerImpl());
+      ApplicationModule().init(_MockedCredentialsManager());
+}
+
+class _MockedCredentialsManager implements CredentialsManager {
+  @override
+  Credentials getCredentials() => Credentials('test_admin', 'password');
+
+  @override
+  void setCredentials(Credentials credentials) {}
 }
