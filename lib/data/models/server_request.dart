@@ -1,7 +1,8 @@
+import 'package:flutter/material.dart';
+
 /// Describes main HTTP methods
 enum RequestMethod { GET, POST, DELETE, PUT }
 
-/// Con
 typedef BodyEncoder = T Function<S, T>(S);
 
 /// Wrapper class for server request
@@ -17,11 +18,21 @@ class ServerRequest {
   /// For other methods `null`  body is also acceptable and means an empty body.
   final Map<String, dynamic> body;
 
-  const ServerRequest({this.method, this.requestPath, this.body})
-      : assert(method != null),
+  final Map<String, dynamic> requestParams;
+
+  const ServerRequest({
+    @required this.method,
+    @required this.requestPath,
+    this.requestParams,
+    this.body,
+  })  : assert(method != null),
         assert(requestPath != null);
 
   /// Constructs GET server request at `requestPath`
-  ServerRequest.get(String requestPath)
-      : this(method: RequestMethod.GET, requestPath: requestPath);
+  ServerRequest.get(String requestPath, {Map<String, dynamic> requestParams})
+      : this(
+          method: RequestMethod.GET,
+          requestPath: requestPath,
+          requestParams: requestParams,
+        );
 }

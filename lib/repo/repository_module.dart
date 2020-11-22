@@ -1,6 +1,6 @@
-
 import 'package:kres_requests2/data/api_server.dart';
 import 'package:kres_requests2/data/credentials_manager.dart';
+import 'package:kres_requests2/repo/request_set_repository.dart';
 import 'package:kres_requests2/repo/users_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -102,6 +102,9 @@ class RepositoryModule {
 
   UsersRepository getUserRepository() =>
       UsersRepository(_apiServer, _credentialsManager);
+
+  RequestsSetRepository getRequestSetRepository() =>
+      RequestsSetRepository(_apiServer, _credentialsManager);
 
   CredentialsManager getCredentialsManager() => _credentialsManager;
 }

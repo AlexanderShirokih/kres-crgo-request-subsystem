@@ -13,9 +13,11 @@ import 'login_form.dart';
 /// An authorization screen. Shows at startup for unauthorized users.
 class AuthorizationScreen extends StatelessWidget {
   final AuthorizationBloc _authorizationBloc;
+  final RepositoryModule _repositoryModule;
 
-  AuthorizationScreen({Key key, RepositoryModule repositoryModule})
+  AuthorizationScreen({Key key, @required RepositoryModule repositoryModule})
       : assert(repositoryModule != null),
+        _repositoryModule = repositoryModule,
         _authorizationBloc = AuthorizationBloc(
           repositoryModule.getUserRepository(),
           repositoryModule.getCredentialsManager(),
@@ -68,7 +70,9 @@ class AuthorizationScreen extends StatelessWidget {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (BuildContext context) => StartupScreen()),
+                        builder: (BuildContext context) =>
+                            StartupScreen(repositoryModule: _repositoryModule),
+                      ),
                     );
                   }
                 },

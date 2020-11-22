@@ -22,8 +22,22 @@ class ApiServer {
 
   Future<ServerResponse> getData(
       Credentials credentials, ServerRequest request) async {
-    // TODO: Query params will be added later
-    final url = '$_baseUrl${request.requestPath}';
+    final requestParams = request.requestParams ?? <String, dynamic>{};
+
+    final baseUrl = '$_baseUrl${request.requestPath}';
+
+    // Encode path params
+    StringBuffer params = StringBuffer();
+    final paramEntries = requestParams.entries;
+    var cnt = 0;
+    for (final param in paramEntries) {
+      params.write(param.key);
+      params.write('=');
+      params.write(param.value.toString());
+      if (++cnt != requestParams.length) params.write('&');
+    }
+
+    final url = requestParams.isEmpty ? baseUrl : '$baseUrl?$params';
 
     final headers = <String, String>{
       "Authorization": credentials.createBasicAuthorization()
