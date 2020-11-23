@@ -40,9 +40,12 @@ enum RequestsSetSource { New, ImportMegaBilling }
 /// Used to create new requests set from scratch or by importing from
 /// another request systems
 class StartupCreateNewRequestsSet extends StartupEvent {
+  final DateTime targetDate;
   final RequestsSetSource source;
 
-  StartupCreateNewRequestsSet(this.source) : assert(source != null);
+  StartupCreateNewRequestsSet(this.targetDate, this.source)
+      : assert(targetDate != null),
+        assert(source != null);
 
   @override
   List<Object> get props => [source];

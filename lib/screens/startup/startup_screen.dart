@@ -5,6 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/models/request_set.dart';
 import 'package:kres_requests2/screens/common.dart';
+import 'package:kres_requests2/screens/common/date_chooser.dart';
+import 'package:kres_requests2/screens/editor/worksheet_master_screen.dart';
+import 'package:kres_requests2/screens/startup/date_tree_view.dart';
 import 'package:window_control/window_listener.dart';
 
 import 'package:kres_requests2/repo/repository_module.dart';
@@ -18,8 +21,10 @@ import 'package:kres_requests2/bloc/startup/startup_bloc.dart';
 class StartupScreen extends StatelessWidget {
   final StartupBloc _startupBloc;
 
-  StartupScreen({Key key, @required RepositoryModule repositoryModule})
-      : assert(repositoryModule != null),
+  StartupScreen({
+    Key key,
+    @required RepositoryModule repositoryModule,
+  })  : assert(repositoryModule != null),
         _startupBloc = StartupBloc(
           repositoryModule.getUserRepository(),
           repositoryModule.getRequestSetRepository(),
@@ -42,11 +47,14 @@ class StartupScreen extends StatelessWidget {
                     const SizedBox(width: 16.0),
                     IconButton(
                       icon: FaIcon(FontAwesomeIcons.cog),
-                      onPressed: () => Navigator.push(
-                        context,
-                        SettingsScreen.createRoute(
-                            context.watch<RepositoryModule>()),
-                      ),
+                      onPressed: () {
+                        // TODO: Implement new settings screen
+                        return Navigator.push(
+                          context,
+                          SettingsScreen.createRoute(
+                              context.watch<RepositoryModule>()),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -66,6 +74,18 @@ class StartupScreen extends StatelessWidget {
                   _createMainActionsButtons(context),
                   _createGroupTitle(context, 'Последние'),
                   _createRecentlyOpenedItems(),
+                  BlocListener(listener: (context, state) {
+                    if (state is StartupOpenRequestsSetState) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WorksheetMasterScreen(
+                            requestSet: state.target,
+                          ),
+                        ),
+                      );
+                    }
+                  }),
                 ],
               ),
             ),
@@ -84,8 +104,7 @@ class StartupScreen extends StatelessWidget {
   Widget _createMainActionsButtons(BuildContext context) {
     return _createExtendedGrid([
       StartupScreenButtonContainer(
-        onPressed: () => _startupBloc
-            .add(StartupCreateNewRequestsSet(RequestsSetSource.New)),
+        onPressed: () => _pickDate(context),
         child: SimpleTextStartupTile(
           title: 'Новый документ',
           description: 'Создать новый набор заявок на заданный день',
@@ -101,8 +120,8 @@ class StartupScreen extends StatelessWidget {
         ),
       ),
       StartupScreenButtonContainer(
-        onPressed: () => _startupBloc.add(
-            StartupCreateNewRequestsSet(RequestsSetSource.ImportMegaBilling)),
+        onPressed: () => _startupBloc.add(StartupCreateNewRequestsSet(
+            null, RequestsSetSource.ImportMegaBilling)),
         child: SimpleTextStartupTile(
           title: 'Импорт заявок',
           description:
@@ -149,12 +168,16 @@ class StartupScreen extends StatelessWidget {
       );
 
   Widget _createExtendedGrid(List<StartupScreenButtonContainer> children) {
-    return LayoutBuilder(
-      builder: (context, constraints) => Container(
-        height: 245.0 * min((children.length / 3.0).ceilToDouble(), 2.0),
-        child: GridView.count(
-          crossAxisCount: 3,
-          children: children,
+    return Expanded(
+      flex: min(2, (children.length / 3.0).floor()),
+      child: LayoutBuilder(
+        builder: (context, constraints) => Container(
+          height: min(1000000,
+              245.0 * min((children.length / 3.0).ceilToDouble(), 2.0)),
+          child: GridView.count(
+            crossAxisCount: 3,
+            children: children,
+          ),
         ),
       ),
     );
@@ -185,9 +208,26 @@ class StartupScreen extends StatelessWidget {
     ]);
   }
 
-  void _pickRequestsSet(BuildContext context) {
-    // TODO
-  }
+  void _pickRequestsSet(BuildContext context) => showDialog<RequestSet>(
+        context: context,
+        child: Container(
+          width: 400,
+          height: 600,
+          child: DateTreeView(
+            requestsSetRepository: _startupBloc.requestSetRepository,
+          ),
+        ),
+      ).then((request) {
+        if (request != null) _startupBloc.add(StartupOpenRequestsSet(request));
+      });
+
+  void _pickDate(BuildContext context) =>
+      showDialog<DateTime>(context: context, child: DateChooserDialog())
+          .then((chosenDate) {
+        if (chosenDate != null)
+          _startupBloc.add(
+              StartupCreateNewRequestsSet(chosenDate, RequestsSetSource.New));
+      });
 }
 
 class _RefreshButton extends StatelessWidget {

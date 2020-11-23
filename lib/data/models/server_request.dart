@@ -16,7 +16,7 @@ class ServerRequest {
   /// Request body. Currently supporting only text bodies.
   /// Should be `null` for `GET` and `DELETE` methods.
   /// For other methods `null`  body is also acceptable and means an empty body.
-  final Map<String, dynamic> body;
+  final dynamic body;
 
   final Map<String, dynamic> requestParams;
 
@@ -34,5 +34,16 @@ class ServerRequest {
           method: RequestMethod.GET,
           requestPath: requestPath,
           requestParams: requestParams,
+        );
+
+  ServerRequest.post(
+    String requestPath, {
+    dynamic body,
+    Map<String, dynamic> requestParams,
+  }) : this(
+          method: RequestMethod.POST,
+          requestPath: requestPath,
+          requestParams: requestParams,
+          body: body,
         );
 }

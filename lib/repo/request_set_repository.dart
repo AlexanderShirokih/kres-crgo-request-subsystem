@@ -1,14 +1,18 @@
+import 'package:intl/intl.dart';
 import 'package:kres_requests2/data/api_server.dart';
 import 'package:kres_requests2/data/credentials_manager.dart';
 import 'package:kres_requests2/data/models/server_request.dart';
 import 'package:kres_requests2/models/request_set.dart';
-import 'package:kres_requests2/repo/server_exception.dart';
+
+import 'api_repository.dart';
 
 /// Fetches information about requests set
-class RequestsSetRepository {
+class RequestsSetRepository with ApiRepositoryMixin {
   static const String _kRequestSet = "requests";
+  static const String _kRequestSetAll = "$_kRequestSet/all";
   static const String _kPage = "page";
   static const String _kSize = "size";
+
   static const int _kDefaultPageSize = 5;
 
   final ApiServer _apiServer;
@@ -20,12 +24,30 @@ class RequestsSetRepository {
       : assert(_apiServer != null),
         assert(_credentialsManager != null);
 
+  /// Creates new request set
+  /// Updates data if ID is not `null`
+  Future<RequestSet> createOrUpdateRequestSet(
+    String name,
+    DateTime targetDate, [
+    int id,
+  ]) async {
+    final dateFormat = DateFormat('yyyy-MM-dd');
+    final response = await _apiServer.getData(
+      _credentialsManager.getCredentials(),
+      ServerRequest.post(_kRequestSet, body: {
+        'name': name,
+        'date': dateFormat.format(targetDate),
+        if (id != null) 'id': id
+      }),
+    );
+
+    return getResponseData(response, (body) => _makeRequestSetFromJson(body));
+  }
+
   /// Fetches information about requests sets from 0 to page
   Future<RequestsSetWrapper> getRequestSets(int pageUntil) async {
-    final credentials = _credentialsManager.getCredentials();
-
     final response = await _apiServer.getData(
-      credentials,
+      _credentialsManager.getCredentials(),
       ServerRequest.get(
         _kRequestSet,
         requestParams: {
@@ -35,10 +57,9 @@ class RequestsSetRepository {
       ),
     );
 
-    if (response.isOk) {
-      final data = response.body;
-
-      final requests = RequestsSetWrapper(
+    final requests = getResponseData(
+      response,
+      (data) => RequestsSetWrapper(
         requestsSets: [
           if (_currentRequestsSets != null)
             ..._currentRequestsSets.requestsSets,
@@ -48,17 +69,11 @@ class RequestsSetRepository {
         ].toSet().toList(),
         upperBoundPage: data['number'],
         hasMore: !data['last'],
-      );
-      _currentRequestsSets = requests;
+      ),
+    );
 
-      return requests;
-    }
-
-    if (response.statusCode == 401) {
-      throw UnauthorizedException();
-    }
-
-    throw ApiException(response.error.toString());
+    _currentRequestsSets = requests;
+    return requests;
   }
 
   RequestSet _makeRequestSetFromJson(Map<String, dynamic> data) {
@@ -66,6 +81,21 @@ class RequestsSetRepository {
       id: data['id'],
       name: data['name'],
       date: DateTime.parse(data['date']),
+    );
+  }
+
+  /// Fetches all request sets
+  Future<List<RequestSet>> getAllRequestSets() async {
+    final response = await _apiServer.getData(
+      _credentialsManager.getCredentials(),
+      ServerRequest.get(_kRequestSetAll),
+    );
+
+    return getResponseData(
+      response,
+      (body) => (body as List<dynamic>)
+          .map((e) => _makeRequestSetFromJson(e))
+          .toList(),
     );
   }
 }

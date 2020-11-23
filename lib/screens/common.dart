@@ -1,6 +1,5 @@
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
-import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
 
 import 'package:kres_requests2/models/document.dart';
@@ -66,23 +65,6 @@ class LoadingView extends StatelessWidget {
           ],
         ),
       );
-}
-
-/// TODO: Move code below to the separate module
-Future<String> showSaveDialog(
-    Document currentDoc, String currentDirectory) async {
-  final res = await showSavePanel(
-    suggestedFileName: getSuggestedName(currentDoc, '.json'),
-    initialDirectory: currentDirectory,
-    confirmButtonText: 'Сохранить',
-    allowedFileTypes: [
-      FileTypeFilterGroup(
-        label: "Документ заявок",
-        fileExtensions: ["json"],
-      )
-    ],
-  );
-  return res.canceled ? null : res.paths[0];
 }
 
 final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');

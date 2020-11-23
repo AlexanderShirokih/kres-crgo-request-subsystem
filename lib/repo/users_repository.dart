@@ -3,11 +3,11 @@ import 'package:kres_requests2/data/credentials_manager.dart';
 import 'package:kres_requests2/data/models/credentials.dart';
 import 'package:kres_requests2/data/models/server_request.dart';
 import 'package:kres_requests2/models/user.dart';
+import 'package:kres_requests2/repo/api_repository.dart';
 import 'package:kres_requests2/repo/server_exception.dart';
 
 /// Fetches information about users
-/// TODO: Should be an interface
-class UsersRepository {
+class UsersRepository with ApiRepositoryMixin {
   static const _kUsers = 'users';
 
   final CredentialsManager _credentialsManager;
@@ -38,17 +38,13 @@ class UsersRepository {
       ServerRequest.get(_kUsers),
     );
 
-    if (response.isOk) {
-      _fetchedUser = User(
+    _fetchedUser = getResponseData(
+      response,
+      (body) => User(
           name: response.body['name'],
-          hasModerationRights: response.body['hasModerationRights']);
-      return _fetchedUser;
-    }
+          hasModerationRights: response.body['hasModerationRights']),
+    );
 
-    if (response.statusCode == 401) {
-      throw UnauthorizedException();
-    }
-
-    throw ApiException(response.error.toString());
+    return _fetchedUser;
   }
 }

@@ -34,6 +34,7 @@ class StartupScreenButtonContainer extends StatelessWidget {
             ),
             padding: const EdgeInsets.all(8.0),
             child: InkWell(
+              hoverColor: Colors.transparent,
               onTap: onPressed,
               child: child,
             ),
@@ -160,17 +161,18 @@ class RequestSetDescriptionTile extends StatelessWidget {
 
     final now = DateTime.now();
 
-    switch (now.day - targetDate.day) {
-      case -2:
-        return 'На после завтра';
-      case -1:
-        return 'На завтра';
-      case 0:
-        return 'На сегодня';
-      case 1:
-        return 'На вчера';
-      default:
-        return 'На ${_dateFormat.format(targetDate)}';
-    }
+    if (now.year == targetDate.year && now.month == targetDate.month)
+      switch (now.day - targetDate.day) {
+        case -2:
+          return 'На после завтра';
+        case -1:
+          return 'На завтра';
+        case 0:
+          return 'На сегодня';
+        case 1:
+          return 'На вчера';
+      }
+
+    return 'На ${_dateFormat.format(targetDate)}';
   }
 }

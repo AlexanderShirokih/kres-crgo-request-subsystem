@@ -8,7 +8,6 @@ import 'package:kres_requests2/data/models/server_request.dart';
 import 'models/server_response.dart';
 
 /// Bridge between client and remote server
-/// TODO: Should be an interface
 class ApiServer {
   static const _kProtocol = 'http://';
 
@@ -40,7 +39,8 @@ class ApiServer {
     final url = requestParams.isEmpty ? baseUrl : '$baseUrl?$params';
 
     final headers = <String, String>{
-      "Authorization": credentials.createBasicAuthorization()
+      'Authorization': credentials.createBasicAuthorization(),
+      'Content-Type': 'application/json; charset=utf-8',
     };
 
     final encodedBody =
@@ -54,8 +54,9 @@ class ApiServer {
         encodedBody,
       );
 
-      var jsonResponse =
-          response.body.isEmpty ? "" : convert.jsonDecode(response.body);
+      var jsonResponse = response.body.isEmpty
+          ? ""
+          : convert.jsonDecode(convert.utf8.decode(response.bodyBytes));
 
       if (response.statusCode == 200) {
         // Success

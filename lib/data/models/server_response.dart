@@ -9,7 +9,7 @@ class ServerResponse {
   final ServerError error;
 
   /// Contains decoded response, if there is no error.
-  final Map<String, dynamic> body;
+  final dynamic body;
 
   const ServerResponse(this.statusCode, this.error, this.body);
 

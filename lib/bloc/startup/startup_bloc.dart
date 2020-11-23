@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:intl/intl.dart';
 import 'package:kres_requests2/models/request_set.dart';
 import 'package:kres_requests2/models/user.dart';
 import 'package:kres_requests2/repo/request_set_repository.dart';
@@ -15,11 +16,11 @@ part 'startup_state.dart';
 /// BLoC class for managing startup screen state
 class StartupBloc extends Bloc<StartupEvent, StartupState> {
   final UsersRepository _usersRepository;
-  final RequestsSetRepository _requestSetRepository;
+  final RequestsSetRepository requestSetRepository;
 
-  StartupBloc(this._usersRepository, this._requestSetRepository)
+  StartupBloc(this._usersRepository, this.requestSetRepository)
       : assert(_usersRepository != null),
-        assert(_requestSetRepository != null),
+        assert(requestSetRepository != null),
         super(StartupInitial(
           const User(name: "--", hasModerationRights: false),
         )) {
@@ -37,11 +38,28 @@ class StartupBloc extends Bloc<StartupEvent, StartupState> {
       add(StartupFetchRecent());
     } else if (event is StartupFetchRecent) {
       yield* _fetchRecent(state.user, event.expand);
-    } else if (event is StartupGotUserEvent) {
-      // TODO: Handle case
+    } else if (event is StartupOpenRequestsSet) {
+      yield* _handleOpenRequest(event.chosenRequestsSet);
     } else if (event is StartupCreateNewRequestsSet) {
-      // TODO: Handle case
+      if (event.source == RequestsSetSource.New) {
+        yield* _handleCreateRequest(event.targetDate);
+      } else {
+        // TODO: Implement request importing
+      }
     }
+  }
+
+  Stream<StartupState> _handleCreateRequest(DateTime targetDate) async* {
+    final formattedDate = DateFormat('dd.MM.yyyy').format(targetDate);
+    final String name = 'Заявки на $formattedDate';
+
+    final requestsSet =
+        await requestSetRepository.createOrUpdateRequestSet(name, targetDate);
+    yield* _handleOpenRequest(requestsSet);
+  }
+
+  Stream<StartupState> _handleOpenRequest(RequestSet target) async* {
+    yield StartupOpenRequestsSetState(state.user, target);
   }
 
   Stream<StartupState> _fetchRecent(User user, bool expandList) async* {
@@ -53,7 +71,7 @@ class StartupBloc extends Bloc<StartupEvent, StartupState> {
     yield StartupFetchingRecent(user);
 
     try {
-      final requestsSet = await _requestSetRepository.getRequestSets(nextPage);
+      final requestsSet = await requestSetRepository.getRequestSets(nextPage);
 
       yield StartupGotRecentDocuments(
         requestsSet.requestsSets,
