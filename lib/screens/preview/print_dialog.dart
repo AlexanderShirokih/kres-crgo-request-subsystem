@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/models/request_set.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/common.dart';
 
 class PrintDialog extends StatelessWidget {
-  final List<Worksheet> worksheets;
+  final List<RequestSet> worksheets;
 
   const PrintDialog(this.worksheets) : assert(worksheets != null);
 
@@ -25,39 +24,37 @@ class PrintDialog extends StatelessWidget {
             worksheets: worksheets,
           ),
           child: Builder(
-            builder: (context) =>
-                BlocConsumer(
-                  cubit: context.bloc<ExporterBloc>(),
-                  builder: (context, state) {
-                    if (state is ExporterListPrintersState) {
-                      return _ListPrintersView(
-                        state.preferredPrinter,
-                        state.availablePrinters,
-                      );
-                    } else if (state is ExporterIdle) {
-                      return LoadingView(state.message);
-                    } else
-                    if (state is ExporterErrorState && state.error != null) {
-                      return ErrorView(
-                        errorDescription: state.error.error,
-                        stackTrace: state.error.stackTrace,
-                      );
-                    } else
-                      return Center(
-                        child: Text('Possibly unknown state'),
-                      );
-                  },
-                  listener: (context, state) {
-                    if (state is ExporterClosingState) {
-                      Navigator.of(context).pop(state.isCompleted
-                          ? 'Задание отправлено на печать'
-                          : null);
-                    } else if (state is ExporterMissingState) {
-                      Navigator.of(context)
-                          .pop('Ошибка: Модуль печати отсутcтвует');
-                    }
-                  },
-                ),
+            builder: (context) => BlocConsumer(
+              cubit: context.bloc<ExporterBloc>(),
+              builder: (context, state) {
+                if (state is ExporterListPrintersState) {
+                  return _ListPrintersView(
+                    state.preferredPrinter,
+                    state.availablePrinters,
+                  );
+                } else if (state is ExporterIdle) {
+                  return LoadingView(state.message);
+                } else if (state is ExporterErrorState && state.error != null) {
+                  return ErrorView(
+                    errorDescription: state.error.error,
+                    stackTrace: state.error.stackTrace,
+                  );
+                } else
+                  return Center(
+                    child: Text('Possibly unknown state'),
+                  );
+              },
+              listener: (context, state) {
+                if (state is ExporterClosingState) {
+                  Navigator.of(context).pop(state.isCompleted
+                      ? 'Задание отправлено на печать'
+                      : null);
+                } else if (state is ExporterMissingState) {
+                  Navigator.of(context)
+                      .pop('Ошибка: Модуль печати отсутcтвует');
+                }
+              },
+            ),
           ),
         ),
       ),
@@ -89,10 +86,9 @@ class __ListPrintersViewState extends State<_ListPrintersView> {
           OutlinedButton.icon(
             icon: FaIcon(FontAwesomeIcons.sync),
             label: Text('Обновить'),
-            onPressed: () =>
-                context
-                    .bloc<ExporterBloc>()
-                    .add(ExporterShowPrintersListEvent()),
+            onPressed: () => context
+                .bloc<ExporterBloc>()
+                .add(ExporterShowPrintersListEvent()),
           )
         ],
       );
@@ -109,10 +105,9 @@ class __ListPrintersViewState extends State<_ListPrintersView> {
             children: [
               Checkbox(
                 value: noLists,
-                onChanged: (newValue) =>
-                    setState(() {
-                      noLists = newValue;
-                    }),
+                onChanged: (newValue) => setState(() {
+                  noLists = newValue;
+                }),
               ),
               const SizedBox(height: 8.0),
               Text('Печать без списка работ'),
@@ -163,8 +158,8 @@ class __ListPrintersViewState extends State<_ListPrintersView> {
         title: Text(printerName),
         onTap: () =>
             context.bloc<ExporterBloc>().add(ExporterPrintDocumentEvent(
-              printerName,
-              noLists,
-            )),
+                  printerName,
+                  noLists,
+                )),
       );
 }

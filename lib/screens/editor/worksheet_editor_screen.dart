@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/document_service.dart';
+import 'package:kres_requests2/domain/request_set_service.dart';
 
-import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/models/request.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 import 'package:kres_requests2/screens/editor/reorderable_list_view.dart';
 import 'package:kres_requests2/screens/editor/request_item_view.dart';
@@ -15,34 +15,34 @@ import 'request_editor_dialog.dart';
 import 'worksheet_move_dialog.dart';
 
 class WorkSheetEditorView extends StatefulWidget {
-  final Document document;
-  final Worksheet worksheet;
-  final List<RequestEntity> highlighted;
+  final RequestSetService requestSetService;
+  final DocumentService documentService;
   final void Function() onDocumentsChanged;
+  final List<Request> highlighted;
 
   const WorkSheetEditorView({
-    @required this.document,
-    @required this.worksheet,
+    @required this.documentService,
+    @required this.requestSetService,
     @required this.onDocumentsChanged,
     @required this.highlighted,
-  })  : assert(document != null),
-        assert(worksheet != null),
+  })  : assert(documentService != null),
+        assert(requestSetService != null),
         assert(onDocumentsChanged != null);
 
   @override
   _WorkSheetEditorViewState createState() =>
-      _WorkSheetEditorViewState(document, worksheet);
+      _WorkSheetEditorViewState(requestSetService, documentService);
 }
 
 class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
   final _controller = ScrollController();
-  Document _document;
-  Worksheet _worksheet;
+  DocumentService _documentService;
+  RequestSetService _requestSet;
 
-  _WorkSheetEditorViewState(this._document, this._worksheet);
+  _WorkSheetEditorViewState(this._requestSet, this._documentService);
 
-  Set<RequestEntity> _selectionList;
-  Map<RequestEntity, int> _groupList;
+  Set<Request> _selectionList;
+  Map<Request, int> _groupList;
 
   int _lastGroupIndex = 0;
 
@@ -61,7 +61,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
     return filtered.length == 1 ? filtered.single : null;
   }
 
-  Set<RequestEntity> getAllByGroup(int group) {
+  Set<Request> getAllByGroup(int group) {
     if (_groupList == null || !_isSelected) return {};
 
     return _groupList.entries
@@ -76,11 +76,11 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
     _controller.dispose();
   }
 
-  List<RequestEntity> _buildRequestsList() {
-    if (widget.highlighted == null) return _worksheet.requests;
+  List<Request> _sortByHighlight(List<Request> allRequests) {
+    if (widget.highlighted == null) return allRequests;
 
     final output = [...widget.highlighted];
-    for (final request in _worksheet.requests) {
+    for (final request in allRequests) {
       if (!output.contains(request)) output.add(request);
     }
     return output;
@@ -88,14 +88,14 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
 
   @override
   Widget build(BuildContext context) {
-    _worksheet = widget.worksheet;
-    if (_worksheet.isEmpty) _selectionList = null;
-
-    final requests = _buildRequestsList();
+    final allRequests = _requestSet.getRequests();
+    final isEmpty = allRequests.isEmpty;
+    final requests = _sortByHighlight(allRequests);
+    if (isEmpty) _selectionList = null;
 
     return Stack(
       children: [
-        _worksheet.isEmpty
+        isEmpty
             ? _showPlaceholder()
             : ConstrainedBox(
                 constraints: BoxConstraints(minWidth: 600.0),
@@ -109,16 +109,11 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                       newIndex -= 1;
                     }
 
-                    // We shouldn't modify [requests] list directly because it's
-                    // just a copy of [_worksheet.requests]
-
                     // Transform shadow list indices to original indices
                     final toRemove = requests[oldIndex];
                     final toInsertAfter = requests[newIndex];
 
-                    final idx = _worksheet.requests.indexOf(toInsertAfter);
-                    _worksheet.requests.remove(toRemove);
-                    _worksheet.requests.insert(idx, toRemove);
+                    _requestSet.swap(toRemove, toInsertAfter);
                   }),
                   children: List.generate(
                     requests.length,
@@ -147,8 +142,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                                   ..remove(old)
                                   ..add(edited);
                               }
-                              final oldIdx = _worksheet.requests.indexOf(old);
-                              _worksheet.requests[oldIdx] = edited;
+                              _requestSet.update(old, edited);
                             });
                           widget.onDocumentsChanged();
                         });
@@ -165,7 +159,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                         isHighlighted: widget.highlighted != null &&
                             widget.highlighted.contains(requests[index]),
                         request: requests[index],
-                        key: ValueKey(requests[index].accountId),
+                        key: ValueKey(requests[index].accountInfo.baseId),
                         onChanged: (isSelected) => setState(() {
                           final value = requests[index];
                           if (isSelected) {
@@ -231,7 +225,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
               width: double.maxFinite,
               height: 64.0,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: _createSelectionContextMenu(),
+              child: _createSelectionContextMenu(allRequests),
             ),
           ),
       ],
@@ -248,7 +242,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
         ),
       );
 
-  Widget _createSelectionContextMenu() {
+  Widget _createSelectionContextMenu(List<Request> allRequests) {
     final singleGroup = _singleGroup;
     return Row(
       children: [
@@ -275,7 +269,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
           ),
           tooltip: "Выбрать все",
           onPressed: () => setState(() {
-            _selectionList = _worksheet.requests.toSet();
+            _selectionList = allRequests.toSet();
           }),
         ),
         if (singleGroup != null) ...[
@@ -299,13 +293,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
               _selectionActionButton(
                 iconData: FontAwesomeIcons.folderOpen,
                 tooltip: "Переместить",
-                onPressed: () => _showWorksheetMoveDialog(MoveMethod.Move),
-              ),
-              const SizedBox(width: 24.0),
-              _selectionActionButton(
-                iconData: FontAwesomeIcons.copy,
-                tooltip: "Копировать",
-                onPressed: () => _showWorksheetMoveDialog(MoveMethod.Copy),
+                onPressed: () => _showWorksheetMoveDialog(),
               ),
               const SizedBox(width: 46.0),
               _selectionActionButton(
@@ -320,8 +308,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                   ).then((confirmed) {
                     if (confirmed != null && confirmed) {
                       setState(() {
-                        for (final selected in _selectionList)
-                          _worksheet.requests.remove(selected);
+                        _requestSet.remove(_selectionList);
                         _selectionList = null;
                       });
                     }
@@ -335,13 +322,12 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
     );
   }
 
-  void _showWorksheetMoveDialog(MoveMethod moveMethod) => showDialog(
+  void _showWorksheetMoveDialog() => showDialog(
         context: context,
         builder: (_) => WorksheetMoveDialog(
-          document: _document,
-          sourceWorksheet: _worksheet,
+          document: _documentService,
+          sourceWorksheet: _requestSet.getRequestSet(),
           movingRequests: _selectionList,
-          moveMethod: moveMethod,
         ),
       ).then((hasChanges) {
         if (hasChanges != null) {

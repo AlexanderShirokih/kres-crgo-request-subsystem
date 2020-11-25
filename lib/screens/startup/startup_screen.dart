@@ -20,10 +20,11 @@ import 'package:kres_requests2/bloc/startup/startup_bloc.dart';
 /// or manage them
 class StartupScreen extends StatelessWidget {
   final StartupBloc _startupBloc;
+  final RepositoryModule repositoryModule;
 
   StartupScreen({
     Key key,
-    @required RepositoryModule repositoryModule,
+    @required this.repositoryModule,
   })  : assert(repositoryModule != null),
         _startupBloc = StartupBloc(
           repositoryModule.getUserRepository(),
@@ -80,7 +81,8 @@ class StartupScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => WorksheetMasterScreen(
-                            requestSet: state.target,
+                            repositoryModule: repositoryModule,
+                            documentService: state.target,
                           ),
                         ),
                       );

@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:kres_requests2/domain/document_service.dart';
 import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
-import 'package:path/path.dart' as p;
 import 'package:equatable/equatable.dart';
 
 import 'package:kres_requests2/repo/requests_repository.dart';
@@ -55,20 +54,19 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
       return;
     }
 
-    Document _copyToTarget(Document source) {
-      targetDocument
-        ..savePath ??= (import.attachPath
-            ? File(p.withoutExtension(file) + ".json")
-            : null)
-        ..addWorksheets(source.worksheets);
-      return targetDocument;
+    Document _copyToTarget(DocumentService source) {
+      // TODO: Unimplemented
+      throw UnimplementedError();
+      // targetDocument
+      //   ..addWorksheets(source.worksheets);
+      // return targetDocument;
     }
 
     yield ImportLoadingState(file);
 
     Future<ImporterState> state =
         importerRepository.importDocument(file, importerParams).then(
-      (OptionalData<Document> importedDocument) {
+      (OptionalData<DocumentService> importedDocument) {
         if (importedDocument == null) return ImportEmptyState();
 
         if (importedDocument.hasError()) {

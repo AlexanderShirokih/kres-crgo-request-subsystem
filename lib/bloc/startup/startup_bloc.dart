@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intl/intl.dart';
+import 'package:kres_requests2/domain/document_service.dart';
+import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/request_set.dart';
 import 'package:kres_requests2/models/user.dart';
 import 'package:kres_requests2/repo/request_set_repository.dart';
@@ -39,7 +41,7 @@ class StartupBloc extends Bloc<StartupEvent, StartupState> {
     } else if (event is StartupFetchRecent) {
       yield* _fetchRecent(state.user, event.expand);
     } else if (event is StartupOpenRequestsSet) {
-      yield* _handleOpenRequest(event.chosenRequestsSet);
+      yield* _handleOpenRequest(event.pickedRequestSet);
     } else if (event is StartupCreateNewRequestsSet) {
       if (event.source == RequestsSetSource.New) {
         yield* _handleCreateRequest(event.targetDate);
@@ -53,13 +55,20 @@ class StartupBloc extends Bloc<StartupEvent, StartupState> {
     final formattedDate = DateFormat('dd.MM.yyyy').format(targetDate);
     final String name = 'Заявки на $formattedDate';
 
-    final requestsSet =
+    final requestSet =
         await requestSetRepository.createOrUpdateRequestSet(name, targetDate);
-    yield* _handleOpenRequest(requestsSet);
+
+    yield* _handleOpenRequest(requestSet);
   }
 
-  Stream<StartupState> _handleOpenRequest(RequestSet target) async* {
-    yield StartupOpenRequestsSetState(state.user, target);
+  Stream<StartupState> _handleOpenRequest(RequestSet requestSet) async* {
+    final List<RequestSet> requestSets =
+        await requestSetRepository.getAllRequestSetsByDate(requestSet.date);
+
+    yield StartupOpenRequestsSetState(
+      state.user,
+      DocumentService(requestSetRepository, Document(requestSets: requestSets)),
+    );
   }
 
   Stream<StartupState> _fetchRecent(User user, bool expandList) async* {

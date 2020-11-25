@@ -1,76 +1,66 @@
 part of 'worksheet_master_bloc.dart';
 
+/// Common state class for `WorksheetMasterScreen`
 abstract class WorksheetMasterState extends Equatable {
-  const WorksheetMasterState(this.currentDocument, this.currentDirectory);
-
-  final Document currentDocument;
-  final String currentDirectory;
+  const WorksheetMasterState();
 
   @override
-  List<Object> get props => [currentDocument, currentDirectory];
+  List<Object> get props => [];
+}
+
+/// State used when some data is loading
+class WorksheetFetchingState extends WorksheetMasterState {
+  const WorksheetFetchingState();
+}
+
+/// State that indicates an error during communication with API
+class WorksheetErrorState extends WorksheetMasterState {
+  final ErrorWrapper error;
+
+  const WorksheetErrorState(this.error);
 }
 
 class WorksheetMasterPopState extends WorksheetMasterState {
-  const WorksheetMasterPopState(Document currentDocument,
-      String currentDirectory)
-      : super(currentDocument, currentDirectory);
+  const WorksheetMasterPopState();
 }
 
+/// State when no active actions in use
 class WorksheetMasterIdleState extends WorksheetMasterState {
-  static int _updateCounter = 0;
+  final RequestSet currentEditable;
 
-  final int _updateId = ++_updateCounter;
-
-  WorksheetMasterIdleState(Document currentDocument, String currentDirectory)
-      : super(currentDocument, currentDirectory);
-
-  @override
-  List<Object> get props => [...super.props, _updateId];
-}
-
-class WorksheetMasterSavingState extends WorksheetMasterState {
-  final bool completed;
-  final ErrorWrapper error;
-
-  const WorksheetMasterSavingState(Document currentDocument,
-      String currentDirectory,
-      {this.completed, this.error})
-      : super(currentDocument, currentDirectory);
-
-  @override
-  List<Object> get props => [...super.props, completed, error];
+  const WorksheetMasterIdleState(this.currentEditable)
+      : assert(currentEditable != null);
 }
 
 enum WorksheetImporterType {
   requestsImporter,
-  nativeImporter,
   countersImporter,
 }
 
 class WorksheetMasterShowImporterState extends WorksheetMasterState {
   final WorksheetImporterType importerType;
 
-  const WorksheetMasterShowImporterState(Document currentDocument,
-      String currentDirectory,
-      this.importerType,) : super(currentDocument, currentDirectory);
+  const WorksheetMasterShowImporterState(
+    this.importerType,
+  );
 
   @override
-  List<Object> get props => [...super.props, importerType];
+  List<Object> get props => [importerType];
 }
 
 class WorksheetMasterSearchingState extends WorksheetMasterState {
   final WorksheetMasterSearchEvent sourceEvent;
-  final Map<Worksheet, List<RequestEntity>> filteredItems;
+  final Map<RequestSet, List<Request>> filteredItems;
+  final RequestSet active;
 
-  const WorksheetMasterSearchingState(Document currentDocument,
-      String currentDirectory, {
-        @required this.sourceEvent,
-        @required this.filteredItems,
-      })
-      : assert(sourceEvent != null),
+  const WorksheetMasterSearchingState({
+    @required this.sourceEvent,
+    @required this.filteredItems,
+    @required this.active,
+  })  : assert(sourceEvent != null),
         assert(filteredItems != null),
-        super(currentDocument, currentDirectory);
+        assert(active != null);
 
   @override
-  List<Object> get props => super.props + [filteredItems, sourceEvent];
+  List<Object> get props => [filteredItems, sourceEvent, active];
 }

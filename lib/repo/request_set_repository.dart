@@ -41,7 +41,7 @@ class RequestsSetRepository with ApiRepositoryMixin {
       }),
     );
 
-    return getResponseData(response, (body) => _makeRequestSetFromJson(body));
+    return getResponseData(response, (body) => RequestSet.fromJson(body));
   }
 
   /// Fetches information about requests sets from 0 to page
@@ -64,7 +64,7 @@ class RequestsSetRepository with ApiRepositoryMixin {
           if (_currentRequestsSets != null)
             ..._currentRequestsSets.requestsSets,
           ...(data['content'] as List<dynamic>)
-              .map((e) => _makeRequestSetFromJson(e))
+              .map((e) => RequestSet.fromJson(e))
               .toList()
         ].toSet().toList(),
         upperBoundPage: data['number'],
@@ -76,14 +76,6 @@ class RequestsSetRepository with ApiRepositoryMixin {
     return requests;
   }
 
-  RequestSet _makeRequestSetFromJson(Map<String, dynamic> data) {
-    return RequestSet(
-      id: data['id'],
-      name: data['name'],
-      date: DateTime.parse(data['date']),
-    );
-  }
-
   /// Fetches all request sets
   Future<List<RequestSet>> getAllRequestSets() async {
     final response = await _apiServer.getData(
@@ -93,9 +85,29 @@ class RequestsSetRepository with ApiRepositoryMixin {
 
     return getResponseData(
       response,
-      (body) => (body as List<dynamic>)
-          .map((e) => _makeRequestSetFromJson(e))
-          .toList(),
+      (body) =>
+          (body as List<dynamic>).map((e) => RequestSet.fromJson(e)).toList(),
     );
   }
+
+  Future<RequestSet> getRequestSetById(int id) async {
+    final response = await _apiServer.getData(
+      _credentialsManager.getCredentials(),
+      ServerRequest.get("$_kRequestSet/id"),
+    );
+
+    return getResponseData(
+      response,
+      (body) => RequestSet.fromJson(body),
+    );
+  }
+
+  /// Fetches all request sets by `date`
+  Future<List<RequestSet>> getAllRequestSetsByDate(DateTime date) {
+    // TODO: Create REST API
+    throw UnimplementedError();
+  }
+
+  // TODO
+  Future<RequestSet> createNewWorksheet() {}
 }

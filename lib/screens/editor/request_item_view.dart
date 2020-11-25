@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/models/request.dart';
 
 /// Describes single item of request entity
 class RequestItemView extends StatelessWidget {
   final int position;
-  final RequestEntity request;
+  final Request request;
 
   final bool isHighlighted;
 
@@ -70,14 +70,17 @@ class RequestItemView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        request.accountId?.toString()?.padLeft(6, '0') ?? "--",
+                        request?.accountInfo?.baseId
+                                ?.toString()
+                                ?.padLeft(6, '0') ??
+                            "--",
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 20.0,
                         ),
                       ),
                       const SizedBox(height: 16.0),
-                      Text(request.reqType ?? "--"),
+                      Text(request?.requestType?.shortName ?? "--"),
                     ],
                   ),
                   const SizedBox(width: 12.0),
@@ -89,14 +92,14 @@ class RequestItemView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          request.name,
+                          request.accountInfo?.name ?? '???',
                           style: TextStyle(
                             fontSize: 22.0,
                           ),
                         ),
                         const SizedBox(height: 6.0),
                         Text(
-                          request.address,
+                          request.accountInfo?.joinAddress() ?? '???',
                           style: TextStyle(
                             fontSize: 18.0,
                           ),
@@ -116,7 +119,7 @@ class RequestItemView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            request.counterInfo,
+                            request.countingPoint?.joinToString() ?? '???',
                             style: TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.w600,
@@ -124,7 +127,7 @@ class RequestItemView extends StatelessWidget {
                           ),
                           const SizedBox(height: 10.0),
                           Text(
-                            request.additionalInfo,
+                            request.additional,
                             style: TextStyle(fontSize: 16.0),
                           ),
                         ],
@@ -150,7 +153,7 @@ class RequestItemView extends StatelessWidget {
   }
 
   Iterable<Widget> _printRequestReason(
-    RequestEntity request,
+    Request request,
     BuildContext context,
   ) {
     if (request.reason != null && request.reason.isNotEmpty) {

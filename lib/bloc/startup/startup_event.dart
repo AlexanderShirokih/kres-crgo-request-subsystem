@@ -26,13 +26,13 @@ class StartupFetchRecent extends StartupEvent {
 
 /// Used to open chosen requests set
 class StartupOpenRequestsSet extends StartupEvent {
-  final RequestSet chosenRequestsSet;
+  final RequestSet pickedRequestSet;
 
-  StartupOpenRequestsSet(this.chosenRequestsSet)
-      : assert(chosenRequestsSet != null);
+  StartupOpenRequestsSet(this.pickedRequestSet)
+      : assert(pickedRequestSet != null);
 
   @override
-  List<Object> get props => [chosenRequestsSet];
+  List<Object> get props => [pickedRequestSet];
 }
 
 enum RequestsSetSource { New, ImportMegaBilling }

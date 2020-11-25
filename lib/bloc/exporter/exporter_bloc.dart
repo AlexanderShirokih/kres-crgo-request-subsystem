@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/models/request_set.dart';
 import 'package:kres_requests2/models/optional_data.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
@@ -17,7 +17,7 @@ part 'exporter_state.dart';
 enum ExportFormat { Pdf, Excel }
 
 class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
-  final List<Worksheet> worksheets;
+  final List<RequestSet> worksheets;
   final Future<String> Function() fileChooser;
   final ExportFormat exportFormat;
 

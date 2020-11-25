@@ -1,10 +1,10 @@
 import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:kres_requests2/models/request_set.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:kres_requests2/repo/repository_module.dart';
-import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 
@@ -21,7 +21,7 @@ extension on ExportFormat {
 }
 
 class ExporterDialog extends StatelessWidget {
-  final List<Worksheet> worksheets;
+  final List<RequestSet> worksheets;
   final String suggestedExportBasename;
   final ExportFormat exportFormat;
 

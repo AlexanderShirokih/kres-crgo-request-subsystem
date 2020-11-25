@@ -1,78 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/document_service.dart';
 
-import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/request_entity.dart';
-import 'package:kres_requests2/models/worksheet.dart';
-
-enum MoveMethod {
-  Copy,
-  Move,
-}
+import 'package:kres_requests2/models/request.dart';
+import 'package:kres_requests2/models/request_set.dart';
 
 class WorksheetMoveDialog extends StatefulWidget {
-  final Document document;
-  final Set<RequestEntity> movingRequests;
-  final Worksheet sourceWorksheet;
-  final MoveMethod moveMethod;
+  final DocumentService document;
+  final Set<Request> movingRequests;
+  final RequestSet sourceWorksheet;
 
-  const WorksheetMoveDialog({
-    @required this.document,
-    @required this.movingRequests,
-    @required this.sourceWorksheet,
-    @required this.moveMethod,
-  })  : assert(sourceWorksheet != null),
+  const WorksheetMoveDialog(
+      {@required this.document,
+      @required this.movingRequests,
+      @required this.sourceWorksheet})
+      : assert(sourceWorksheet != null),
         assert(movingRequests != null),
-        assert(document != null),
-        assert(moveMethod != null);
+        assert(document != null);
 
   @override
   _WorksheetMoveDialogState createState() => _WorksheetMoveDialogState(
         document,
         sourceWorksheet,
         movingRequests,
-        moveMethod,
       );
 }
 
 class _WorksheetMoveDialogState extends State<WorksheetMoveDialog> {
-  final Set<RequestEntity> _movingRequests;
-  final Worksheet _sourceWorksheet;
-  final MoveMethod _moveMethod;
-  final Document _document;
+  final Set<Request> _movingRequests;
+  final RequestSet _sourceWorksheet;
+  final DocumentService _document;
 
   _WorksheetMoveDialogState(
     this._document,
     this._sourceWorksheet,
     this._movingRequests,
-    this._moveMethod,
   );
 
-  String _getTitle() {
-    switch (_moveMethod) {
-      case MoveMethod.Copy:
-        return "Копирование заявок";
-      case MoveMethod.Move:
-        return "Перемещение заявок";
-      default:
-        throw ("Unknown MoveMethod $_moveMethod");
-    }
-  }
+  Iterable<RequestSet> _getTargetWorksheet() => _document
+      .getWorksheets()
+      .where((worksheet) => worksheet != _sourceWorksheet);
 
-  Iterable<Worksheet> _getTargetWorksheet() =>
-      _document.worksheets.where((worksheet) => worksheet != _sourceWorksheet);
-
-  void _moveRequests(Worksheet targetWorksheet) {
-    targetWorksheet.requests.addAll(_movingRequests);
-    if (_moveMethod == MoveMethod.Move)
-      for (RequestEntity e in _movingRequests)
-        _sourceWorksheet.requests.remove(e);
-  }
+  Future _moveRequests(RequestSet targetWorksheet) =>
+      _document.moveRequests(targetWorksheet, _movingRequests);
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(_getTitle(), textAlign: TextAlign.center),
+      title: Text("Перемещение заявок", textAlign: TextAlign.center),
       content: Container(
         width: 400,
         height: 300,
@@ -80,16 +55,13 @@ class _WorksheetMoveDialogState extends State<WorksheetMoveDialog> {
           children: [
             ..._getTargetWorksheet().map(
               (e) => _createListTile(FontAwesomeIcons.file, e.name, () {
-                _moveRequests(e);
-                Navigator.pop(context, true);
+                _moveRequests(e).then((value) => Navigator.pop(context, true));
               }),
             ),
             _createListTile(FontAwesomeIcons.plus, "В новый лист", () {
-              final target =
-                  _document.addEmptyWorksheet(name: _sourceWorksheet.name);
-              _document.active = target;
-              _moveRequests(target);
-              Navigator.pop(context, true);
+              _document
+                  .addNewWorksheet(_sourceWorksheet.name)
+                  .then((value) => Navigator.pop(context, true));
             })
           ],
         ),

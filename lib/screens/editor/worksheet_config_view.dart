@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:intl/intl.dart';
+import 'package:kres_requests2/domain/request_set_service.dart';
 
 import 'package:kres_requests2/models/employee.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/models/request_set.dart';
 import 'package:kres_requests2/repo/employees_repository.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
-import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
 class WorksheetConfigView extends StatefulWidget {
-  final Worksheet worksheet;
+  final RequestSetService requestSetService;
+  final RepositoryModule repositoryModule;
 
-  const WorksheetConfigView(this.worksheet);
+  const WorksheetConfigView(this.repositoryModule, this.requestSetService);
 
   @override
   State createState() => _WorksheetConfigViewState();
@@ -22,7 +22,7 @@ class WorksheetConfigView extends StatefulWidget {
 class _WorksheetConfigViewState extends State<WorksheetConfigView> {
   @override
   Widget build(BuildContext context) {
-    final w = widget.worksheet;
+    final w = widget.requestSetService;
     return Form(
       child: Builder(
         builder: (ctx) => Padding(
@@ -35,11 +35,10 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
                 const SizedBox(height: 18.0),
                 _createDropdownEmployeeForm(
                   positionDesc: "Выберите выдающего распоряжения",
-                  current: w.chiefEmployee,
+                  current: w.getChiefEmployee(),
                   employees: _getAllEmployees(ctx, 4),
-                  onChanged: (Employee value) => setState(() {
-                    w.chiefEmployee = value;
-                  }),
+                  onChanged: (Employee value) =>
+                      w.setChiefEmployee(value).then((isOk) => setState(() {})),
                 ),
                 const SizedBox(height: 28.0),
                 ..._showMainEmployee(ctx, w),
@@ -57,20 +56,21 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
     );
   }
 
-  Iterable<Widget> _showMainEmployee(BuildContext context, Worksheet w) sync* {
+  Iterable<Widget> _showMainEmployee(
+      BuildContext context, RequestSetService w) sync* {
     yield* _header(4.0, "Производитель работ:");
     yield const SizedBox(height: 4.0);
     yield _createDropdownEmployeeForm(
       positionDesc: "Выберите производителя работ",
-      current: w.mainEmployee,
+      current: w.getMainEmployee(),
       employees: _getAllEmployees(context),
-      onChanged: (Employee value) => setState(() {
-        w.mainEmployee = value;
-      }),
+      onChanged: (Employee value) =>
+          w.setMainEmployee(value).then((isOk) => setState(() {})),
     );
   }
 
-  Iterable<Widget> _showTeamMembers(BuildContext context, Worksheet w) sync* {
+  Iterable<Widget> _showTeamMembers(
+      BuildContext context, RequestSetService w) sync* {
     yield Row(
       children: [
         Expanded(
@@ -82,10 +82,8 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
         IconButton(
           icon: FaIcon(FontAwesomeIcons.plus),
           tooltip: "Добавить члена бригады",
-          onPressed: w.membersEmployee.length < 6
-              ? () => setState(() {
-                    w.membersEmployee.add(null);
-                  })
+          onPressed: w.getMembersEmployee().length < 6
+              ? () => w.addMemberEmployee().then((isOk) => setState(() {}))
               : null,
         ),
         const SizedBox(width: 8.0),
@@ -94,7 +92,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
     yield const SizedBox(height: 4.0);
     yield* _spreadTeamMembers(
       _getAllEmployees(context),
-      w.membersEmployee,
+      w.getMembersEmployee(),
     );
   }
 
@@ -106,7 +104,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
     );
   }
 
-  Iterable<Widget> _showWorkTypes(Worksheet w) sync* {
+  Iterable<Widget> _showWorkTypes(RequestSetService w) sync* {
     yield Row(
       children: [
         Expanded(
@@ -116,15 +114,9 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
           ),
         ),
         IconButton(
-          icon: FaIcon(FontAwesomeIcons.sync),
-          tooltip: "Добавить из списка заявок",
-          onPressed: () => setState(() => w.insertDefaultWorkTypes()),
-        ),
-        const SizedBox(width: 16.0),
-        IconButton(
           icon: FaIcon(FontAwesomeIcons.plus),
           tooltip: "Добавить",
-          onPressed: () => setState(() => w.addEmptyWorkType()),
+          onPressed: () => w.addEmptyWorkType().then((_) => setState(() {})),
         ),
         const SizedBox(width: 8.0),
       ],
@@ -153,11 +145,10 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
 
   /// Returns a list of all employees, including all currently present
   /// (even if they is not present if [EmployeesRepository],
-  /// but exists in [Worksheet] data)
+  /// but exists in [RequestSet] data)
   List<Employee> _getAllEmployees(BuildContext context, [int minGroup]) {
-    final w = widget.worksheet;
-    final repo =
-        context.repository<RepositoryModule>().getEmployeesRepository();
+    final w = widget.requestSetService;
+    final repo = widget.repositoryModule.getEmployeesRepository();
     final used = w.getUsedEmployee();
     final all = minGroup == null
         ? repo.getAllEmployees()
@@ -191,7 +182,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
               validator: (value) {
                 return value == null || value.name.isEmpty
                     ? positionDesc
-                    : (widget.worksheet.isUsedElseWhere(value)
+                    : (widget.requestSetService.isUsedElseWhere(value)
                         ? 'Значение дублируется'
                         : null);
               },
@@ -214,9 +205,9 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
 }
 
 class _DatePicker extends StatefulWidget {
-  final Worksheet worksheet;
+  final RequestSetService requestSet;
 
-  const _DatePicker(this.worksheet);
+  const _DatePicker(this.requestSet);
 
   @override
   __DatePickerState createState() => __DatePickerState();
@@ -242,7 +233,7 @@ class __DatePickerState extends State<_DatePicker> {
                   _isPicking = false;
                 }),
                 child: FormField<DateTime>(
-                  initialValue: widget.worksheet.date,
+                  initialValue: widget.requestSet.getDate(),
                   builder: (state) => state.hasError
                       ? Text(
                           state.errorText,
@@ -261,22 +252,26 @@ class __DatePickerState extends State<_DatePicker> {
           )
         : CalendarDatePicker(
             initialCalendarMode: DatePickerMode.day,
-            initialDate: widget.worksheet.date ?? DateTime.now(),
-            firstDate: (widget.worksheet.date ?? DateTime.now())
+            initialDate: widget.requestSet.getDate() ?? DateTime.now(),
+            firstDate: (widget.requestSet.getDate() ?? DateTime.now())
                 .subtract(Duration(days: 15)),
             lastDate: DateTime.now().add(Duration(days: 15)),
-            onDateChanged: (newDate) => setState(() {
-              widget.worksheet.date = newDate;
-              _isPicking = true;
+            onDateChanged: (newDate) =>
+                widget.requestSet.setDate(newDate).then((isOk) {
+              if (isOk) {
+                setState(() {
+                  _isPicking = true;
+                });
+              }
             }),
           );
   }
 }
 
 class _WorkTypesList extends StatefulWidget {
-  final Worksheet worksheet;
+  final RequestSetService requestSetService;
 
-  const _WorkTypesList(this.worksheet);
+  const _WorkTypesList(this.requestSetService);
 
   @override
   __WorkTypesListState createState() => __WorkTypesListState();
@@ -285,33 +280,12 @@ class _WorkTypesList extends StatefulWidget {
 class __WorkTypesListState extends State<_WorkTypesList> {
   @override
   Widget build(BuildContext context) {
-    final worksheet = widget.worksheet;
+    final requestSet = widget.requestSetService;
 
     return Column(
-      children: worksheet.workTypes
-          .map(
-            (e) => ListTile(
-              leading: IconButton(
-                icon: FaIcon(
-                  FontAwesomeIcons.timesCircle,
-                  size: 16.0,
-                ),
-                onPressed: () => setState(() => worksheet.workTypes.remove(e)),
-              ),
-              title: e.isNotEmpty
-                  ? Text(e)
-                  : CopyableTextField(
-                      onSubmitted: (value) {
-                        if (value.isNotEmpty) {
-                          setState(() {
-                            worksheet.workTypes.remove("");
-                            worksheet.workTypes.add(value);
-                          });
-                        }
-                      },
-                    ),
-            ),
-          )
+      children: requestSet
+          .getRequestTypes()
+          .map((e) => ListTile(title: Text(e.fullName)))
           .toList(),
     );
   }

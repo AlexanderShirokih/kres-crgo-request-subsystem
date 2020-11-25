@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:kres_requests2/models/request_entity.dart';
-import 'package:kres_requests2/repo/repository_module.dart';
+import 'package:kres_requests2/models/request.dart';
 
 import '../copyable_textformfield.dart';
 
 class RequestEditorDialog extends StatefulWidget {
-  final RequestEntity editingRequest;
+  final Request editingRequest;
 
   const RequestEditorDialog({this.editingRequest});
 
   @override
   _RequestEditorDialogState createState() => _RequestEditorDialogState(
-        editingRequest?.copy() ?? RequestEntity.empty(),
+        editingRequest,
         editingRequest == null,
       );
 }
@@ -31,6 +29,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
     "откл.",
     "Другое"
   ];
+
   TextEditingController _lsController;
   TextEditingController _addressController;
   TextEditingController _nameController;
@@ -38,7 +37,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
   TextEditingController _additionalController;
   TextEditingController _requestTypeController;
 
-  final RequestEntity _request;
+  final Request _request;
   bool _isValid;
   bool _isNew;
 
@@ -48,18 +47,20 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
     _isValid = !_isNew;
   }
 
+  // TODO: Split input fields
   @override
   void initState() {
     super.initState();
     _lsController = TextEditingController(
-        text: _request.accountId?.toString()?.padLeft(6, '0') ?? "");
-    _addressController = TextEditingController(text: _request.address);
-    _nameController = TextEditingController(text: _request.name);
-    _counterController = TextEditingController(text: _request.counterInfo);
-    _additionalController =
-        TextEditingController(text: _request.additionalInfo);
+        text: _request?.accountInfo?.baseId?.toString()?.padLeft(6, '0') ?? "");
+    _addressController =
+        TextEditingController(text: _request?.accountInfo?.joinAddress());
+    _nameController = TextEditingController(text: _request?.accountInfo?.name);
+    _counterController =
+        TextEditingController(text: _request?.countingPoint?.joinToString());
+    _additionalController = TextEditingController(text: _request?.additional);
     _requestTypeController = TextEditingController(
-      text: _request.reqType,
+      text: _request?.requestType?.shortName,
     );
   }
 
@@ -74,6 +75,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
     _requestTypeController.dispose();
   }
 
+  // TODO: Copy Request fields to internal fields without it direct editing
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -81,7 +83,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
       title: Text(
         _isNew
             ? 'Создание заявки'
-            : 'Редактирование заявки | Л/С №${_request.accountId?.toString()?.padLeft(6, '0') ?? "--"}',
+            : 'Редактирование заявки | Л/С №${_request?.accountInfo?.baseId?.toString()?.padLeft(6, '0') ?? "--"}',
         textAlign: TextAlign.center,
       ),
       content: Container(
@@ -162,21 +164,22 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
             onPressed: () {
               Navigator.pop(
                 context,
-                RequestEntity(
-                  name: _sanitize(_nameController.text),
-                  additionalInfo: _sanitize(_additionalController.text),
-                  address: _sanitize(_addressController.text),
-                  counterInfo: _sanitize(_counterController.text),
-                  accountId: _lsController.text.isNotEmpty
-                      ? int.parse(_lsController.text)
-                      : null,
-                  reqType: _sanitize(_requestTypeController.text),
-                  fullReqType: context
-                      .repository<RepositoryModule>()
-                      .getConfigRepository()
-                      .getFullRequestName(_requestTypeController.text),
-                  reason: _request.reason,
-                ),
+                null, // TODO: Unimplemented!
+                // Request(
+                //   name: _sanitize(_nameController.text),
+                //   additionalInfo: _sanitize(_additionalController.text),
+                //   address: _sanitize(_addressController.text),
+                //   counterInfo: _sanitize(_counterController.text),
+                //   accountId: _lsController.text.isNotEmpty
+                //       ? int.parse(_lsController.text)
+                //       : null,
+                //   reqType: _sanitize(_requestTypeController.text),
+                //   fullReqType: context
+                //       .repository<RepositoryModule>()
+                //       .getConfigRepository()
+                //       .getFullRequestName(_requestTypeController.text),
+                //   reason: _request.reason,
+                // ),
               );
             },
             child: Text("Сохранить"),

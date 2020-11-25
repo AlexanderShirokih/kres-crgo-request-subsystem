@@ -16,7 +16,7 @@ class RequestSet {
   /// List of requests
   final List<Request> requests;
 
-  final List<Employee> assignedEmployees;
+  final List<EmployeeAssignment> assignedEmployees;
 
   RequestSet({
     this.id,
@@ -25,6 +25,28 @@ class RequestSet {
     this.requests,
     this.assignedEmployees,
   });
+
+  bool get isEmpty => requests.isEmpty;
+
+  static RequestSet fromJson(Map<String, dynamic> data) {
+    return RequestSet(
+      id: data['id'],
+      name: data['name'],
+      date: DateTime.parse(data['date']),
+      requests: data['requests'] == null
+          ? null
+          : (data['requests'] as List<dynamic>)
+              .cast<Map<String, dynamic>>()
+              .map((e) => Request.fromJson(e))
+              .toList(),
+      assignedEmployees: data['assignedEmployees'] == null
+          ? null
+          : (data['assignedEmployees'] as List<dynamic>)
+              .cast<Map<String, dynamic>>()
+              .map((e) => EmployeeAssignment.fromJson(e))
+              .toList(),
+    );
+  }
 }
 
 /// Wrapper that contains meta info about fetched requests sets

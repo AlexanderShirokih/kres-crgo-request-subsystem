@@ -9,6 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApplicationModule {
   RepositoryModule _repositoryModule;
 
+
+
   /// Injects all fields of `RepositoryModule`. Returns `this` instance
   Future<ApplicationModule> init(CredentialsManager credentialsManager) async {
     final apiServer = _getApiServer();

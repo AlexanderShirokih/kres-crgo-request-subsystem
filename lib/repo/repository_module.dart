@@ -21,7 +21,6 @@ class RepositoryModule {
   final RequestsRepository _requestsRepository;
   final EmployeesRepository _employeeRepository;
   final CountersImporterRepository _countersRepository;
-  final NativeImporterRepository _nativeImporterRepository;
 
   final ApiServer _apiServer;
   final CredentialsManager _credentialsManager;
@@ -61,15 +60,12 @@ class RepositoryModule {
       importer: CountersImporter(configRepo),
     );
 
-    final nativeImporterRepo = NativeImporterRepository();
-
     return RepositoryModule._(
       configRepo,
       settingsRepo,
       requestsRepo,
       employeeRepo,
       countersRepo,
-      nativeImporterRepo,
       apiServer,
       credentialsManager,
     );
@@ -81,7 +77,6 @@ class RepositoryModule {
     this._requestsRepository,
     this._employeeRepository,
     this._countersRepository,
-    this._nativeImporterRepository,
     this._apiServer,
     this._credentialsManager,
   );
@@ -96,9 +91,6 @@ class RepositoryModule {
 
   CountersImporterRepository getCountersImporterRepository() =>
       _countersRepository;
-
-  NativeImporterRepository getNativeImporterRepository() =>
-      _nativeImporterRepository;
 
   UsersRepository getUserRepository() =>
       UsersRepository(_apiServer, _credentialsManager);

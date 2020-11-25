@@ -5,10 +5,10 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/document_service.dart';
+import 'package:kres_requests2/domain/request_set_service.dart';
 
-import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/employee.dart';
-import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 
@@ -16,7 +16,7 @@ import 'exporter_dialogs.dart';
 import 'print_dialog.dart';
 
 class WorksheetsPreviewScreen extends StatefulWidget {
-  final Document document;
+  final DocumentService document;
 
   const WorksheetsPreviewScreen(this.document) : assert(document != null);
 
@@ -26,19 +26,19 @@ class WorksheetsPreviewScreen extends StatefulWidget {
 }
 
 class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
-  Document currentDocument;
+  DocumentService document;
 
-  List<Worksheet> selectedWorksheets;
+  List<RequestSetService> selectedWorksheets;
 
   @override
   void initState() {
     super.initState();
-    selectedWorksheets = currentDocument.worksheets
-        .where((worksheet) => !worksheet.isEmpty && !worksheet.hasErrors())
-        .toList();
+    selectedWorksheets = document
+        .getEditableWorksheets()
+        .where((element) => !element.validator().hasErrors());
   }
 
-  _WorksheetsPreviewScreenState(this.currentDocument);
+  _WorksheetsPreviewScreenState(this.document);
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +66,9 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
           _buildActionsContainer(context),
           Expanded(
             child: _WorksheetCardGroup(
-              worksheets: currentDocument.worksheets
-                  .where((worksheet) => !worksheet.isEmpty)
+              worksheets: document
+                  .getEditableWorksheets()
+                  .where((worksheet) => !worksheet.getRequests().isNotEmpty)
                   .toList(),
               onStatusChanged: (newWorksheets) => setState(() {
                 selectedWorksheets = newWorksheets;
@@ -159,13 +160,13 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
         barrierDismissible: false,
         builder: (_) => ExporterDialog(
           format,
-          selectedWorksheets,
-          (ext) => getSuggestedName(currentDocument, ext),
+          selectedWorksheets.map((e) => e.getRequestSet()).toList(),
+          (ext) => getSuggestedName(ext),
         ),
       ).then(
         (resultMessage) {
           if (resultMessage != null)
-            Scaffold.of(context).showSnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(resultMessage),
                 duration: Duration(seconds: 6),
@@ -177,11 +178,13 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
   Future _showPrintDialog(BuildContext context) => showDialog<String>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => PrintDialog(selectedWorksheets),
+        builder: (_) => PrintDialog(
+          selectedWorksheets.map((e) => e.getRequestSet()).toList(),
+        ),
       ).then(
         (resultMessage) {
           if (resultMessage != null)
-            Scaffold.of(context).showSnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(resultMessage),
                 duration: Duration(seconds: 6),
@@ -192,9 +195,9 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
 }
 
 class _WorksheetCardGroup extends StatefulWidget {
-  final List<Worksheet> worksheets;
+  final List<RequestSetService> worksheets;
 
-  final void Function(List<Worksheet>) onStatusChanged;
+  final void Function(List<RequestSetService>) onStatusChanged;
 
   const _WorksheetCardGroup({
     @required this.worksheets,
@@ -209,7 +212,7 @@ class _WorksheetCardGroup extends StatefulWidget {
 class _WorksheetCardGroupState extends State<_WorksheetCardGroup> {
   static const _tileMaxWidth = 500.0;
 
-  Map<Worksheet, bool> _checkedCards;
+  Map<RequestSetService, bool> _checkedCards;
 
   @override
   void initState() {
@@ -243,37 +246,37 @@ class _WorksheetCardGroupState extends State<_WorksheetCardGroup> {
     );
   }
 
-  List<Widget> _buildChildren(BuildContext context) => widget.worksheets
-      .map(
-        (worksheet) => ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: _tileMaxWidth,
-          ),
-          child: WorksheetCard(
-            worksheet: worksheet,
-            isSelected: _checkedCards[worksheet],
-            onChanged: worksheet.hasErrors()
-                ? null
-                : (isChecked) => setState(() {
-                      _checkedCards[worksheet] = isChecked;
-                      widget.onStatusChanged(
-                        widget.worksheets
-                            .where((worksheet) =>
-                                _checkedCards[worksheet] &&
-                                !worksheet.hasErrors())
-                            .toList(),
-                      );
-                    }),
-          ),
-        ),
-      )
-      .toList();
+  List<Widget> _buildChildren(BuildContext context) => widget.worksheets.map(
+        (worksheet) {
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: _tileMaxWidth,
+            ),
+            child: WorksheetCard(
+              worksheet: worksheet,
+              isSelected: _checkedCards[worksheet],
+              onChanged: worksheet.validator().hasErrors()
+                  ? null
+                  : (isChecked) => setState(() {
+                        _checkedCards[worksheet] = isChecked;
+                        widget.onStatusChanged(
+                          widget.worksheets
+                              .where((worksheet) =>
+                                  _checkedCards[worksheet] &&
+                                  !worksheet.validator().hasErrors())
+                              .toList(),
+                        );
+                      }),
+            ),
+          );
+        },
+      ).toList();
 }
 
 class WorksheetCard extends StatelessWidget {
   static final _dateFormat = DateFormat('dd.MM.yyyy');
   final ValueChanged<bool> onChanged;
-  final Worksheet worksheet;
+  final RequestSetService worksheet;
   final bool isSelected;
 
   const WorksheetCard({
@@ -304,7 +307,7 @@ class WorksheetCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        worksheet.name,
+                        worksheet.getName(),
                         style: Theme.of(context).textTheme.headline5,
                       ),
                       Expanded(
@@ -325,8 +328,8 @@ class WorksheetCard extends StatelessWidget {
                   const SizedBox(height: 8.0),
                   _showDate(context),
                   const SizedBox(height: 8.0),
-                  _showSubtitle(
-                      context, 'Заявок:', Text('${worksheet.requests.length}')),
+                  _showSubtitle(context, 'Заявок:',
+                      Text('${worksheet.getRequests().length}')),
                   const SizedBox(height: 8.0),
                   _printWorksheetStatus(context),
                 ],
@@ -347,19 +350,19 @@ class WorksheetCard extends StatelessWidget {
             _printSingleEmployeeField(
               ctx,
               'Выдающий задание:',
-              worksheet.chiefEmployee,
+              worksheet.getChiefEmployee(),
             ),
             const SizedBox(height: 8.0),
             _printSingleEmployeeField(
               ctx,
               'Производитель работ:',
-              worksheet.mainEmployee,
+              worksheet.getMainEmployee(),
             ),
             const SizedBox(height: 8.0),
             _printMultipleChildField(
               ctx,
               'Члены бригады:',
-              worksheet.membersEmployee,
+              worksheet.getMembersEmployee(),
             ),
           ],
         ),
@@ -420,9 +423,9 @@ class WorksheetCard extends StatelessWidget {
   Widget _showDate(BuildContext context) => _showSubtitle(
         context,
         'Дата выдачи:',
-        worksheet.date == null
+        worksheet.getDate() == null
             ? Text('Не выбрано', style: _createErrorTextStyle(context))
-            : Text('${_dateFormat.format(worksheet.date)}'),
+            : Text('${_dateFormat.format(worksheet.getDate())}'),
       );
 
   Widget _showSubtitle(BuildContext context, String label, Widget child) => Row(
@@ -440,7 +443,7 @@ class WorksheetCard extends StatelessWidget {
         ],
       );
 
-  Widget _joinWorkTypes(BuildContext ctx) => worksheet.workTypes.isEmpty
+  Widget _joinWorkTypes(BuildContext ctx) => worksheet.getRequestTypes().isEmpty
       ? Text(
           'Не выбран ни один вид работ',
           style: _createErrorTextStyle(ctx),
@@ -448,7 +451,7 @@ class WorksheetCard extends StatelessWidget {
         )
       : Flexible(
           child: Text(
-            worksheet.workTypes.join(', '),
+            worksheet.getRequestTypes().map((e) => e.fullName).join(', '),
           ),
         );
 
@@ -460,7 +463,7 @@ class WorksheetCard extends StatelessWidget {
           );
 
   Widget _printWorksheetStatus(BuildContext context) {
-    final errors = worksheet.validate().take(3).toList();
+    final errors = worksheet.validator().validate().take(3).toList();
 
     if (errors.isEmpty) {
       return Row(

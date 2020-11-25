@@ -45,10 +45,9 @@ class StartupFetchingError extends StartupState {
 
 /// State for opening RequestEditor page
 class StartupOpenRequestsSetState extends StartupState {
-  final RequestSet target;
+  final DocumentService target;
 
   StartupOpenRequestsSetState(User user, this.target)
       : assert(target != null),
-        assert(target.id != null),
         super(user);
 }

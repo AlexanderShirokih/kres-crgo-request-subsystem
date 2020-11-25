@@ -1,8 +1,5 @@
-import 'package:intl/intl.dart';
-import 'package:path/path.dart' as path;
 import 'package:flutter/material.dart';
-
-import 'package:kres_requests2/models/document.dart';
+import 'package:intl/intl.dart';
 
 class ErrorView extends StatelessWidget {
   final String errorDescription;
@@ -69,9 +66,7 @@ class LoadingView extends StatelessWidget {
 
 final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
 
-String getSuggestedName(Document currentDocument, String ext) {
+String getSuggestedName(String ext) {
   String fmtDate(DateTime d) => _dateFormat.format(d);
-  return currentDocument.savePath == null
-      ? "Заявки ${fmtDate(currentDocument.updateDate)}$ext"
-      : "${path.basenameWithoutExtension(currentDocument.savePath.path)}$ext";
+  return "Заявки ${fmtDate(DateTime.now())}$ext";
 }
