@@ -13,6 +13,7 @@ dependencies:
   meta: ^1.1.7
   http: ^0.12.2
   intl: ^0.16.1
+  async: ^2.4.2
   equatable: ^1.2.3
   flutter_bloc: ^6.0.1
   path_provider: ^1.6.14

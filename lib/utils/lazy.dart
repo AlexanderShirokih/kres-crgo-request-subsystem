@@ -6,15 +6,12 @@ typedef AsyncLazyInstanceBuilder<T> = Future<T> Function();
 
 /// Container for lazy field initialization
 class Lazy<T> {
-  final LazyInstanceBuilder<T> _instanceBuilder;
   T _instance;
 
-  Lazy(this._instanceBuilder) : assert(_instanceBuilder != null);
-
-  /// Returns previously created instance or creates new.
-  T get instance {
+  /// Returns once created previous field value or creates new of not created yet.
+  T getValue(LazyInstanceBuilder<T> instanceBuilder) {
     if (_instance == null) {
-      _instance = _instanceBuilder();
+      _instance = instanceBuilder();
     }
     return _instance;
   }

@@ -4,6 +4,7 @@ import 'package:kres_requests2/repo/positions_repository.dart';
 import 'package:kres_requests2/repo/request_set_repository.dart';
 import 'package:kres_requests2/repo/request_types_repository.dart';
 import 'package:kres_requests2/repo/users_repository.dart';
+import 'package:kres_requests2/utils/lazy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:kres_requests2/data/java_process_executor.dart';
@@ -25,6 +26,9 @@ class RepositoryModule {
 
   final ApiServer _apiServer;
   final CredentialsManager _credentialsManager;
+
+  final Lazy<PositionsRepository> _positionsRepository = Lazy();
+  final Lazy<EmployeesRepository> _employeeRepository = Lazy();
 
   /// Builds new instance of `RepositoryModule`
   static Future<RepositoryModule> buildRepositoryModule(
@@ -91,10 +95,10 @@ class RepositoryModule {
       RequestTypeRepository(_apiServer);
 
   PositionsRepository getPositionsRepository() =>
-      PositionsRepository(_apiServer);
+      _positionsRepository.getValue(() => PositionsRepository(_apiServer));
 
   EmployeesRepository getEmployeesRepository() =>
-      EmployeesRepository(_apiServer);
+      _employeeRepository.getValue(() => EmployeesRepository(_apiServer));
 
   CredentialsManager getCredentialsManager() => _credentialsManager;
 }

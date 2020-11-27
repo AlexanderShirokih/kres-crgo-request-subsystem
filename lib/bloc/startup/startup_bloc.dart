@@ -51,26 +51,28 @@ class StartupBloc extends Bloc<StartupEvent, StartupState> {
     }
   }
 
-  Stream<StartupState> _handleCreateRequest(DateTime targetDate) async* {
-    final formattedDate = DateFormat('dd.MM.yyyy').format(targetDate);
-    final String name = 'Заявки на $formattedDate';
+  Stream<StartupState> _handleCreateRequest(DateTime targetDate) =>
+      _catchApiException(state.user, () async* {
+        final formattedDate = DateFormat('dd.MM.yyyy').format(targetDate);
+        final String name = 'Заявки на $formattedDate';
 
-    final requestSet =
-        await requestSetRepository.createOrUpdateRequestSet(name, targetDate);
+        final requestSet = await requestSetRepository.createOrUpdateRequestSet(
+            name, targetDate);
 
-    yield* _handleOpenRequest(requestSet);
-  }
+        yield* _handleOpenRequest(requestSet);
+      });
 
-  Stream<StartupState> _handleOpenRequest(RequestSet requestSet) async* {
-    final List<RequestSet> requestSets = await requestSetRepository
-        .getAllRequestSetsByDate(requestSet.date, true);
+  Stream<StartupState> _handleOpenRequest(RequestSet requestSet) =>
+      _catchApiException(state.user, () async* {
+        final List<RequestSet> requestSets = await requestSetRepository
+            .getAllRequestSetsByDate(requestSet.date, true);
 
-    yield StartupOpenRequestsSetState(
-      state.user,
-      DocumentService(requestSetRepository,
-          Document(requestSets: requestSets, active: requestSet)),
-    );
-  }
+        yield StartupOpenRequestsSetState(
+          state.user,
+          DocumentService(requestSetRepository,
+              Document(requestSets: requestSets, active: requestSet)),
+        );
+      });
 
   Stream<StartupState> _fetchRecent(User user, bool expandList) async* {
     var nextPage = 0;
@@ -80,17 +82,26 @@ class StartupBloc extends Bloc<StartupEvent, StartupState> {
 
     yield StartupFetchingRecent(user);
 
-    try {
+    yield* _catchApiException(user, () async* {
       final requestsSet = await requestSetRepository.getRequestSets(nextPage);
-
       yield StartupGotRecentDocuments(
         requestsSet.requestsSets,
         requestsSet.hasMore,
         requestsSet.upperBoundPage,
         user,
       );
-    } on ApiException catch (apiException) {
-      yield StartupFetchingError(user, apiException);
-    }
+    });
   }
+
+  Stream<StartupState> _catchApiException(
+          User user, Stream<StartupState> Function() action) =>
+      action()
+          .transform(StreamTransformer<StartupState, StartupState>.fromHandlers(
+        handleError: (e, s, sink) {
+          if (e is ApiException)
+            sink.add(StartupFetchingError(user, e));
+          else
+            sink.addError(e, s);
+        },
+      ));
 }

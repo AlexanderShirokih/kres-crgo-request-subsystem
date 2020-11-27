@@ -1,11 +1,11 @@
 import 'package:kres_requests2/data/api_server.dart';
 import 'package:kres_requests2/models/employee.dart';
-import 'package:kres_requests2/repo/base_crud_repository.dart';
+import 'package:kres_requests2/repo/caching_crud_repository.dart';
 
 /// Repository class for managing [Employee]s
-class EmployeesRepository extends BaseCRUDRepository<Employee> {
-  const EmployeesRepository(ApiServer apiServer)
-      : super(apiServer, 'employees');
+class EmployeesRepository extends CachingCRUDRepository<Employee> {
+  EmployeesRepository(ApiServer apiServer)
+      : super(const Duration(hours: 1), apiServer, 'employees');
 
   @override
   Employee fromJson(dynamic data) => Employee.encoder().fromJson(data);
