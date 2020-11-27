@@ -1,20 +1,20 @@
-import 'dart:io';
-
-import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
+import 'package:kres_requests2/screens/management/request_type_management_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final SettingsRepository settingsRepository;
+  final RepositoryModule repositoryModule;
 
-  const SettingsScreen({Key key, this.settingsRepository}) : super(key: key);
+  SettingsScreen({Key key, this.repositoryModule})
+      : settingsRepository = repositoryModule.getSettingsRepository(),
+        super(key: key);
 
   static Route createRoute(RepositoryModule reposModule) => MaterialPageRoute(
-        builder: (_) => SettingsScreen(
-            settingsRepository: reposModule.getSettingsRepository()),
+        builder: (_) => SettingsScreen(repositoryModule: reposModule),
       );
 
   @override
@@ -25,43 +25,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text('Настройки'),
+          title: Text('Параметры'),
         ),
-        body: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 500.0),
-          child: ListView(
-            padding: const EdgeInsets.all(12.0),
-            children: [_itemJavaPath()],
+        body: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 1000.0),
+            child: ListView(
+              padding: const EdgeInsets.all(12.0),
+              children: [
+                _managementItem(
+                    'Сотрудники',
+                    () =>
+                        RequestTypesManagementScreen(widget.repositoryModule)),
+                _managementItem(
+                    'Типы заявок',
+                    () =>
+                        RequestTypesManagementScreen(widget.repositoryModule)),
+              ],
+            ),
           ),
         ),
       );
 
-  Widget _itemJavaPath() => ListTile(
-        leading: FaIcon(FontAwesomeIcons.java),
-        title: Text('Путь к Java (JAVA_HOME)'),
-        subtitle: Text(_getCurrentJavaPath()),
-        onTap: () => _showJavaPathSelector().then((newPath) {
-          if (newPath != null) {
-            setState(() {
-              widget.settingsRepository.javaPath = newPath;
-            });
-          }
-        }),
+  Widget _managementItem(String title, Widget Function() managementClass) =>
+      Builder(
+        builder: (context) => ListTile(
+          contentPadding: EdgeInsets.all(12.0),
+          leading: FaIcon(FontAwesomeIcons.cog),
+          title: Text(title),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => managementClass()),
+          ),
+        ),
       );
-
-  String _getCurrentJavaPath() {
-    final path = widget.settingsRepository.javaPath;
-    if (path == null) return '(Не установлено)';
-    final filePath = Directory(path).absolute;
-    if (!filePath.existsSync()) {
-      print("PATH=${filePath.path} is NOT EXISTS!");
-      return '(Не существует!)';
-    }
-    return path;
-  }
-
-  Future<String> _showJavaPathSelector() => showOpenPanel(
-        canSelectDirectories: true,
-        confirmButtonText: 'Выбрать',
-      ).then((res) => res.canceled ? null : res.paths[0]);
 }
