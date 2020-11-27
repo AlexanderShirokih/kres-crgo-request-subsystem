@@ -1,9 +1,10 @@
 import 'dart:convert' as convert;
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:kres_requests2/data/models/credentials.dart';
+import 'package:kres_requests2/data/credentials_manager.dart';
 import 'package:kres_requests2/data/models/server_error_model.dart';
 import 'package:kres_requests2/data/models/server_request.dart';
+import 'package:kres_requests2/repo/server_exception.dart';
 
 import 'models/server_response.dart';
 
@@ -13,14 +14,16 @@ class ApiServer {
 
   final http.Client _httpClient;
   final String _baseUrl;
+  final CredentialsManager _credentialsManager;
 
-  const ApiServer(this._httpClient, String host, int port)
+  const ApiServer(
+      this._httpClient, String host, int port, this._credentialsManager)
       : assert(host != null),
         assert(port != null),
+        assert(_credentialsManager != null),
         _baseUrl = '$_kProtocol$host:$port/';
 
-  Future<ServerResponse> getData(
-      Credentials credentials, ServerRequest request) async {
+  Future<ServerResponse> getData(ServerRequest request) async {
     final requestParams = request.requestParams ?? <String, dynamic>{};
 
     final baseUrl = '$_baseUrl${request.requestPath}';
@@ -37,6 +40,9 @@ class ApiServer {
     }
 
     final url = requestParams.isEmpty ? baseUrl : '$baseUrl?$params';
+
+    final credentials = _credentialsManager.getCredentials();
+    if (credentials == null) throw UnauthorizedException(url);
 
     final headers = <String, String>{
       'Authorization': credentials.createBasicAuthorization(),
@@ -60,13 +66,14 @@ class ApiServer {
 
       if (response.statusCode == 200) {
         // Success
-        return ServerResponse(response.statusCode, null, jsonResponse);
+        return ServerResponse(response.statusCode, null, jsonResponse, url);
       } else if (response.statusCode == 401) {
         // Unauthorized
         return ServerResponse(
           401,
           ServerError(error: 'Unauthorized', message: ''),
           null,
+          url,
         );
       } else {
         return ServerResponse(
@@ -75,23 +82,32 @@ class ApiServer {
                 error:
                     jsonResponse['error'] ?? 'Response ${response.statusCode}',
                 message: jsonResponse['message'] ?? 'No description attached'),
-            jsonResponse);
+            jsonResponse,
+            url);
       }
     } on convert.JsonUnsupportedObjectError catch (e) {
       return ServerResponse(
-          422,
-          ServerError(error: 'Json Decoding Error!', message: e.toString()),
-          null);
+        422,
+        ServerError(error: 'Json Decoding Error!', message: e.toString()),
+        null,
+        url,
+      );
     } on SocketException catch (ex) {
       return ServerResponse(
-          0,
-          ServerError(
-              error: '${ex.address.address}:${ex.port}',
-              message: ex.osError.message),
-          null);
+        0,
+        ServerError(
+            error: '${ex.address.address}:${ex.port}',
+            message: ex.osError.message),
+        null,
+        url,
+      );
     } catch (unk) {
-      return ServerResponse(422,
-          ServerError(error: 'Unknown error', message: unk.toString()), null);
+      return ServerResponse(
+        422,
+        ServerError(error: 'Unknown error', message: unk.toString()),
+        null,
+        url,
+      );
     }
   }
 

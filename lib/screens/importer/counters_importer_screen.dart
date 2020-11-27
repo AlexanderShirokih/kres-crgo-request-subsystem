@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_chooser/file_chooser.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/document_service.dart';
 
-import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 
@@ -21,7 +21,7 @@ class CountersImporterScreen extends BaseImporterScreen {
   }
 
   CountersImporterScreen({
-    @required Document targetDocument,
+    @required DocumentService targetDocument,
     @required CountersImporterRepository importerRepository,
     this.initialDirectory,
   }) : super(
@@ -75,7 +75,7 @@ class _CountersImporterIdleView extends StatelessWidget {
               label: Text(
                 'Открыть отчёт',
               ),
-              onPressed: () => context.bloc<ImporterBloc>().add(ImportEvent()),
+              onPressed: () => context.read<ImporterBloc>().add(ImportEvent()),
             )
           ],
         ),

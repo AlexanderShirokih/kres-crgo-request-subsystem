@@ -30,7 +30,7 @@ class WorksheetMasterSearchEvent extends WorksheetMasterEvent {
 enum WorksheetAction { remove, makeActive }
 
 class WorksheetMasterWorksheetActionEvent extends WorksheetMasterEvent {
-  final RequestSet targetWorksheet;
+  final RequestSetService targetWorksheet;
   final WorksheetAction action;
 
   const WorksheetMasterWorksheetActionEvent(this.targetWorksheet, this.action);

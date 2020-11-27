@@ -8,10 +8,10 @@ mixin ApiRepositoryMixin {
       return onOK(response.body);
     }
     if (response.statusCode == 401) {
-      throw UnauthorizedException();
+      throw UnauthorizedException(response.url);
     }
 
-    throw ApiException(response.error.toString());
+    throw ApiException(response.error.toString(), response.url);
   }
 
   void ensureOk(ServerResponse response) =>

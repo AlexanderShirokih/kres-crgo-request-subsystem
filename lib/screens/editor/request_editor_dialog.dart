@@ -11,10 +11,8 @@ class RequestEditorDialog extends StatefulWidget {
   const RequestEditorDialog({this.editingRequest});
 
   @override
-  _RequestEditorDialogState createState() => _RequestEditorDialogState(
-        editingRequest,
-        editingRequest == null,
-      );
+  _RequestEditorDialogState createState() =>
+      _RequestEditorDialogState(editingRequest);
 }
 
 class _RequestEditorDialogState extends State<RequestEditorDialog> {
@@ -41,11 +39,9 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
   bool _isValid;
   bool _isNew;
 
-  _RequestEditorDialogState(this._request, this._isNew)
-      : assert(_request != null),
-        assert(_isNew != null) {
-    _isValid = !_isNew;
-  }
+  _RequestEditorDialogState(this._request)
+      : _isNew = _request == null,
+        _isValid = _request != null;
 
   // TODO: Split input fields
   @override

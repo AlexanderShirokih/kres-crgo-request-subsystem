@@ -193,7 +193,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
                       child: e == null
                           ? Text('')
                           : Text(
-                              "${e.name}, ${e.position}, ${e.accessGroup} гр."),
+                              "${e.name}, ${e.position.name}, ${e.accessGroup} гр."),
                     ),
                   )
                   .toList(),

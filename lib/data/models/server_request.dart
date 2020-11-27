@@ -36,6 +36,15 @@ class ServerRequest {
           requestParams: requestParams,
         );
 
+  /// Constructs DELETE server request at `requestPath`
+  ServerRequest.delete(String requestPath, {Map<String, dynamic> requestParams})
+      : this(
+          method: RequestMethod.DELETE,
+          requestPath: requestPath,
+          requestParams: requestParams,
+        );
+
+  /// Constructs POST server request at `requestPath`
   ServerRequest.post(
     String requestPath, {
     dynamic body,

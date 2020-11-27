@@ -11,7 +11,10 @@ class ServerResponse {
   /// Contains decoded response, if there is no error.
   final dynamic body;
 
-  const ServerResponse(this.statusCode, this.error, this.body);
+  /// Request URL
+  final String url;
+
+  const ServerResponse(this.statusCode, this.error, this.body, this.url);
 
   /// Returns `true` is response contains errors
   bool get hasErrors => !isOk;

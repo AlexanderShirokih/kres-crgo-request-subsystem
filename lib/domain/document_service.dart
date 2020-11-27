@@ -10,6 +10,8 @@ class DocumentService {
 
   final Document _document;
 
+  final Map<RequestSet, RequestSetService> _serviceCache = {};
+
   /// Creates document with single `RequestSet`
   DocumentService(this._requestsSetRepository, this._document)
       : assert(_requestsSetRepository != null),
@@ -26,16 +28,23 @@ class DocumentService {
     // state.currentDocument.active =
     // state.currentDocument.addEmptyWorksheet();
     // makeActive: _document.active = target;
+    throw UnimplementedError();
   }
 
   /// Removes worksheet from the document
   Future removeWorksheet(RequestSet targetRequestSet) {
+    _serviceCache.remove(targetRequestSet);
+
     // TODO:
+    throw UnimplementedError();
   }
 
-  /// Makes `targetRequestSet` active
-  void setActive(RequestSet targetRequestSet) {
-    // TODO
+  /// Returns currently active worksheet
+  RequestSet getActive() => _document.active;
+
+  /// Makes `requestSet` active
+  void setActive(RequestSet requestSet) {
+    _document.active = requestSet;
   }
 
   Map<RequestSet, List<Request>> filterRequests(String searchText) {
@@ -66,16 +75,24 @@ class DocumentService {
             }).toList());
   }
 
-  RequestSet getActive() => _document.active;
+  // TODO: Remove element from cache when we remove request set from document
+  RequestSetService _gerOrCreateRequestService(RequestSet set) {
+    var cached = _serviceCache[set];
+    if (cached == null) {
+      cached = RequestSetService(set);
+      _serviceCache[set] = cached;
+    }
+    return cached;
+  }
 
   /// Gets current worksheet for editing
-  /// TODO: Keep instance?
-  RequestSetService getEditableWorksheet() => RequestSetService(getActive());
+  RequestSetService getEditableWorksheet() {
+    return _gerOrCreateRequestService(getActive());
+  }
 
   /// Gets all worksheets which are not empty
-  List<RequestSetService> getEditableWorksheets() => _document.requestSets
-      .where((element) => !element.isEmpty)
-      .map((e) => RequestSetService(e));
+  List<RequestSetService> getEditableWorksheets() =>
+      _document.requestSets.map((e) => _gerOrCreateRequestService(e)).toList();
 
   /// Gets read-only list of worksheets
   List<RequestSet> getWorksheets() => List.unmodifiable(_document.requestSets);
@@ -88,5 +105,6 @@ class DocumentService {
     //     if (_moveMethod == MoveMethod.Move)
     //       for (RequestEntity e in _movingRequests)
     //         _sourceWorksheet.requests.remove(e);
+    throw UnimplementedError();
   }
 }

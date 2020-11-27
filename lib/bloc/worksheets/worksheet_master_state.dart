@@ -3,14 +3,14 @@ part of 'worksheet_master_bloc.dart';
 /// Common state class for `WorksheetMasterScreen`
 abstract class WorksheetMasterState extends Equatable {
   const WorksheetMasterState();
-
-  @override
-  List<Object> get props => [];
 }
 
 /// State used when some data is loading
 class WorksheetFetchingState extends WorksheetMasterState {
   const WorksheetFetchingState();
+
+  @override
+  List<Object> get props => [];
 }
 
 /// State that indicates an error during communication with API
@@ -18,10 +18,16 @@ class WorksheetErrorState extends WorksheetMasterState {
   final ErrorWrapper error;
 
   const WorksheetErrorState(this.error);
+
+  @override
+  List<Object> get props => [error];
 }
 
 class WorksheetMasterPopState extends WorksheetMasterState {
   const WorksheetMasterPopState();
+
+  @override
+  List<Object> get props => [];
 }
 
 /// State when no active actions in use
@@ -30,6 +36,9 @@ class WorksheetMasterIdleState extends WorksheetMasterState {
 
   const WorksheetMasterIdleState(this.currentEditable)
       : assert(currentEditable != null);
+
+  @override
+  List<Object> get props => [currentEditable];
 }
 
 enum WorksheetImporterType {

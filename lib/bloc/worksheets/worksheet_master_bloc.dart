@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:kres_requests2/domain/document_service.dart';
+import 'package:kres_requests2/domain/request_set_service.dart';
 import 'package:kres_requests2/models/optional_data.dart';
 import 'package:kres_requests2/models/request.dart';
-import 'package:kres_requests2/repo/server_exception.dart';
 import 'package:meta/meta.dart';
 import 'package:equatable/equatable.dart';
 
@@ -43,18 +43,14 @@ class WorksheetMasterBloc
   }
 
   Stream<WorksheetMasterState> _safeApiCall(
-      Stream<WorksheetMasterState> Function() action) async* {
-    try {
-      yield* action();
-    } on ApiException catch (e, s) {
-      yield WorksheetErrorState(
-        ErrorWrapper(
-          e.toString(),
-          s.toString(),
-        ),
-      );
-    }
-  }
+          Stream<WorksheetMasterState> Function() action) =>
+      action().transform(StreamTransformer<WorksheetMasterState,
+          WorksheetMasterState>.fromHandlers(
+        handleError: (e, s, sink) {
+          sink.add(
+              WorksheetErrorState(ErrorWrapper(e.toString(), s.toString())));
+        },
+      ));
 
   Stream<WorksheetMasterState> _keepSearchingState(
       Stream<WorksheetMasterState> Function() scope,
@@ -74,7 +70,6 @@ class WorksheetMasterBloc
         );
     } else {
       yield* scope();
-      yield WorksheetMasterIdleState(_documentService.getActive());
     }
   }
 
@@ -101,13 +96,13 @@ class WorksheetMasterBloc
   }
 
   Stream<WorksheetMasterState> _handleWorksheetAction(
-      RequestSet targetRequestSet, WorksheetAction action) async* {
+      RequestSetService targetRequestSet, WorksheetAction action) async* {
     switch (action) {
       case WorksheetAction.remove:
-        _documentService.removeWorksheet(targetRequestSet);
+        _documentService.removeWorksheet(targetRequestSet.getRequestSet());
         break;
       case WorksheetAction.makeActive:
-        _documentService.setActive(targetRequestSet);
+        _documentService.setActive(targetRequestSet.getRequestSet());
         break;
     }
 

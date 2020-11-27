@@ -9,11 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApplicationModule {
   RepositoryModule _repositoryModule;
 
-
-
   /// Injects all fields of `RepositoryModule`. Returns `this` instance
   Future<ApplicationModule> init(CredentialsManager credentialsManager) async {
-    final apiServer = _getApiServer();
+    final apiServer = _getApiServer(credentialsManager);
     final sharedPreferences = await _getSharedPreferences();
 
     _repositoryModule = await RepositoryModule.buildRepositoryModule(
@@ -23,7 +21,12 @@ class ApplicationModule {
 
   RepositoryModule getRepositoryModule() => _repositoryModule;
 
-  ApiServer _getApiServer() => ApiServer(http.Client(), 'localhost', 8080);
+  ApiServer _getApiServer(CredentialsManager credentialsManager) => ApiServer(
+        http.Client(),
+        'localhost',
+        8080,
+        credentialsManager,
+      );
 
   Future<SharedPreferences> _getSharedPreferences() async =>
       SharedPreferences.getInstance();

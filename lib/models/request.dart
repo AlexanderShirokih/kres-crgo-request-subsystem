@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/models/counting_point.dart';
 import 'package:kres_requests2/models/account_info.dart';
+import 'package:kres_requests2/models/encoder.dart';
+import 'package:kres_requests2/models/entity.dart';
 
 /// Describes request type
-class RequestType extends Equatable {
+class RequestType extends Equatable implements Entity<int> {
   /// Internal ID
   final int id;
 
@@ -19,14 +21,38 @@ class RequestType extends Equatable {
     this.fullName,
   });
 
-  static RequestType fromJson(Map<String, dynamic> data) => RequestType(
+  static Encoder<RequestType> encoder() => _RequestTypeEncoder();
+
+  static RequestType fromJson(Map<String, dynamic> data) =>
+      encoder().fromJson(data);
+
+  @override
+  List<Object> get props => [id, shortName, fullName];
+
+  Map<String, dynamic> toJson() => encoder().toJson(this);
+
+  @override
+  String toString() => '$shortName ($fullName)';
+
+  @override
+  int getId() => id;
+
+}
+
+class _RequestTypeEncoder extends Encoder<RequestType> {
+  @override
+  RequestType fromJson(Map<String, dynamic> data) => RequestType(
         id: data['id'],
         shortName: data['shortName'],
         fullName: data['fullName'],
       );
 
   @override
-  List<Object> get props => [id, shortName, fullName];
+  Map<String, dynamic> toJson(RequestType e) => {
+        if (e.id != null) 'id': e.id,
+        'shortName': e.shortName,
+        'fullName': e.fullName,
+      };
 }
 
 /// Describes customer request

@@ -62,12 +62,13 @@ class StartupBloc extends Bloc<StartupEvent, StartupState> {
   }
 
   Stream<StartupState> _handleOpenRequest(RequestSet requestSet) async* {
-    final List<RequestSet> requestSets =
-        await requestSetRepository.getAllRequestSetsByDate(requestSet.date);
+    final List<RequestSet> requestSets = await requestSetRepository
+        .getAllRequestSetsByDate(requestSet.date, true);
 
     yield StartupOpenRequestsSetState(
       state.user,
-      DocumentService(requestSetRepository, Document(requestSets: requestSets)),
+      DocumentService(requestSetRepository,
+          Document(requestSets: requestSets, active: requestSet)),
     );
   }
 

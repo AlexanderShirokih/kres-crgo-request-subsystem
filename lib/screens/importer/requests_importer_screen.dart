@@ -2,32 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_chooser/file_chooser.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/document_service.dart';
 
-import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 
 class RequestsImporterScreen extends BaseImporterScreen {
-  final String initialDirectory;
-
   factory RequestsImporterScreen.fromContext({
+    @required RepositoryModule repositoryModule,
     @required BuildContext context,
-    @required Document targetDocument,
+    @required DocumentService targetDocument,
     String initialDirectory,
   }) =>
       RequestsImporterScreen(
         targetDocument: targetDocument,
-        requestsRepository:
-            context.repository<RepositoryModule>().getRequestsRepository(),
-        initialDirectory: initialDirectory,
+        requestsRepository: repositoryModule.getRequestsRepository(),
       );
 
   RequestsImporterScreen({
-    @required Document targetDocument,
+    @required DocumentService targetDocument,
     @required RequestsRepository requestsRepository,
-    this.initialDirectory,
   }) : super(
           title: 'Импорт заявок',
           targetDocument: targetDocument,
@@ -41,7 +37,7 @@ class RequestsImporterScreen extends BaseImporterScreen {
     final res = await showOpenPanel(
       allowsMultipleSelection: false,
       canSelectDirectories: false,
-      initialDirectory: initialDirectory,
+      initialDirectory: './',
       confirmButtonText: 'Открыть',
       allowedFileTypes: [
         FileTypeFilterGroup(
@@ -78,10 +74,8 @@ class _RequestsImporterIdleView extends StatelessWidget {
             textColor: Theme.of(context).primaryTextTheme.bodyText2.color,
             padding: EdgeInsets.all(22.0),
             icon: FaIcon(FontAwesomeIcons.fileExcel),
-            label: Text(
-              'Открыть отчёт',
-            ),
-            onPressed: () => context.bloc<ImporterBloc>().add(ImportEvent()),
+            label: Text('Открыть отчёт'),
+            onPressed: () => context.read<ImporterBloc>().add(ImportEvent()),
           )
         ],
       ),

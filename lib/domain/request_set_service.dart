@@ -9,12 +9,16 @@ class RequestSetService {
 
   const RequestSetService(this._requestSet);
 
+  /// Returns `true` if request set has no requests
+  bool get isEmpty => _requestSet.isEmpty;
+
   /// Returns main employee assigned to this request set or `null`
-  Employee getMainEmployee() => _getEmployeesOfType(AssignmentType.MAIN).single;
+  Employee getMainEmployee() => _getEmployeesOfType(AssignmentType.MAIN)
+      .singleWhere((_) => true, orElse: () => null);
 
   /// Returns chief employee assigned to this request set or `null`
-  Employee getChiefEmployee() =>
-      _getEmployeesOfType(AssignmentType.CHIEF).single;
+  Employee getChiefEmployee() => _getEmployeesOfType(AssignmentType.CHIEF)
+      .singleWhere((_) => true, orElse: () => null);
 
   /// Returns list of members employee assigned to this request set or `null`
   List<Employee> getMembersEmployee() =>

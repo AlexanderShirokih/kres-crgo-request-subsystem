@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
 import 'package:kres_requests2/domain/document_service.dart';
+import 'package:kres_requests2/domain/request_set_service.dart';
 import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/request_set.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 import 'package:kres_requests2/screens/editor/search_box.dart';
@@ -27,8 +27,6 @@ class WorksheetMasterScreen extends StatelessWidget {
   })  : _worksheetBloc = WorksheetMasterBloc(documentService),
         _documentService = documentService,
         _repositoryModule = repositoryModule;
-
-  String _getDocumentTitle(RequestSet requestSet) => requestSet.name;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -110,8 +108,7 @@ class WorksheetMasterScreen extends StatelessWidget {
           cubit: _worksheetBloc,
           builder: (_, state) {
             if (state is WorksheetMasterIdleState) {
-              return Text(
-                  'Редактирование - ${_getDocumentTitle(state.currentEditable)}');
+              return Text('Редактирование - ${state.currentEditable.name}');
             } else
               return Text('...');
           },
@@ -159,10 +156,10 @@ class WorksheetMasterScreen extends StatelessWidget {
 
   Widget _createPageController(
       BuildContext context, WorksheetMasterState state) {
-    final worksheets = _documentService.getWorksheets();
+    final worksheets = _documentService.getEditableWorksheets();
 
-    Widget withClosure(
-            RequestSet current, Widget Function(RequestSet) closure) =>
+    Widget withClosure(RequestSetService current,
+            Widget Function(RequestSetService) closure) =>
         closure(current);
 
     return Container(
@@ -186,14 +183,13 @@ class WorksheetMasterScreen extends StatelessWidget {
             : withClosure(
                 worksheets[index],
                 (current) => WorkSheetTabView(
-                  worksheet: _documentService
-                      .getEditableWorksheets()
-                      .singleWhere(
-                          (element) => element.getRequestSet() == current),
+                  worksheet: current,
                   filteredItemsCount: state is WorksheetMasterSearchingState
-                      ? state.filteredItems[current]?.length ?? 0
+                      ? state.filteredItems[current.getRequestSet()]?.length ??
+                          0
                       : 0,
-                  isActive: current == _documentService.getActive(),
+                  isActive:
+                      current.getRequestSet() == _documentService.getActive(),
                   onSelect: () => _worksheetBloc.add(
                       WorksheetMasterWorksheetActionEvent(
                           current, WorksheetAction.makeActive)),
@@ -205,7 +201,8 @@ class WorksheetMasterScreen extends StatelessWidget {
                               context: context,
                               barrierDismissible: false,
                               child: ConfirmationDialog(
-                                message: "Удалить страницу ${current.name}?",
+                                message:
+                                    "Удалить страницу ${current.getName()}?",
                               ),
                             ).then((result) {
                               if (result)
@@ -232,6 +229,8 @@ class WorksheetMasterScreen extends StatelessWidget {
           context,
           RequestsImporterScreen.fromContext(
             context: context,
+            targetDocument: _documentService,
+            repositoryModule: _repositoryModule,
           ),
         );
         break;
@@ -240,9 +239,9 @@ class WorksheetMasterScreen extends StatelessWidget {
         _navigateToImporter(
           context,
           CountersImporterScreen(
-            importerRepository: context
-                .repository<RepositoryModule>()
-                .getCountersImporterRepository(),
+            targetDocument: _documentService,
+            importerRepository:
+                _repositoryModule.getCountersImporterRepository(),
           ),
         );
         break;

@@ -35,6 +35,7 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
     super.initState();
     selectedWorksheets = document
         .getEditableWorksheets()
+        .where((element) => !element.isEmpty)
         .where((element) => !element.validator().hasErrors());
   }
 

@@ -8,7 +8,6 @@ import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/common/date_chooser.dart';
 import 'package:kres_requests2/screens/editor/worksheet_master_screen.dart';
 import 'package:kres_requests2/screens/startup/date_tree_view.dart';
-import 'package:window_control/window_listener.dart';
 
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/settings/settings_screen.dart';
@@ -52,8 +51,7 @@ class StartupScreen extends StatelessWidget {
                         // TODO: Implement new settings screen
                         return Navigator.push(
                           context,
-                          SettingsScreen.createRoute(
-                              context.watch<RepositoryModule>()),
+                          SettingsScreen.createRoute(repositoryModule),
                         );
                       },
                     ),
@@ -63,36 +61,37 @@ class StartupScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: WindowListener(
-          onWindowClosing: () => Future.value(true),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 700.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _createGroupTitle(context, 'Действия'),
-                  _createMainActionsButtons(context),
-                  _createGroupTitle(context, 'Последние'),
-                  _createRecentlyOpenedItems(),
-                  BlocListener(listener: (context, state) {
-                    if (state is StartupOpenRequestsSetState) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => WorksheetMasterScreen(
-                            repositoryModule: repositoryModule,
-                            documentService: state.target,
-                          ),
-                        ),
-                      );
-                    }
-                  }),
-                ],
+        body: BlocListener<StartupBloc, StartupState>(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _createGroupTitle(context, 'Действия'),
+                    _createMainActionsButtons(context),
+                    _createGroupTitle(context, 'Последние'),
+                    _createRecentlyOpenedItems(),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+            cubit: _startupBloc,
+            listener: (context, state) {
+              if (state is StartupOpenRequestsSetState) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WorksheetMasterScreen(
+                      repositoryModule: repositoryModule,
+                      documentService: state.target,
+                    ),
+                  ),
+                ).then(
+                  (_) => _startupBloc.add(StartupGotUserEvent(state.user)),
+                );
+              }
+            }),
       );
 
   Widget _createGroupTitle(BuildContext context, String groupTitle) => Padding(

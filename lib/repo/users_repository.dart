@@ -4,7 +4,6 @@ import 'package:kres_requests2/data/models/credentials.dart';
 import 'package:kres_requests2/data/models/server_request.dart';
 import 'package:kres_requests2/models/user.dart';
 import 'package:kres_requests2/repo/api_repository.dart';
-import 'package:kres_requests2/repo/server_exception.dart';
 
 /// Fetches information about users
 class UsersRepository with ApiRepositoryMixin {
@@ -17,8 +16,7 @@ class UsersRepository with ApiRepositoryMixin {
   User _fetchedUser;
 
   UsersRepository(this._apiServer, this._credentialsManager)
-      : assert(_apiServer != null),
-        assert(_credentialsManager != null);
+      : assert(_apiServer != null);
 
   /// Returns information about currently logged in user
   Future<User> getUserDetails() async {
@@ -31,10 +29,7 @@ class UsersRepository with ApiRepositoryMixin {
     _fetchedUser = null;
     _fetchedUserCredentials = credentials;
 
-    if (credentials == null) throw UnauthorizedException();
-
     final response = await _apiServer.getData(
-      credentials,
       ServerRequest.get(_kUsers),
     );
 

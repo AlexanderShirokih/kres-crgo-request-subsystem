@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kres_requests2/domain/document_service.dart';
 
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/screens/common.dart';
 
 abstract class BaseImporterScreen extends StatelessWidget {
   final String title;
   final WorksheetImporterRepository importerRepository;
-  final Document targetDocument;
+  final DocumentService targetDocument;
   final WidgetBuilder mainWidgetBuilder;
   final bool forceFileSelection;
 
@@ -42,7 +42,7 @@ abstract class BaseImporterScreen extends StatelessWidget {
           ),
           child: Builder(
             builder: (ctx) => BlocConsumer<ImporterBloc, ImporterState>(
-              cubit: ctx.bloc<ImporterBloc>(),
+              cubit: ctx.read<ImporterBloc>(),
               builder: (_, state) {
                 if (state is ImportLoadingState) {
                   return LoadingView("Загрузка файла ${state.path}");
@@ -61,7 +61,7 @@ abstract class BaseImporterScreen extends StatelessWidget {
                 if (state is WorksheetReadyState) {
                   Navigator.pop(context, state.document);
                 } else if (state is ImporterProccessMissingState) {
-                  Scaffold.of(context).showSnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       duration: Duration(seconds: 6),
                       content:

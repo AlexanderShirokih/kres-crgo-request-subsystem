@@ -16,7 +16,7 @@ part 'importer_state.dart';
 
 class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
   final WorksheetImporterRepository importerRepository;
-  final Document targetDocument;
+  final DocumentService targetDocument;
   final Future<String> Function() fileChooser;
   final dynamic importerParams;
 

@@ -29,8 +29,9 @@ class Document {
     this._activeSet,
   );
 
-  Document({List<RequestSet> requestSets})
+  Document({List<RequestSet> requestSets, RequestSet active})
       : _requestSets = requestSets,
+        _activeSet = max(requestSets.indexWhere((e) => e.id == active.id), 0),
         assert(requestSets != null);
 
   Document.empty() {

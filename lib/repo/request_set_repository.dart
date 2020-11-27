@@ -1,6 +1,5 @@
 import 'package:intl/intl.dart';
 import 'package:kres_requests2/data/api_server.dart';
-import 'package:kres_requests2/data/credentials_manager.dart';
 import 'package:kres_requests2/data/models/server_request.dart';
 import 'package:kres_requests2/models/request_set.dart';
 
@@ -16,13 +15,10 @@ class RequestsSetRepository with ApiRepositoryMixin {
   static const int _kDefaultPageSize = 5;
 
   final ApiServer _apiServer;
-  final CredentialsManager _credentialsManager;
 
   RequestsSetWrapper _currentRequestsSets;
 
-  RequestsSetRepository(this._apiServer, this._credentialsManager)
-      : assert(_apiServer != null),
-        assert(_credentialsManager != null);
+  RequestsSetRepository(this._apiServer) : assert(_apiServer != null);
 
   /// Creates new request set
   /// Updates data if ID is not `null`
@@ -33,7 +29,6 @@ class RequestsSetRepository with ApiRepositoryMixin {
   ]) async {
     final dateFormat = DateFormat('yyyy-MM-dd');
     final response = await _apiServer.getData(
-      _credentialsManager.getCredentials(),
       ServerRequest.post(_kRequestSet, body: {
         'name': name,
         'date': dateFormat.format(targetDate),
@@ -47,7 +42,6 @@ class RequestsSetRepository with ApiRepositoryMixin {
   /// Fetches information about requests sets from 0 to page
   Future<RequestsSetWrapper> getRequestSets(int pageUntil) async {
     final response = await _apiServer.getData(
-      _credentialsManager.getCredentials(),
       ServerRequest.get(
         _kRequestSet,
         requestParams: {
@@ -79,7 +73,6 @@ class RequestsSetRepository with ApiRepositoryMixin {
   /// Fetches all request sets
   Future<List<RequestSet>> getAllRequestSets() async {
     final response = await _apiServer.getData(
-      _credentialsManager.getCredentials(),
       ServerRequest.get(_kRequestSetAll),
     );
 
@@ -92,7 +85,6 @@ class RequestsSetRepository with ApiRepositoryMixin {
 
   Future<RequestSet> getRequestSetById(int id) async {
     final response = await _apiServer.getData(
-      _credentialsManager.getCredentials(),
       ServerRequest.get("$_kRequestSet/id"),
     );
 
@@ -103,11 +95,26 @@ class RequestsSetRepository with ApiRepositoryMixin {
   }
 
   /// Fetches all request sets by `date`
-  Future<List<RequestSet>> getAllRequestSetsByDate(DateTime date) {
-    // TODO: Create REST API
-    throw UnimplementedError();
-  }
+  /// If `full` is `false` only id, date, name fields on `RequestSet` will be
+  /// set.
+  Future<List<RequestSet>> getAllRequestSetsByDate(
+      DateTime date, bool full) async {
+    final response = await _apiServer.getData(
+      ServerRequest.get(
+        _kRequestSetAll,
+        requestParams: {
+          "date": DateFormat('yyyy-MM-dd').format(date).toString(),
+          "full": full,
+        },
+      ),
+    );
 
-  // TODO
-  Future<RequestSet> createNewWorksheet() {}
+    return getResponseData(
+      response,
+      (body) => (body as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .map((e) => RequestSet.fromJson(e))
+          .toList(),
+    );
+  }
 }
