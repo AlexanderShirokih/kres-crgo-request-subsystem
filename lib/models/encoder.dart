@@ -1,5 +1,7 @@
 /// Converts object to JSON and vice versa
 abstract class Encoder<E> {
+  const Encoder();
+
   /// Converts JSON representation to entity instance
   E fromJson(Map<String, dynamic> data);
 

@@ -8,11 +8,11 @@ import 'package:kres_requests2/repo/api_repository.dart';
 /// - For adding a new entity:            POST   requestPath/
 /// - For removing existing entity:       DELETE requestPath/{id}
 /// - For getting a list of all entities: GET requestPath/
-abstract class BaseCRDRepository<E> with ApiRepositoryMixin {
+abstract class BaseCRUDRepository<E> with ApiRepositoryMixin {
   final ApiServer _apiServer;
   final String _requestPath;
 
-  const BaseCRDRepository(
+  const BaseCRUDRepository(
     this._apiServer,
     this._requestPath,
   )   : assert(_requestPath != null),

@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/models/entity.dart';
 import 'package:kres_requests2/models/encoder.dart';
-import 'package:kres_requests2/repo/base_crd_repository.dart';
+import 'package:kres_requests2/repo/base_crud_repository.dart';
 import 'package:kres_requests2/bloc/management/management_bloc.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/management/management_editor_dialog.dart';
@@ -19,14 +19,14 @@ abstract class BaseManagementScreen<E extends Entity> extends StatelessWidget
     Key key,
     @required this.title,
     @required Encoder<E> typeEncoder,
-    @required BaseCRDRepository<E> repository,
+    @required BaseCRUDRepository<E> repository,
   })  : _managementBloc = ManagementBloc<E>(repository, typeEncoder),
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(),
       body: BlocConsumer<ManagementBloc<E>, ManagementState>(
         cubit: _managementBloc,
         builder: (context, state) {

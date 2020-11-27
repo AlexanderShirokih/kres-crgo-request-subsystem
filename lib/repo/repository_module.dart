@@ -1,5 +1,6 @@
 import 'package:kres_requests2/data/api_server.dart';
 import 'package:kres_requests2/data/credentials_manager.dart';
+import 'package:kres_requests2/repo/positions_repository.dart';
 import 'package:kres_requests2/repo/request_set_repository.dart';
 import 'package:kres_requests2/repo/request_types_repository.dart';
 import 'package:kres_requests2/repo/users_repository.dart';
@@ -20,7 +21,6 @@ class RepositoryModule {
   final ConfigRepository _configRepository;
   final SettingsRepository _settingsRepository;
   final RequestsRepository _requestsRepository;
-  final EmployeesRepository _employeeRepository;
   final CountersImporterRepository _countersRepository;
 
   final ApiServer _apiServer;
@@ -49,14 +49,6 @@ class RepositoryModule {
       ),
     );
 
-    // TODO: TEMPORARY DISABLED FEATURE
-    final employeeRepo = EmployeesRepository(
-      // (jsonDecode(await File("employees.json").readAsString()) as List<dynamic>)
-      //     .map((e) => Employee.fromJson(e))
-      //     .toList(),
-      [],
-    );
-
     final countersRepo = CountersImporterRepository(
       importer: CountersImporter(configRepo),
     );
@@ -65,7 +57,6 @@ class RepositoryModule {
       configRepo,
       settingsRepo,
       requestsRepo,
-      employeeRepo,
       countersRepo,
       apiServer,
       credentialsManager,
@@ -76,7 +67,6 @@ class RepositoryModule {
     this._configRepository,
     this._settingsRepository,
     this._requestsRepository,
-    this._employeeRepository,
     this._countersRepository,
     this._apiServer,
     this._credentialsManager,
@@ -87,8 +77,6 @@ class RepositoryModule {
   SettingsRepository getSettingsRepository() => _settingsRepository;
 
   ConfigRepository getConfigRepository() => _configRepository;
-
-  EmployeesRepository getEmployeesRepository() => _employeeRepository;
 
   CountersImporterRepository getCountersImporterRepository() =>
       _countersRepository;
@@ -101,6 +89,12 @@ class RepositoryModule {
 
   RequestTypeRepository getRequestTypeRepository() =>
       RequestTypeRepository(_apiServer);
+
+  PositionsRepository getPositionsRepository() =>
+      PositionsRepository(_apiServer);
+
+  EmployeesRepository getEmployeesRepository() =>
+      EmployeesRepository(_apiServer);
 
   CredentialsManager getCredentialsManager() => _credentialsManager;
 }

@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
+import 'package:kres_requests2/screens/management/positions_management_screen.dart';
 import 'package:kres_requests2/screens/management/request_type_management_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -37,6 +38,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'Сотрудники',
                     () =>
                         RequestTypesManagementScreen(widget.repositoryModule)),
+                _managementItem('Должности',
+                    () => PositionsManagementScreen(widget.repositoryModule)),
                 _managementItem(
                     'Типы заявок',
                     () =>

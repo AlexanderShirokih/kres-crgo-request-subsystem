@@ -5,7 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/models/entity.dart';
 import 'package:kres_requests2/models/encoder.dart';
 import 'package:kres_requests2/models/optional_data.dart';
-import 'package:kres_requests2/repo/base_crd_repository.dart';
+import 'package:kres_requests2/repo/base_crud_repository.dart';
 import 'package:meta/meta.dart';
 
 part 'management_event.dart';
@@ -15,7 +15,7 @@ part 'management_state.dart';
 class ManagementBloc<E extends Entity>
     extends Bloc<ManagementEvent, ManagementState> {
   final Encoder<E> _typeEncoder;
-  final BaseCRDRepository<E> _repository;
+  final BaseCRUDRepository<E> _repository;
 
   ManagementBloc(this._repository, this._typeEncoder)
       : super(ManagementInitial()) {
