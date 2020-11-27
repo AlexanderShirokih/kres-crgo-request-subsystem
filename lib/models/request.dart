@@ -36,10 +36,11 @@ class RequestType extends Equatable implements Entity<int> {
 
   @override
   int getId() => id;
-
 }
 
 class _RequestTypeEncoder extends Encoder<RequestType> {
+  const _RequestTypeEncoder();
+
   @override
   RequestType fromJson(Map<String, dynamic> data) => RequestType(
         id: data['id'],

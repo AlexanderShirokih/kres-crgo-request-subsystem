@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
+import 'package:kres_requests2/screens/management/employees_management_screen.dart';
 import 'package:kres_requests2/screens/management/positions_management_screen.dart';
 import 'package:kres_requests2/screens/management/request_type_management_screen.dart';
 
@@ -34,10 +35,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: ListView(
               padding: const EdgeInsets.all(12.0),
               children: [
-                _managementItem(
-                    'Сотрудники',
-                    () =>
-                        RequestTypesManagementScreen(widget.repositoryModule)),
+                _managementItem('Сотрудники',
+                    () => EmployeesManagementScreen(widget.repositoryModule)),
                 _managementItem('Должности',
                     () => PositionsManagementScreen(widget.repositoryModule)),
                 _managementItem(

@@ -27,6 +27,9 @@ class Position extends Equatable implements Entity<int> {
   @override
   int getId() => id;
 
+  @override
+  String toString() => name;
+
   static Encoder<Position> encoder() => _PositionEncoder();
 }
 

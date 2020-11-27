@@ -92,8 +92,7 @@ abstract class BaseManagementScreen<E extends Entity> extends StatelessWidget
           } else if (state is ManagementEditingState<E>) {
             showDialog<Map<String, dynamic>>(
               context: context,
-              builder: (_) => ManagementEditorDialog(
-                  state.entity == null, buildEditableFields(state.entity)),
+              builder: (_) => createEditorDialog(state.entity),
             ).then((editingResult) {
               if (editingResult != null) {
                 _managementBloc.add(
@@ -107,6 +106,10 @@ abstract class BaseManagementScreen<E extends Entity> extends StatelessWidget
   }
 
   List<EditableField> buildEditableFields(E e);
+
+  /// Creates dialog for editing an entity
+  Widget createEditorDialog(E entity) =>
+      ManagementEditorDialog(entity == null, buildEditableFields(entity));
 }
 
 abstract class ContentBuildContract<E> {
@@ -155,25 +158,26 @@ class __ManagedContentViewState<E extends Entity>
         Center(
           heightFactor: 1.1,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 24.0),
               Text(widget.title, style: Theme.of(context).textTheme.headline4),
               const SizedBox(height: 24.0),
-              Container(
-                width: 840.0,
-                child: SingleChildScrollView(
-                  child: DataTable(
-                    columns: widget.builder.buildColumns(),
-                    rows: widget.data
-                        .map((e) => widget.builder.buildRow(
-                              e,
-                              isSelected: e == _selected,
-                              onTap: () => setState(() {
-                                _selected = e;
-                              }),
-                            ))
-                        .toList(),
+              Expanded(
+                child: Container(
+                  width: 840.0,
+                  child: SingleChildScrollView(
+                    child: DataTable(
+                      columns: widget.builder.buildColumns(),
+                      rows: widget.data
+                          .map((e) => widget.builder.buildRow(
+                                e,
+                                isSelected: e == _selected,
+                                onTap: () => setState(() {
+                                  _selected = e;
+                                }),
+                              ))
+                          .toList(),
+                    ),
                   ),
                 ),
               ),

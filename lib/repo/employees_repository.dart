@@ -1,13 +1,18 @@
+import 'package:kres_requests2/data/api_server.dart';
 import 'package:kres_requests2/models/employee.dart';
+import 'package:kres_requests2/repo/base_crud_repository.dart';
 
-class EmployeesRepository {
-  final List<Employee> _allEmployees;
+/// Repository class for managing [Employee]s
+class EmployeesRepository extends BaseCRUDRepository<Employee> {
+  const EmployeesRepository(ApiServer apiServer)
+      : super(apiServer, 'employees');
 
-  const EmployeesRepository(this._allEmployees);
+  @override
+  Employee fromJson(dynamic data) => Employee.encoder().fromJson(data);
 
-  List<Employee> getAllEmployees() => List.unmodifiable(_allEmployees);
+  @override
+  int getId(Employee entity) => entity.id;
 
-  List<Employee> getAllByMinGroup(int minGroup) => getAllEmployees()
-      .where((element) => element.accessGroup >= minGroup)
-      .toList();
+  @override
+  dynamic toJson(Employee entity) => entity.toJson();
 }

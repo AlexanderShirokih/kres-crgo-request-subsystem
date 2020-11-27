@@ -42,7 +42,7 @@ class PositionsManagementScreen extends BaseManagementScreen<Position> {
           'name',
           e?.name ?? '',
           32,
-          RegExp('[\wА-я -]{1,16}'),
+          RegExp('[\wА-я -]{1,32}'),
         ),
       ];
 }

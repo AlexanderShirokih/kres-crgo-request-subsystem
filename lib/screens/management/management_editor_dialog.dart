@@ -27,11 +27,12 @@ class ManagementEditorDialog extends StatefulWidget {
 
 class _ManagementEditorDialogState<E> extends State<ManagementEditorDialog> {
   final _formKey = GlobalKey<FormState>();
-  bool _isValid = true;
+  bool _isValid;
   Map<EditableField, TextEditingController> _fieldControllers;
 
   @override
   void initState() {
+    _isValid = !widget.isNew;
     _fieldControllers = Map.fromIterable(
       widget.fields,
       key: (e) => e,
@@ -51,7 +52,7 @@ class _ManagementEditorDialogState<E> extends State<ManagementEditorDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
-          widget.isNew == null ? 'Добавление записи' : 'Редактирование записи'),
+          widget.isNew ? 'Добавление записи' : 'Редактирование записи'),
       content: Container(
         width: 460.0,
         child: _buildLayout(),

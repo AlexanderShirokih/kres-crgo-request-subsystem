@@ -2,18 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:intl/intl.dart';
-import 'package:kres_requests2/domain/request_set_service.dart';
 
+import 'package:kres_requests2/domain/request_set_service.dart';
 import 'package:kres_requests2/models/employee.dart';
-import 'package:kres_requests2/models/request_set.dart';
-import 'package:kres_requests2/repo/employees_repository.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 
 class WorksheetConfigView extends StatefulWidget {
   final RequestSetService requestSetService;
   final RepositoryModule repositoryModule;
 
-  const WorksheetConfigView(this.repositoryModule, this.requestSetService);
+  WorksheetConfigView(this.repositoryModule, this.requestSetService);
 
   @override
   State createState() => _WorksheetConfigViewState();
@@ -23,53 +21,75 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
   @override
   Widget build(BuildContext context) {
     final w = widget.requestSetService;
-    return Form(
-      child: Builder(
-        builder: (ctx) => Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 8.0, top: 24.0),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ..._header(8.0, "Выдающий распоряжение:"),
-                const SizedBox(height: 18.0),
-                _createDropdownEmployeeForm(
-                  positionDesc: "Выберите выдающего распоряжения",
-                  current: w.getChiefEmployee(),
-                  employees: _getAllEmployees(ctx, 4),
-                  onChanged: (Employee value) =>
-                      w.setChiefEmployee(value).then((isOk) => setState(() {})),
+    return FutureBuilder<List<Employee>>(
+      future: widget.repositoryModule.getEmployeesRepository().getAll(),
+      builder: (context, snap) {
+        final employees =
+            (snap.hasError || !snap.hasData) ? <Employee>[] : snap.data;
+
+        /// Returns a list of all employees, including all currently present
+        /// (even if they is not present if [EmployeesRepository],
+        /// but exists in [RequestSet] data)
+        List<Employee> getAllEmployees([int minGroup]) {
+          final used = widget.requestSetService.getUsedEmployee();
+          final all = minGroup == null
+              ? employees
+              : employees
+                  .where((element) => element.accessGroup >= minGroup)
+                  .toList();
+          return [...used, ...all].toSet().toList(growable: false);
+        }
+
+        return Form(
+          child: Builder(
+            builder: (ctx) => Padding(
+              padding: const EdgeInsets.only(left: 16.0, right: 8.0, top: 24.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ..._header(8.0, "Выдающий распоряжение:"),
+                    const SizedBox(height: 18.0),
+                    _createDropdownEmployeeForm(
+                      positionDesc: "Выберите выдающего распоряжения",
+                      current: w.getChiefEmployee(),
+                      employees: getAllEmployees(4),
+                      onChanged: (Employee value) => w
+                          .setChiefEmployee(value)
+                          .then((isOk) => setState(() {})),
+                    ),
+                    const SizedBox(height: 28.0),
+                    ..._showMainEmployee(employees, w),
+                    const SizedBox(height: 24.0),
+                    ..._showTeamMembers(employees, ctx, w),
+                    const SizedBox(height: 24.0),
+                    _DatePicker(w),
+                    const SizedBox(height: 28.0),
+                    ..._showWorkTypes(w),
+                  ],
                 ),
-                const SizedBox(height: 28.0),
-                ..._showMainEmployee(ctx, w),
-                const SizedBox(height: 24.0),
-                ..._showTeamMembers(ctx, w),
-                const SizedBox(height: 24.0),
-                _DatePicker(w),
-                const SizedBox(height: 28.0),
-                ..._showWorkTypes(w),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   Iterable<Widget> _showMainEmployee(
-      BuildContext context, RequestSetService w) sync* {
+      List<Employee> employees, RequestSetService w) sync* {
     yield* _header(4.0, "Производитель работ:");
     yield const SizedBox(height: 4.0);
     yield _createDropdownEmployeeForm(
       positionDesc: "Выберите производителя работ",
       current: w.getMainEmployee(),
-      employees: _getAllEmployees(context),
+      employees: employees,
       onChanged: (Employee value) =>
           w.setMainEmployee(value).then((isOk) => setState(() {})),
     );
   }
 
-  Iterable<Widget> _showTeamMembers(
+  Iterable<Widget> _showTeamMembers(List<Employee> employees,
       BuildContext context, RequestSetService w) sync* {
     yield Row(
       children: [
@@ -91,7 +111,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
     );
     yield const SizedBox(height: 4.0);
     yield* _spreadTeamMembers(
-      _getAllEmployees(context),
+      employees,
       w.getMembersEmployee(),
     );
   }
@@ -142,20 +162,6 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
           ),
         ),
       );
-
-  /// Returns a list of all employees, including all currently present
-  /// (even if they is not present if [EmployeesRepository],
-  /// but exists in [RequestSet] data)
-  List<Employee> _getAllEmployees(BuildContext context, [int minGroup]) {
-    final w = widget.requestSetService;
-    final repo = widget.repositoryModule.getEmployeesRepository();
-    final used = w.getUsedEmployee();
-    final all = minGroup == null
-        ? repo.getAllEmployees()
-        : repo.getAllByMinGroup(minGroup);
-
-    return [...used, ...all].toSet().toList(growable: false);
-  }
 
   Widget _createDropdownEmployeeForm({
     String positionDesc,

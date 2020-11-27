@@ -10,7 +10,7 @@ import 'package:kres_requests2/screens/editor/worksheet_master_screen.dart';
 import 'package:kres_requests2/screens/startup/date_tree_view.dart';
 
 import 'package:kres_requests2/repo/repository_module.dart';
-import 'package:kres_requests2/screens/settings/settings_screen.dart';
+import 'package:kres_requests2/screens/management/preferences_screen.dart';
 import 'package:kres_requests2/screens/startup/startup_screen_buttons.dart';
 import 'package:kres_requests2/bloc/startup/startup_bloc.dart';
 
