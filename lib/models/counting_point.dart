@@ -101,6 +101,10 @@ class CounterType extends Equatable implements Entity<int> {
     this.singlePhased,
   });
 
+  @override
+  String toString() =>
+      '$name, ${singlePhased ? '1 ф.' : '1 ф.'}, $bits р., ${accuracy.describeValue()} кл.,';
+
   static CounterType fromJson(Map<String, dynamic> data) =>
       encoder().fromJson(data);
 

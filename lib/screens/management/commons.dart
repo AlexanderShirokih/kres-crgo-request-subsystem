@@ -11,13 +11,13 @@ Widget buildFixedWidthText(String text, double minWidth) => ConstrainedBox(
 
 bool _validateNotEmptyField(String text) => text == null || text.isEmpty;
 
-/// Builds
+/// Builds row with text and text form field
 Widget buildLabeledTextField({
   @required String fieldName,
   @required TextEditingController fieldController,
-  @required double labelWidth,
   @required int maxLength,
   bool Function(String) validatorPredicate = _validateNotEmptyField,
+  double labelWidth = 160.0,
   double fieldWidth = 300.0,
 }) =>
     Row(
@@ -39,7 +39,8 @@ Widget buildLabeledTextField({
     );
 
 Widget buildDropdownField<T>({
-  @required double labelWidth,
+  bool allowEmptyValues = false,
+  double labelWidth = 160.0,
   @required String labelName,
   @required double buttonWidth,
   @required T value,
@@ -53,6 +54,8 @@ Widget buildDropdownField<T>({
         SizedBox(
           width: buttonWidth,
           child: DropdownButtonFormField<T>(
+            autovalidateMode: AutovalidateMode.always,
+            validator: (value) => allowEmptyValues || value != null ? null : '',
             value: value,
             items: items == null
                 ? null
