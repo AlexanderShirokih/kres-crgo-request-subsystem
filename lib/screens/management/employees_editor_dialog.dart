@@ -2,25 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:kres_requests2/models/employee.dart';
 import 'package:kres_requests2/models/position.dart';
 import 'package:kres_requests2/repo/positions_repository.dart';
-import 'package:kres_requests2/screens/common.dart';
+import 'package:kres_requests2/screens/management/base_editor_dialog.dart';
+
+import 'commons.dart';
 
 /// Dialog for editing [Employee] items
-class EmployeeEditorDialog extends StatefulWidget {
+class EmployeeEditorDialog extends BaseEditorDialog {
   final PositionsRepository positionsRepository;
-  final Employee employee;
-  final bool isNew;
 
-  const EmployeeEditorDialog(this.employee, this.positionsRepository)
+  EmployeeEditorDialog(Employee employee, this.positionsRepository)
       : assert(positionsRepository != null),
-        isNew = employee == null;
+        super(entity: employee, encoder: Employee.encoder());
 
   @override
   _EmployeeEditorDialogState createState() => _EmployeeEditorDialogState();
 }
 
-class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
+class _EmployeeEditorDialogState extends BaseEditorDialogState<Employee> {
   static const _kLabelsWidth = 160.0;
-  final _formKey = GlobalKey<FormState>();
 
   List<Position> _fetchedPositions;
   List<int> _accessGroups;
@@ -28,12 +27,11 @@ class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
   Position _position;
   EmployeeStatus _status;
   int _accessGroup;
-  bool _isValid = true;
 
   @override
   void initState() {
     _accessGroups = const [2, 3, 4, 5];
-    widget.positionsRepository.getAll().then((value) {
+    (widget as EmployeeEditorDialog).positionsRepository.getAll().then((value) {
       if (mounted) {
         setState(() {
           _fetchedPositions = value;
@@ -41,11 +39,10 @@ class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
       }
     });
 
-    _isValid = !widget.isNew;
-    _position = widget.employee?.position;
-    _accessGroup = widget.employee?.accessGroup;
-    _status = widget.employee?.status;
-    _nameController = TextEditingController(text: widget.employee?.name ?? '');
+    _position = entity.position;
+    _accessGroup = entity?.accessGroup;
+    _status = entity?.status;
+    _nameController = TextEditingController(text: entity?.name ?? '');
     super.initState();
   }
 
@@ -56,59 +53,26 @@ class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.isNew ? 'Добавление записи' : 'Редактирование записи'),
-      content: Container(
-        width: 460.0,
-        child: _buildLayout(),
-      ),
-      actionsPadding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-      actions: [
-        FlatButton(
-          child: Text('Отменить'),
-          onPressed: () => Navigator.pop(context, null),
-        ),
-        const SizedBox(width: 12.0),
-        OutlinedButton(
-          child: Text('Сохранить'),
-          onPressed: _isValid
-              ? () => Navigator.pop(
-                  context,
-                  Employee(
-                    name: _nameController.text,
-                    position: _position,
-                    accessGroup: _accessGroup,
-                    status: _status ?? EmployeeStatus.WORKS,
-                  ).toJson())
-              : null,
-        ),
-      ],
-    );
-  }
+  Widget buildLayout() => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildNameField(),
+          const SizedBox(height: 12.0),
+          _buildPositionField(),
+          const SizedBox(height: 12.0),
+          _buildGroupField(),
+          const SizedBox(height: 12.0),
+          if (_status == EmployeeStatus.FIRED) _buildUnfireField(),
+        ],
+      );
 
-  Widget _buildLayout() => Form(
-        onChanged: () {
-          final isValid = _formKey.currentState.validate();
-          if (_isValid != isValid)
-            setState(() {
-              _isValid = isValid;
-            });
-        },
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildNameField(),
-            const SizedBox(height: 12.0),
-            _buildPositionField(),
-            const SizedBox(height: 12.0),
-            _buildGroupField(),
-            const SizedBox(height: 12.0),
-            if (_status == EmployeeStatus.FIRED) _buildUnfireField(),
-          ],
-        ),
+  @override
+  Employee onSave() => Employee(
+        name: _nameController.text,
+        position: _position,
+        accessGroup: _accessGroup,
+        status: _status ?? EmployeeStatus.WORKS,
       );
 
   Widget _buildUnfireField() => Row(
@@ -124,73 +88,34 @@ class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
         ],
       );
 
-  Widget _buildGroupField() => Row(
-        children: [
-          buildFixedWidthText('Группа э/б.: ', _kLabelsWidth),
-          SizedBox(
-            width: 80.0,
-            child: DropdownButtonFormField<int>(
-              autovalidateMode: AutovalidateMode.always,
-              validator: (value) => value == null ? '' : null,
-              value: _accessGroup,
-              items: _accessGroups
-                  .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-                      child: Text('$e гр.'),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (newGroup) => setState(() {
-                _accessGroup = newGroup;
-              }),
-            ),
-          )
-        ],
-      );
+  Widget _buildGroupField() => buildDropdownField(
+      labelName: 'Группа э/б.: ',
+      labelWidth: _kLabelsWidth,
+      value: _accessGroup,
+      valueExtractor: (e) => '$e гр.',
+      items: _accessGroups,
+      buttonWidth: 80.0,
+      onChanged: (newGroup) => setState(() {
+            _accessGroup = newGroup;
+          }));
 
-  Widget _buildPositionField() => Row(
-        children: [
-          buildFixedWidthText('Должность: ', _kLabelsWidth),
-          SizedBox(
-            width: 140.0,
-            child: DropdownButtonFormField<Position>(
-              autovalidateMode: AutovalidateMode.always,
-              validator: (value) => value == null ? '' : null,
-              value: _position,
-              items: _fetchedPositions == null
-                  ? null
-                  : _fetchedPositions
-                      .map(
-                        (e) => DropdownMenuItem(
-                          value: e,
-                          child: Text(e.name),
-                        ),
-                      )
-                      .toList(),
-              onChanged: (newPosition) => setState(() {
-                _position = newPosition;
-              }),
-            ),
-          )
-        ],
-      );
+  Widget _buildPositionField() => buildDropdownField(
+      labelName: 'Должность: ',
+      labelWidth: _kLabelsWidth,
+      value: _position,
+      valueExtractor: (pos) => pos.name,
+      items: _fetchedPositions,
+      buttonWidth: 140.0,
+      onChanged: (newPosition) => setState(() {
+            _position = newPosition;
+          }));
 
-  Widget _buildNameField() => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          buildFixedWidthText('Ф.И.О. работника: ', _kLabelsWidth),
-          SizedBox(
-            width: 300.0,
-            child: TextFormField(
-              controller: _nameController,
-              autovalidateMode: AutovalidateMode.always,
-              validator: (text) => text == null || text.isEmpty ? '' : null,
-              maxLength: 80,
-            ),
-          )
-        ],
+  Widget _buildNameField() => buildLabeledTextField(
+        maxLength: 80,
+        labelWidth: _kLabelsWidth,
+        fieldWidth: 300.0,
+        fieldName: 'Ф.И.О. работника: ',
+        fieldController: _nameController,
+        validatorPredicate: (text) => text == null || text.isEmpty,
       );
 }

@@ -19,6 +19,8 @@ import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 
+import 'counter_types_repository.dart';
+
 /// Repository injection point
 class RepositoryModule {
   final ConfigRepository _configRepository;
@@ -32,6 +34,7 @@ class RepositoryModule {
   final Lazy<PositionsRepository> _positionsRepository = Lazy();
   final Lazy<EmployeesRepository> _employeeRepository = Lazy();
   final Lazy<StreetRepository> _streetRepository = Lazy();
+  final Lazy<CounterTypesRepository> _counterTypesRepository = Lazy();
 
   /// Builds new instance of `RepositoryModule`
   static Future<RepositoryModule> buildRepositoryModule(
@@ -109,4 +112,7 @@ class RepositoryModule {
   DistrictRepository getDistrictRepository() => DistrictRepository(_apiServer);
 
   CredentialsManager getCredentialsManager() => _credentialsManager;
+
+  CounterTypesRepository getCounterTypesRepository() => _counterTypesRepository
+      .getValue(() => CounterTypesRepository(_apiServer));
 }

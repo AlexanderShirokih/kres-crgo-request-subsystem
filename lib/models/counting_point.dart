@@ -1,4 +1,7 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
+import 'package:kres_requests2/models/encoder.dart';
+import 'package:kres_requests2/models/entity.dart';
 
 /// Describes API request for adding or updating counting point info's
 class CountingPoint extends Equatable {
@@ -74,7 +77,7 @@ class CountingPoint extends Equatable {
 }
 
 /// Describes information about counter type
-class CounterType extends Equatable {
+class CounterType extends Equatable implements Entity<int> {
   /// Internal ID
   final int id;
 
@@ -98,7 +101,29 @@ class CounterType extends Equatable {
     this.singlePhased,
   });
 
-  static CounterType fromJson(Map<String, dynamic> data) => CounterType(
+  static CounterType fromJson(Map<String, dynamic> data) =>
+      encoder().fromJson(data);
+
+  @override
+  List<Object> get props => [
+        id,
+        name,
+        accuracy,
+        bits,
+        singlePhased,
+      ];
+
+  @override
+  int getId() => id;
+
+  static Encoder<CounterType> encoder() => _CounterTypeEncoder();
+}
+
+class _CounterTypeEncoder extends Encoder<CounterType> {
+  const _CounterTypeEncoder();
+
+  @override
+  CounterType fromJson(Map<String, dynamic> data) => CounterType(
         id: data['id'],
         name: data['name'],
         accuracy: data['accuracy'] == null
@@ -109,13 +134,13 @@ class CounterType extends Equatable {
       );
 
   @override
-  List<Object> get props => [
-        id,
-        name,
-        accuracy,
-        bits,
-        singlePhased,
-      ];
+  Map<String, dynamic> toJson(CounterType e) => {
+        'id': e.id,
+        'name': e.name,
+        'accuracy': e.accuracy == null ? null : describeEnum(e.accuracy),
+        'bits': e.bits,
+        'singlePhased': e.singlePhased,
+      };
 }
 
 /// Describes a counter accuracy level
@@ -137,6 +162,26 @@ enum CounterAccuracy {
 
   /// Values greater than 2.5
   DOUBLE_HALF_PLUS
+}
+
+extension CounterAccuracyExt on CounterAccuracy {
+  String describeValue() {
+    switch (this) {
+      case CounterAccuracy.HALF_MINUS:
+        return '<0.5';
+      case CounterAccuracy.HALF:
+        return '0.5';
+      case CounterAccuracy.SINGLE:
+        return '1.0';
+      case CounterAccuracy.DOUBLE:
+        return '2.0';
+      case CounterAccuracy.DOUBLE_HALF:
+        return '2.5';
+      case CounterAccuracy.DOUBLE_HALF_PLUS:
+        return '2.5<';
+    }
+    throw ('Unknown CounterAccuracy value: $this');
+  }
 }
 
 CounterAccuracy getCounterAccuracyFromString(String type) {

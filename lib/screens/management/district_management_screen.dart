@@ -36,12 +36,6 @@ class DistrictManagementScreen extends BaseManagementScreen<District> {
 
   @override
   List<EditableField> buildEditableFields(District e) => [
-        EditableField(
-          'Название района',
-          'name',
-          e?.name ?? '',
-          20,
-          RegExp('[\w]{1,20}'),
-        ),
+        EditableField('Название района', 'name', e?.name ?? '', 20),
       ];
 }

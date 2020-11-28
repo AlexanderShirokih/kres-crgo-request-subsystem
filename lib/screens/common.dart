@@ -70,12 +70,3 @@ String getSuggestedName(String ext) {
   String fmtDate(DateTime d) => _dateFormat.format(d);
   return "Заявки ${fmtDate(DateTime.now())}$ext";
 }
-
-/// Builds [Text] wrapped in [ConstrainedBox] with [minWidth]
-Widget buildFixedWidthText(String text, double minWidth) => ConstrainedBox(
-      constraints: BoxConstraints(minWidth: minWidth),
-      child: Text(
-        text,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );

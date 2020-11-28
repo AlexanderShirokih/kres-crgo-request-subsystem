@@ -42,19 +42,7 @@ class RequestTypesManagementScreen extends BaseManagementScreen<RequestType> {
 
   @override
   List<EditableField> buildEditableFields(RequestType e) => [
-        EditableField(
-          'Название',
-          'shortName',
-          e?.shortName ?? '',
-          16,
-          RegExp('[\wА-я -]{1,16}'),
-        ),
-        EditableField(
-          'Вид работ',
-          'fullName',
-          e?.fullName ?? '',
-          64,
-          RegExp('[\wА-я -]{1,64}'),
-        ),
+        EditableField('Название', 'shortName', e?.shortName ?? '', 16),
+        EditableField('Вид работ', 'fullName', e?.fullName ?? '', 64),
       ];
 }

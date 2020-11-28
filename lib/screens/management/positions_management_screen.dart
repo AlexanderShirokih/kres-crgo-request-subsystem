@@ -37,12 +37,6 @@ class PositionsManagementScreen extends BaseManagementScreen<Position> {
 
   @override
   List<EditableField> buildEditableFields(Position e) => [
-        EditableField(
-          'Название должности',
-          'name',
-          e?.name ?? '',
-          32,
-          RegExp('[\wА-я -]{1,32}'),
-        ),
+        EditableField('Название должности', 'name', e?.name ?? '', 32),
       ];
 }
