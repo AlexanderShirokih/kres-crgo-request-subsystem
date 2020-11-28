@@ -24,6 +24,6 @@ abstract class CachingCRUDRepository<E> extends BaseCRUDRepository<E> {
   @override
   Future delete(E entity) {
     _dataCache.invalidate();
-    return super.save(entity);
+    return super.delete(entity);
   }
 }

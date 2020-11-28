@@ -67,11 +67,10 @@ class ManagementBloc<E extends Entity>
   }
 
   Stream<ManagementState> _deleteEntity(E entity) => _safeApiCall(() async* {
-        final saved = state;
-        if (saved is ManagementDataState<E>) {
+        if (state is ManagementDataState<E>) {
           yield ManagementFetchingData();
           await _repository.delete(entity);
-          yield saved;
+          yield* _fetchData();
         }
       });
 

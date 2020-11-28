@@ -103,8 +103,23 @@ class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
             _buildPositionField(),
             const SizedBox(height: 12.0),
             _buildGroupField(),
+            const SizedBox(height: 12.0),
+            if (_status == EmployeeStatus.FIRED) _buildUnfireField(),
           ],
         ),
+      );
+
+  Widget _buildUnfireField() => Row(
+        children: [
+          Text('Сотрудник уволен.'),
+          const SizedBox(width: 18.0),
+          RaisedButton(
+            child: Text('Восстановить'),
+            onPressed: () => setState(() {
+              _status = EmployeeStatus.WORKS;
+            }),
+          ),
+        ],
       );
 
   Widget _buildGroupField() => Row(
