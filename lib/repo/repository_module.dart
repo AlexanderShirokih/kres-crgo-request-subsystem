@@ -4,6 +4,7 @@ import 'package:kres_requests2/repo/districts_repository.dart';
 import 'package:kres_requests2/repo/positions_repository.dart';
 import 'package:kres_requests2/repo/request_set_repository.dart';
 import 'package:kres_requests2/repo/request_types_repository.dart';
+import 'package:kres_requests2/repo/street_repository.dart';
 import 'package:kres_requests2/repo/users_repository.dart';
 import 'package:kres_requests2/utils/lazy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,6 +31,7 @@ class RepositoryModule {
 
   final Lazy<PositionsRepository> _positionsRepository = Lazy();
   final Lazy<EmployeesRepository> _employeeRepository = Lazy();
+  final Lazy<StreetRepository> _streetRepository = Lazy();
 
   /// Builds new instance of `RepositoryModule`
   static Future<RepositoryModule> buildRepositoryModule(
@@ -100,6 +102,9 @@ class RepositoryModule {
 
   EmployeesRepository getEmployeesRepository() =>
       _employeeRepository.getValue(() => EmployeesRepository(_apiServer));
+
+  StreetRepository getStreetRepository() =>
+      _streetRepository.getValue(() => StreetRepository(_apiServer));
 
   DistrictRepository getDistrictRepository() => DistrictRepository(_apiServer);
 

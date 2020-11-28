@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kres_requests2/models/employee.dart';
 import 'package:kres_requests2/models/position.dart';
 import 'package:kres_requests2/repo/positions_repository.dart';
+import 'package:kres_requests2/screens/common.dart';
 
 /// Dialog for editing [Employee] items
 class EmployeeEditorDialog extends StatefulWidget {
@@ -18,6 +19,7 @@ class EmployeeEditorDialog extends StatefulWidget {
 }
 
 class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
+  static const _kLabelsWidth = 160.0;
   final _formKey = GlobalKey<FormState>();
 
   List<Position> _fetchedPositions;
@@ -124,7 +126,7 @@ class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
 
   Widget _buildGroupField() => Row(
         children: [
-          _buildFixedWidthText('Группа э/б.: '),
+          buildFixedWidthText('Группа э/б.: ', _kLabelsWidth),
           SizedBox(
             width: 80.0,
             child: DropdownButtonFormField<int>(
@@ -149,7 +151,7 @@ class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
 
   Widget _buildPositionField() => Row(
         children: [
-          _buildFixedWidthText('Должность: '),
+          buildFixedWidthText('Должность: ', _kLabelsWidth),
           SizedBox(
             width: 140.0,
             child: DropdownButtonFormField<Position>(
@@ -179,7 +181,7 @@ class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
         children: [
-          _buildFixedWidthText('Ф.И.О. работника: '),
+          buildFixedWidthText('Ф.И.О. работника: ', _kLabelsWidth),
           SizedBox(
             width: 300.0,
             child: TextFormField(
@@ -190,13 +192,5 @@ class _EmployeeEditorDialogState extends State<EmployeeEditorDialog> {
             ),
           )
         ],
-      );
-
-  Widget _buildFixedWidthText(String text) => ConstrainedBox(
-        constraints: BoxConstraints(minWidth: 160.0),
-        child: Text(
-          text,
-          overflow: TextOverflow.ellipsis,
-        ),
       );
 }

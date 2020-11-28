@@ -7,6 +7,7 @@ import 'package:kres_requests2/screens/management/district_management_screen.dar
 import 'package:kres_requests2/screens/management/employees_management_screen.dart';
 import 'package:kres_requests2/screens/management/positions_management_screen.dart';
 import 'package:kres_requests2/screens/management/request_type_management_screen.dart';
+import 'package:kres_requests2/screens/management/street_management_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final SettingsRepository settingsRepository;
@@ -42,6 +43,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     () => PositionsManagementScreen(widget.repositoryModule)),
                 _managementItem('Районы',
                     () => DistrictManagementScreen(widget.repositoryModule)),
+                _managementItem('Улицы',
+                    () => StreetManagementScreen(widget.repositoryModule)),
                 _managementItem(
                     'Типы заявок',
                     () =>
