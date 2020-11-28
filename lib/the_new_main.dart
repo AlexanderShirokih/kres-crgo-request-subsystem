@@ -5,7 +5,6 @@ import 'package:kres_requests2/data/credentials_manager.dart';
 import 'package:kres_requests2/data/models/credentials.dart';
 import 'package:kres_requests2/screens/auth/authorization_screen.dart';
 import 'package:kres_requests2/screens/common.dart';
-import 'package:window_control/window_control.dart';
 
 // Short entry point for debug purposes
 void main() => runApp(MyApp());
@@ -14,9 +13,6 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Warm up [WindowControl] instance
-    WindowControl.instance;
-
     return FutureBuilder<ApplicationModule>(
       future: _injectRootModule(),
       builder: (context, snapshot) {
