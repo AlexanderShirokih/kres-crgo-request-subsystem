@@ -4,7 +4,6 @@ import 'package:kres_requests2/models/request.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
 import 'package:kres_requests2/domain/importer_exception.dart';
-import 'package:kres_requests2/repo/config_repository.dart';
 
 typedef TableChooser = Future<String> Function(List<String>);
 
@@ -18,10 +17,7 @@ class NamedWorksheet {
 class CountersImporter {
   static const _kDefaultRequestName = 'замена';
 
-  final ConfigRepository _configRepository;
-
-  const CountersImporter(this._configRepository)
-      : assert(_configRepository != null);
+  const CountersImporter();
 
   Future<NamedWorksheet> importAsRequestsList(
       String filePath, TableChooser chooser) async {
@@ -52,7 +48,7 @@ class CountersImporter {
         final additional = row[6]?.toString();
         // TODO: Unimplemented
         if (true) throw UnimplementedError();
-        return Request();
+        // return Request();
         // reqType: _kDefaultRequestName,
         // fullReqType:
         //     _configRepository.getFullRequestName(_kDefaultRequestName),

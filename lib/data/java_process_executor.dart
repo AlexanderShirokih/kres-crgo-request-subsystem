@@ -11,7 +11,7 @@ class JavaProcessExecutor extends ProcessExecutor {
 
   const JavaProcessExecutor({
     @required this.javaHome,
-    @required this.javaProcessInfo,
+    this.javaProcessInfo,
   })  : assert(javaHome != null),
         assert(javaProcessInfo != null);
 

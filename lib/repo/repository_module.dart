@@ -9,11 +9,7 @@ import 'package:kres_requests2/repo/users_repository.dart';
 import 'package:kres_requests2/utils/lazy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:kres_requests2/data/java_process_executor.dart';
-import 'package:kres_requests2/data/models/java_process_info.dart';
-import 'package:kres_requests2/data/request_processor.dart';
 import 'package:kres_requests2/domain/counters_importer.dart';
-import 'package:kres_requests2/repo/config_repository.dart';
 import 'package:kres_requests2/repo/employees_repository.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
@@ -23,7 +19,6 @@ import 'counter_types_repository.dart';
 
 /// Repository injection point
 class RepositoryModule {
-  final ConfigRepository _configRepository;
   final SettingsRepository _settingsRepository;
   final RequestsRepository _requestsRepository;
   final CountersImporterRepository _countersRepository;
@@ -47,24 +42,14 @@ class RepositoryModule {
     assert(sharedPreferences != null);
 
     final settingsRepo = SettingsRepository.fromPreferences(sharedPreferences);
-    final configRepo = await ConfigRepository.create();
 
-    final requestsRepo = RequestsRepository(
-      RequestProcessorImpl(
-        JavaProcessExecutor(
-          javaHome: () => settingsRepo.javaPath,
-          javaProcessInfo:
-              JavaProcessInfo.fromMap(configRepo.getRequestsProcessInfoData()),
-        ),
-      ),
-    );
+    final requestsRepo = RequestsRepository(null);
 
     final countersRepo = CountersImporterRepository(
-      importer: CountersImporter(configRepo),
+      importer: CountersImporter(),
     );
 
     return RepositoryModule._(
-      configRepo,
       settingsRepo,
       requestsRepo,
       countersRepo,
@@ -74,7 +59,6 @@ class RepositoryModule {
   }
 
   RepositoryModule._(
-    this._configRepository,
     this._settingsRepository,
     this._requestsRepository,
     this._countersRepository,
@@ -85,8 +69,6 @@ class RepositoryModule {
   RequestsRepository getRequestsRepository() => _requestsRepository;
 
   SettingsRepository getSettingsRepository() => _settingsRepository;
-
-  ConfigRepository getConfigRepository() => _configRepository;
 
   CountersImporterRepository getCountersImporterRepository() =>
       _countersRepository;
