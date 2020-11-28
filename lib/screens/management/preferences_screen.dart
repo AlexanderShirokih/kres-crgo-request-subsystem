@@ -39,13 +39,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: ListView(
             padding: const EdgeInsets.all(12.0),
             children: [
-              _addItem('Сотрудники', () => EmployeesManagementScreen(rep)),
-              _addItem('Должности', () => PositionsManagementScreen(rep)),
-              _addItem('Районы', () => DistrictManagementScreen(rep)),
-              _addItem('Улицы', () => StreetManagementScreen(rep)),
-              _addItem('Типы заявок', () => RequestTypesManagementScreen(rep)),
-              _addItem(
-                  'Приборы учёта', () => CounterTypesManagementScreen(rep)),
+              _addItem('Сотрудники', FontAwesomeIcons.users,
+                  () => EmployeesManagementScreen(rep)),
+              _addItem('Должности', FontAwesomeIcons.briefcase,
+                  () => PositionsManagementScreen(rep)),
+              _addItem('Районы', FontAwesomeIcons.city,
+                  () => DistrictManagementScreen(rep)),
+              _addItem('Улицы', FontAwesomeIcons.road,
+                  () => StreetManagementScreen(rep)),
+              _addItem('Типы заявок', FontAwesomeIcons.wrench,
+                  () => RequestTypesManagementScreen(rep)),
+              _addItem('Приборы учёта', FontAwesomeIcons.cog,
+                  () => CounterTypesManagementScreen(rep)),
             ],
           ),
         ),
@@ -53,10 +58,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _addItem(String title, Widget Function() managementClass) => Builder(
+  Widget _addItem(
+          String title, IconData iconData, Widget Function() managementClass) =>
+      Builder(
         builder: (context) => ListTile(
           contentPadding: EdgeInsets.all(12.0),
-          leading: FaIcon(FontAwesomeIcons.cog),
+          leading: FaIcon(iconData),
           title: Text(title),
           onTap: () => Navigator.push(
             context,
