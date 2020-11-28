@@ -10,8 +10,8 @@ import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/management/management_editor_dialog.dart';
 
 /// Base class for all management screens
-abstract class BaseManagementScreen<E extends Entity> extends StatelessWidget
-    implements ContentBuildContract<E> {
+abstract class BaseManagementScreen<E extends Entity<int>>
+    extends StatelessWidget implements ContentBuildContract<E> {
   final String title;
   final ManagementBloc<E> _managementBloc;
 
@@ -124,7 +124,7 @@ abstract class ContentBuildContract<E> {
   });
 }
 
-class _ManagedContentView<E extends Entity> extends StatefulWidget {
+class _ManagedContentView<E extends Entity<int>> extends StatefulWidget {
   final ContentBuildContract<E> builder;
   final List<E> data;
   final String title;
@@ -139,7 +139,7 @@ class _ManagedContentView<E extends Entity> extends StatefulWidget {
   __ManagedContentViewState createState() => __ManagedContentViewState<E>();
 }
 
-class __ManagedContentViewState<E extends Entity>
+class __ManagedContentViewState<E extends Entity<int>>
     extends State<_ManagedContentView> {
   E _selected;
 

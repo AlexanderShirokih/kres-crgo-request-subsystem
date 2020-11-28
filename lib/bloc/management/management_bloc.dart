@@ -12,7 +12,7 @@ part 'management_event.dart';
 
 part 'management_state.dart';
 
-class ManagementBloc<E extends Entity>
+class ManagementBloc<E extends Entity<int>>
     extends Bloc<ManagementEvent, ManagementState> {
   final Encoder<E> _typeEncoder;
   final BaseCRUDRepository<E> _repository;
