@@ -1,5 +1,6 @@
 import 'package:kres_requests2/data/api_server.dart';
 import 'package:kres_requests2/data/credentials_manager.dart';
+import 'package:kres_requests2/repo/districts_repository.dart';
 import 'package:kres_requests2/repo/positions_repository.dart';
 import 'package:kres_requests2/repo/request_set_repository.dart';
 import 'package:kres_requests2/repo/request_types_repository.dart';
@@ -99,6 +100,8 @@ class RepositoryModule {
 
   EmployeesRepository getEmployeesRepository() =>
       _employeeRepository.getValue(() => EmployeesRepository(_apiServer));
+
+  DistrictRepository getDistrictRepository() => DistrictRepository(_apiServer);
 
   CredentialsManager getCredentialsManager() => _credentialsManager;
 }
