@@ -47,6 +47,15 @@ class RequestsSetRepository with ApiRepositoryMixin {
     ensureOk(response);
   }
 
+  /// Removes request set from the document
+  Future<void> removeWorksheet(RequestSet set) async {
+    final response = await _apiServer.getData(
+      ServerRequest.delete('requests/worksheets/${set.id}'),
+    );
+
+    ensureOk(response);
+  }
+
   /// Creates new request set
   /// Updates data if ID is not `null`
   Future<RequestSet> createOrUpdateRequestSet(
@@ -56,7 +65,7 @@ class RequestsSetRepository with ApiRepositoryMixin {
   ]) async {
     final dateFormat = DateFormat('yyyy-MM-dd');
     final response = await _apiServer.getData(
-      ServerRequest.post(_kRequestSet, body: {
+      ServerRequest.post('$_kRequestSet/worksheets/', body: {
         'name': name,
         'date': dateFormat.format(targetDate),
         if (id != null) 'id': id

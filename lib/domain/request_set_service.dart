@@ -102,9 +102,15 @@ class RequestSetService {
   DateTime getDate() => _requestSet.date;
 
   /// Sets target date for this worksheet
-  Future<bool> setDate(DateTime newDate) {
-    // TODO:
-    return Future.value(false);
+  Future<bool> setDate(DateTime newDate) async {
+    try {
+      _requestSet.date = newDate;
+      await _repository.createOrUpdateRequestSet(
+          _requestSet.name, newDate, _requestSet.id);
+    } on ApiException {
+      return false;
+    }
+    return true;
   }
 
   /// Returns set of unique request types used in this worksheet
@@ -112,7 +118,7 @@ class RequestSetService {
       _requestSet.requests.map((e) => e.requestType).toSet();
 
   /// Returns list of all requests
-  List<Request> getRequests() => List.unmodifiable(_requestSet.requests);
+  List<Request> getRequests() => List.unmodifiable(_requestSet.requests ?? []);
 
   /// Swaps requests in list
   /// TODO: Pooled task
@@ -142,9 +148,17 @@ class RequestSetService {
   /// Returns request set name
   String getName() => _requestSet.name;
 
-  /// Sets request set name
-  /// TODO : Pooled task
-  void setName(String text) {}
+  /// Sets request set name. Returns `true` if renaming was successful
+  Future<bool> setName(String newName) async {
+    try {
+      _requestSet.name = newName;
+      await _repository.createOrUpdateRequestSet(
+          newName, _requestSet.date, _requestSet.id);
+    } on ApiException {
+      return false;
+    }
+    return true;
+  }
 
   RequestSetValidator validator() => RequestSetValidator(_requestSet);
 }

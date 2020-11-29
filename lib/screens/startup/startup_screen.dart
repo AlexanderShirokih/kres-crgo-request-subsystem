@@ -47,13 +47,10 @@ class StartupScreen extends StatelessWidget {
                     const SizedBox(width: 16.0),
                     IconButton(
                       icon: FaIcon(FontAwesomeIcons.cog),
-                      onPressed: () {
-                        // TODO: Implement new settings screen
-                        return Navigator.push(
-                          context,
-                          SettingsScreen.createRoute(repositoryModule),
-                        );
-                      },
+                      onPressed: () => Navigator.push(
+                        context,
+                        SettingsScreen.createRoute(repositoryModule),
+                      ),
                     ),
                   ],
                 ),
@@ -211,7 +208,7 @@ class StartupScreen extends StatelessWidget {
 
   void _pickRequestsSet(BuildContext context) => showDialog<RequestSet>(
         context: context,
-        child: Container(
+        builder: (_) => Container(
           width: 400,
           height: 600,
           child: DateTreeView(
@@ -222,9 +219,9 @@ class StartupScreen extends StatelessWidget {
         if (request != null) _startupBloc.add(StartupOpenRequestsSet(request));
       });
 
-  void _pickDate(BuildContext context) =>
-      showDialog<DateTime>(context: context, child: DateChooserDialog())
-          .then((chosenDate) {
+  void _pickDate(BuildContext context) => showDialog<DateTime>(
+          context: context,
+          builder: (_) => DateChooserDialog()).then((chosenDate) {
         if (chosenDate != null)
           _startupBloc.add(
               StartupCreateNewRequestsSet(chosenDate, RequestsSetSource.New));

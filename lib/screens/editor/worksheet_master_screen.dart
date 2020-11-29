@@ -4,14 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
 import 'package:kres_requests2/domain/document_service.dart';
-import 'package:kres_requests2/domain/request_set_service.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
-import 'package:kres_requests2/screens/confirmation_dialog.dart';
 import 'package:kres_requests2/screens/editor/search_box.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_editor_screen.dart';
-import 'package:kres_requests2/screens/editor/worksheet_tab_view.dart';
+import 'package:kres_requests2/screens/editor/worksheet_page_controller.dart';
 import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 import 'package:kres_requests2/screens/preview/worksheets_preview_screen.dart';
@@ -79,25 +77,27 @@ class WorksheetMasterScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context, WorksheetMasterState state) => Row(
-        children: [
-          _createPageController(context, state),
-          Expanded(
-            child: Container(
-              height: double.maxFinite,
-              child: WorkSheetEditorView(
-                documentService: _documentService,
-                requestSetService: _documentService.getEditableWorksheet(),
-                onDocumentsChanged: () => _worksheetBloc
-                    .add(WorksheetMasterRefreshDocumentStateEvent()),
-                highlighted: state is WorksheetMasterSearchingState
-                    ? state.filteredItems[state.active]
-                    : null,
-              ),
+  Widget _buildBody(BuildContext context, WorksheetMasterState state) {
+    return Row(
+      children: [
+        WorksheetPageController(_documentService),
+        Expanded(
+          child: Container(
+            height: double.maxFinite,
+            child: WorkSheetEditorView(
+              documentService: _documentService,
+              requestSetService: _documentService.getEditableWorksheet(),
+              onDocumentsChanged: () => _worksheetBloc
+                  .add(WorksheetMasterRefreshDocumentStateEvent()),
+              highlighted: state is WorksheetMasterSearchingState
+                  ? state.filteredItems[state.active]
+                  : null,
             ),
           ),
-        ],
-      );
+        ),
+      ],
+    );
+  }
 
   Widget _buildEndDrawer() =>
       BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
@@ -120,15 +120,7 @@ class WorksheetMasterScreen extends StatelessWidget {
             onPressed: () => Navigator.maybePop(context),
           ),
         ),
-        title: BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
-          cubit: _worksheetBloc,
-          builder: (_, state) {
-            if (state is WorksheetMasterIdleState) {
-              return Text('Редактирование - ${state.currentEditable.name}');
-            } else
-              return Text('...');
-          },
-        ),
+        title: Text('Редактирование документа'),
         actions: [
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.search),
@@ -170,73 +162,6 @@ class WorksheetMasterScreen extends StatelessWidget {
         ),
       );
 
-  Widget _createPageController(
-      BuildContext context, WorksheetMasterState state) {
-    final worksheets = _documentService.getEditableWorksheets();
-
-    Widget withClosure(RequestSetService current,
-            Widget Function(RequestSetService) closure) =>
-        closure(current);
-
-    return Container(
-      width: 280.0,
-      decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            width: 2.0,
-            color: Theme.of(context).secondaryHeaderColor,
-            style: BorderStyle.solid,
-          ),
-        ),
-      ),
-      height: double.maxFinite,
-      child: ListView.builder(
-        itemCount: worksheets.length + 1,
-        itemBuilder: (context, index) => index == worksheets.length
-            ? AddNewWorkSheetTabView((worksheetCreationMode) =>
-                _worksheetBloc.add(
-                    WorksheetMasterAddNewWorksheetEvent(worksheetCreationMode)))
-            : withClosure(
-                worksheets[index],
-                (current) => WorkSheetTabView(
-                  worksheet: current,
-                  filteredItemsCount: state is WorksheetMasterSearchingState
-                      ? state.filteredItems[current.getRequestSet()]?.length ??
-                          0
-                      : 0,
-                  isActive:
-                      current.getRequestSet() == _documentService.getActive(),
-                  onSelect: () => _worksheetBloc.add(
-                      WorksheetMasterWorksheetActionEvent(
-                          current, WorksheetAction.makeActive)),
-                  onRemove: worksheets.length == 1
-                      ? null
-                      : () {
-                          if (!current.isEmpty) {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (_) => ConfirmationDialog(
-                                message:
-                                    "Удалить страницу ${current.getName()}?",
-                              ),
-                            ).then((result) {
-                              if (result)
-                                _worksheetBloc.add(
-                                    WorksheetMasterWorksheetActionEvent(
-                                        current, WorksheetAction.remove));
-                            });
-                          } else
-                            _worksheetBloc.add(
-                                WorksheetMasterWorksheetActionEvent(
-                                    current, WorksheetAction.remove));
-                        },
-                ),
-              ),
-      ),
-    );
-  }
-
   void _onShowImporterScreen(
       BuildContext context, WorksheetMasterShowImporterState state) {
     switch (state.importerType) {
@@ -250,7 +175,6 @@ class WorksheetMasterScreen extends StatelessWidget {
           ),
         );
         break;
-      //
       case WorksheetImporterType.countersImporter:
         _navigateToImporter(
           context,

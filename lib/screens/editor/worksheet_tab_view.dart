@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/bloc/worksheets/worksheet_creation_mode.dart';
-import 'package:kres_requests2/domain/request_set_service.dart';
+import 'package:kres_requests2/models/request_set.dart';
 import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
 class AddNewWorkSheetTabView extends StatefulWidget {
@@ -90,11 +90,12 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
 }
 
 class WorkSheetTabView extends StatefulWidget {
-  final RequestSetService worksheet;
+  final RequestSet worksheet;
   final bool isActive;
   final int filteredItemsCount;
   final void Function() onSelect;
   final void Function() onRemove;
+  final void Function(String) onRename;
 
   const WorkSheetTabView({
     @required this.filteredItemsCount,
@@ -102,6 +103,7 @@ class WorkSheetTabView extends StatefulWidget {
     @required this.isActive,
     @required this.onSelect,
     @required this.onRemove,
+    @required this.onRename,
   })  : assert(filteredItemsCount != null),
         assert(worksheet != null),
         assert(isActive != null),
@@ -109,6 +111,7 @@ class WorkSheetTabView extends StatefulWidget {
 
   @override
   _WorkSheetTabViewState createState() => _WorkSheetTabViewState();
+
 }
 
 class _WorkSheetTabViewState extends State<WorkSheetTabView> {
@@ -117,7 +120,7 @@ class _WorkSheetTabViewState extends State<WorkSheetTabView> {
 
   @override
   void initState() {
-    _controller = TextEditingController(text: widget.worksheet.getName());
+    _controller = TextEditingController(text: widget.worksheet.name);
     super.initState();
   }
 
@@ -153,11 +156,11 @@ class _WorkSheetTabViewState extends State<WorkSheetTabView> {
                   ? CopyableTextField(
                       controller: _controller,
                       onSubmitted: (text) => setState(() {
-                        widget.worksheet.setName(text);
+                        widget.onRename(text);
                         _isEditable = false;
                       }),
                     )
-                  : Text(widget.worksheet.getName()),
+                  : Text(widget.worksheet.name),
               trailing: widget.onRemove != null
                   ? IconButton(
                       icon: FaIcon(FontAwesomeIcons.times),

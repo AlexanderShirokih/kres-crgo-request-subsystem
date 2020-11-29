@@ -30,16 +30,11 @@ class WorkSheetEditorView extends StatefulWidget {
         assert(onDocumentsChanged != null);
 
   @override
-  _WorkSheetEditorViewState createState() =>
-      _WorkSheetEditorViewState(requestSetService, documentService);
+  _WorkSheetEditorViewState createState() => _WorkSheetEditorViewState();
 }
 
 class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
   final _controller = ScrollController();
-  DocumentService _documentService;
-  RequestSetService _requestSet;
-
-  _WorkSheetEditorViewState(this._requestSet, this._documentService);
 
   Set<Request> _selectionList;
   Map<Request, int> _groupList;
@@ -88,7 +83,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
 
   @override
   Widget build(BuildContext context) {
-    final allRequests = _requestSet.getRequests();
+    final allRequests = widget.requestSetService.getRequests();
     final isEmpty = allRequests.isEmpty;
     final requests = _sortByHighlight(allRequests);
     if (isEmpty) _selectionList = null;
@@ -113,7 +108,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                     final toRemove = requests[oldIndex];
                     final toInsertAfter = requests[newIndex];
 
-                    _requestSet.swap(toRemove, toInsertAfter);
+                    widget.requestSetService.swap(toRemove, toInsertAfter);
                   }),
                   children: List.generate(
                     requests.length,
@@ -142,7 +137,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                                   ..remove(old)
                                   ..add(edited);
                               }
-                              _requestSet.update(old, edited);
+                              widget.requestSetService.update(old, edited);
                             });
                           widget.onDocumentsChanged();
                         });
@@ -308,7 +303,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                   ).then((confirmed) {
                     if (confirmed != null && confirmed) {
                       setState(() {
-                        _requestSet.remove(_selectionList);
+                        widget.requestSetService.remove(_selectionList);
                         _selectionList = null;
                       });
                     }
@@ -325,8 +320,8 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
   void _showWorksheetMoveDialog() => showDialog(
         context: context,
         builder: (_) => WorksheetMoveDialog(
-          document: _documentService,
-          sourceWorksheet: _requestSet.getRequestSet(),
+          document: widget.documentService,
+          sourceWorksheet: widget.requestSetService.getRequestSet(),
           movingRequests: _selectionList,
         ),
       ).then((hasChanges) {

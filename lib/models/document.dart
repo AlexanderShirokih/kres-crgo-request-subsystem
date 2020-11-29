@@ -34,30 +34,10 @@ class Document {
         _activeSet = max(requestSets.indexWhere((e) => e.id == active.id), 0),
         assert(requestSets != null);
 
-  Document.empty() {
-    _requestSets = [];
-    addEmptyWorksheet();
-  }
-
-  /// TODO: Move to repository
-  RequestSet addEmptyWorksheet({String name}) {
-    final worksheet = RequestSet(name: _getUniqueName(name));
+  void addWorksheet(RequestSet worksheet) {
     _requestSets.add(worksheet);
-    return worksheet;
   }
 
-  String _getUniqueName(String name) {
-    name ??= "Лист ${_requestSets.length + 1}";
-    String worksheetName;
-    var attempt = 0;
-    do {
-      worksheetName = "$name${attempt > 0 ? "($attempt)" : ""}";
-      attempt++;
-    } while (_requestSets.any((w) => w.name == worksheetName));
-    return worksheetName;
-  }
-
-  /// TODO: Move to repository
   void removeWorksheet(RequestSet requestSet) {
     if (requestSet == active) {
       final currIndex = _requestSets.indexOf(active);

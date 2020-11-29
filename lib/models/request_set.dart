@@ -1,17 +1,19 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:kres_requests2/models/employee.dart';
 import 'package:kres_requests2/models/request.dart';
 
 /// A set of requests dated with one date
-class RequestSet {
+// ignore: must_be_immutable
+class RequestSet extends Equatable {
   /// Request set ID
   final int id;
 
   /// Request set title
-  final String name;
+  String name;
 
   /// Requests target date
-  final DateTime date;
+  DateTime date;
 
   /// List of requests
   final List<Request> requests;
@@ -47,6 +49,9 @@ class RequestSet {
               .toSet(),
     );
   }
+
+  @override
+  List<Object> get props => [id, name, date, assignedEmployees, requests];
 }
 
 /// Wrapper that contains meta info about fetched requests sets

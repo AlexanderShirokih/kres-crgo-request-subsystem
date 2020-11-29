@@ -1,14 +1,18 @@
+import 'package:intl/intl.dart';
 import 'package:kres_requests2/domain/request_set_service.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/request.dart';
 import 'package:kres_requests2/models/request_set.dart';
 import 'package:kres_requests2/repo/request_set_repository.dart';
+import 'package:kres_requests2/repo/server_exception.dart';
 
 /// Encapsulates logic of editing document
 class DocumentService {
   final RequestsSetRepository _requestsSetRepository;
 
   final Document _document;
+
+  final Map<RequestSet, List<Request>> filtered = {};
 
   final Map<RequestSet, RequestSetService> _serviceCache = {};
 
@@ -23,20 +27,50 @@ class DocumentService {
   /// Adds new worksheet to the document with optional [name]
   /// If name is not passed default name will be generated
   /// If `makeActive` is `true` then newly created worksheet will be activated.
-  Future addNewWorksheet([String name, bool makeActive]) {
-    // TODO:
-    // state.currentDocument.active =
-    // state.currentDocument.addEmptyWorksheet();
-    // makeActive: _document.active = target;
-    throw UnimplementedError();
+  Future<bool> addNewWorksheet(
+      [String name, bool makeActive = false, DateTime targetDate]) async {
+    if (targetDate == null) {
+      targetDate = _document.requestSets.first.date;
+    }
+    if (name == null) {
+      final formattedDate = DateFormat('dd.MM.yyyy').format(targetDate);
+      name = _getUniqueName('Заявки на $formattedDate');
+    }
+
+    try {
+      final requestSet = await _requestsSetRepository.createOrUpdateRequestSet(
+          name, targetDate);
+      _document.addWorksheet(requestSet);
+      if (makeActive) {
+        setActive(requestSet);
+      }
+    } on ApiException {
+      return false;
+    }
+    return true;
+  }
+
+  String _getUniqueName(String name) {
+    name ??= "Лист ${getWorksheets().length + 1}";
+    String worksheetName;
+    var attempt = 0;
+    do {
+      worksheetName = "$name${attempt > 0 ? "($attempt)" : ""}";
+      attempt++;
+    } while (getWorksheets().any((w) => w.name == worksheetName));
+    return worksheetName;
   }
 
   /// Removes worksheet from the document
-  Future removeWorksheet(RequestSet targetRequestSet) {
-    _serviceCache.remove(targetRequestSet);
-
-    // TODO:
-    throw UnimplementedError();
+  Future<bool> removeWorksheet(RequestSet targetRequestSet) async {
+    try {
+      await _requestsSetRepository.removeWorksheet(targetRequestSet);
+      _serviceCache.remove(targetRequestSet);
+      _document.removeWorksheet(targetRequestSet);
+      return true;
+    } on ApiException {
+      return false;
+    }
   }
 
   /// Returns currently active worksheet
@@ -52,9 +86,7 @@ class DocumentService {
       return <RequestSet, List<Request>>{};
     searchText = searchText.toLowerCase();
 
-    RequestSet targetRequestSet = _document.active;
-
-    return Map.fromIterable(targetRequestSet.requests,
+    return Map.fromIterable(_document.requestSets,
         key: (worksheet) => worksheet,
         value: (worksheet) => worksheet.requests.where((Request request) {
               return (request.accountInfo.baseId?.toString()?.padLeft(6, '0') ??
@@ -75,7 +107,6 @@ class DocumentService {
             }).toList());
   }
 
-  // TODO: Remove element from cache when we remove request set from document
   RequestSetService _gerOrCreateRequestService(RequestSet set) {
     var cached = _serviceCache[set];
     if (cached == null) {
@@ -83,6 +114,11 @@ class DocumentService {
       _serviceCache[set] = cached;
     }
     return cached;
+  }
+
+  /// Gets current worksheet for editing
+  RequestSetService getEditor(RequestSet requestSet) {
+    return _gerOrCreateRequestService(requestSet);
   }
 
   /// Gets current worksheet for editing
