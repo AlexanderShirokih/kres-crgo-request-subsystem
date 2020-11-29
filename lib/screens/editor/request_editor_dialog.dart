@@ -1,14 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:kres_requests2/models/address.dart';
+import 'package:kres_requests2/models/counting_point.dart';
 import 'package:kres_requests2/models/request.dart';
+import 'package:kres_requests2/repo/counter_types_repository.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
+import 'package:kres_requests2/repo/request_types_repository.dart';
+import 'package:kres_requests2/repo/street_repository.dart';
 
 import '../copyable_textformfield.dart';
 
 class RequestEditorDialog extends StatefulWidget {
   final Request editingRequest;
+  final StreetRepository streetRepository;
+  final CounterTypesRepository counterTypesRepository;
+  final RequestTypeRepository requestTypeRepository;
 
-  const RequestEditorDialog({this.editingRequest});
+  RequestEditorDialog({
+    @required RepositoryModule repositoryModule,
+    this.editingRequest,
+  })  : streetRepository = repositoryModule.getStreetRepository(),
+        counterTypesRepository = repositoryModule.getCounterTypesRepository(),
+        requestTypeRepository = repositoryModule.getRequestTypeRepository();
 
   @override
   _RequestEditorDialogState createState() =>
@@ -17,25 +30,25 @@ class RequestEditorDialog extends StatefulWidget {
 
 class _RequestEditorDialogState extends State<RequestEditorDialog> {
   final _formKey = GlobalKey<FormState>();
-  final List<String> _availableRequestTypes = [
-    "замена",
-    "опломб.",
-    "распломб.",
-    "тех. пров.",
-    "ЦОП",
-    "подкл.",
-    "откл.",
-    "Другое"
-  ];
 
   TextEditingController _lsController;
-  TextEditingController _addressController;
+  TextEditingController _homeController;
+  TextEditingController _apartmentController;
   TextEditingController _nameController;
-  TextEditingController _counterController;
+  TextEditingController _counterNumberController;
   TextEditingController _additionalController;
-  TextEditingController _requestTypeController;
+  TextEditingController _tpController;
+  TextEditingController _feederController;
+  TextEditingController _pillarController;
 
   final Request _request;
+
+  CounterType _counterType;
+  RequestType _requestType;
+  Street _street;
+  int _checkQuarter;
+  int _checkYear;
+
   bool _isValid;
   bool _isNew;
 
@@ -43,35 +56,45 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
       : _isNew = _request == null,
         _isValid = _request != null;
 
-  // TODO: Split input fields
   @override
   void initState() {
     super.initState();
+    _requestType = _request?.requestType;
+    _street = _request?.accountInfo?.street;
+    _counterType = _request?.countingPoint?.counterType;
+
     _lsController = TextEditingController(
         text: _request?.accountInfo?.baseId?.toString()?.padLeft(6, '0') ?? "");
-    _addressController =
-        TextEditingController(text: _request?.accountInfo?.joinAddress());
+    _homeController =
+        TextEditingController(text: _request?.accountInfo?.homeNumber);
+    _apartmentController =
+        TextEditingController(text: _request?.accountInfo?.apartmentNumber);
     _nameController = TextEditingController(text: _request?.accountInfo?.name);
-    _counterController =
-        TextEditingController(text: _request?.countingPoint?.joinToString());
+    _counterNumberController =
+        TextEditingController(text: _request?.countingPoint?.counterNumber);
+    _tpController =
+        TextEditingController(text: _request?.countingPoint?.tpName);
+    _feederController = TextEditingController(
+        text: _request?.countingPoint?.feederNumber?.toString());
+    _pillarController =
+        TextEditingController(text: _request?.countingPoint?.pillarNumber);
     _additionalController = TextEditingController(text: _request?.additional);
-    _requestTypeController = TextEditingController(
-      text: _request?.requestType?.shortName,
-    );
   }
 
   @override
   void dispose() {
     super.dispose();
     _lsController.dispose();
-    _addressController.dispose();
+    _homeController.dispose();
+    _apartmentController.dispose();
     _nameController.dispose();
-    _counterController.dispose();
+    _counterNumberController.dispose();
     _additionalController.dispose();
-    _requestTypeController.dispose();
+    _tpController.dispose();
+    _feederController.dispose();
+    _pillarController.dispose();
   }
 
-  // TODO: Copy Request fields to internal fields without it direct editing
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -83,7 +106,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
         textAlign: TextAlign.center,
       ),
       content: Container(
-        height: 520.0,
+        height: 580.0,
         padding: EdgeInsets.all(16.0),
         child: Form(
           onChanged: () {
@@ -102,6 +125,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text("Лицевой счёт: "),
                       const SizedBox(width: 8.0),
@@ -124,22 +148,19 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
                   const SizedBox(width: 36.0),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text("Тип заявки: "),
                       const SizedBox(width: 8.0),
-                      _RequestTypeChooser(
-                        _availableRequestTypes,
-                        _requestTypeController,
-                      ),
+                      _buildRequestTypeSelector(),
                     ],
                   ),
                 ],
               ),
               ..._createInputField("ФИО: ", "Введите ФИО", _nameController),
-              ..._createInputField(
-                  "Адрес: ", "Введите адрес", _addressController),
-              ..._createInputField("Прибор учёта: ", null, _counterController,
-                  limit: 36),
+              ..._createAddressField(),
+              ..._createCounterField(),
+              ..._createCountingPointField(),
               ..._createInputField(
                   "Дополнительно: ", null, _additionalController,
                   limit: 56),
@@ -188,6 +209,128 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
     return value.replaceAll(RegExp(r"[\n\r]"), "");
   }
 
+  Iterable<Widget> _createAddressField() sync* {
+    yield SizedBox(height: 24);
+    yield Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: 130.0,
+            ),
+            child: Text('Улица: '),
+          ),
+          _buildStreetSelector(),
+          const SizedBox(width: 24.0),
+          Text('Дом: '),
+          const SizedBox(width: 6.0),
+          SizedBox(
+            width: 60.0,
+            child: CopyableTextFormField(
+              controller: _homeController,
+              autovalidateMode: AutovalidateMode.always,
+              maxLength: 6,
+              validator: (value) => value.isEmpty ? '' : null,
+            ),
+          ),
+          const SizedBox(width: 24.0),
+          Text('Кв.: '),
+          const SizedBox(width: 6.0),
+          SizedBox(
+            width: 60.0,
+            child: CopyableTextFormField(
+              controller: _apartmentController,
+              autovalidateMode: AutovalidateMode.always,
+              maxLength: 6,
+            ),
+          ),
+        ]);
+  }
+
+  Iterable<Widget> _createCountingPointField() sync* {
+    yield SizedBox(height: 24);
+    yield Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: 130.0,
+            ),
+            child: Text('Точка учёта: '),
+          ),
+          const SizedBox(width: 24.0),
+          Text('ТП : '),
+          const SizedBox(width: 6.0),
+          SizedBox(
+            width: 80.0,
+            child: CopyableTextFormField(
+              controller: _tpController,
+              autovalidateMode: AutovalidateMode.always,
+              maxLength: 7,
+            ),
+          ),
+          const SizedBox(width: 24.0),
+          Text('Фидер: '),
+          const SizedBox(width: 6.0),
+          SizedBox(
+            width: 60.0,
+            child: CopyableTextFormField(
+              controller: _feederController,
+              autovalidateMode: AutovalidateMode.always,
+              maxLength: 2,
+            ),
+          ),
+          const SizedBox(width: 24.0),
+          Text('Опора: '),
+          const SizedBox(width: 6.0),
+          SizedBox(
+            width: 60.0,
+            child: CopyableTextFormField(
+              controller: _pillarController,
+              autovalidateMode: AutovalidateMode.always,
+              maxLength: 5,
+            ),
+          ),
+        ]);
+  }
+
+  Iterable<Widget> _createCounterField() sync* {
+    yield SizedBox(height: 24);
+    yield Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: 130.0,
+            ),
+            child: Text('Прибор учёта: '),
+          ),
+          _buildCounterTypeSelector(),
+          const SizedBox(width: 24.0),
+          Text('№ : '),
+          const SizedBox(width: 6.0),
+          SizedBox(
+            width: 160.0,
+            child: CopyableTextFormField(
+              controller: _counterNumberController,
+              autovalidateMode: AutovalidateMode.always,
+              maxLength: 24,
+              validator: (value) =>
+                  value.isEmpty && _counterType != null ? '' : null,
+            ),
+          ),
+          const SizedBox(width: 24.0),
+          Text('Поверка.: '),
+          const SizedBox(width: 6.0),
+          _buildQuarter(),
+          const SizedBox(width: 6.0),
+          _buildCheckYearSelector(),
+        ]);
+  }
+
   Iterable<Widget> _createInputField(
     String label,
     String errorHint,
@@ -197,6 +340,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
     yield SizedBox(height: 24);
     yield Row(
       crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: [
         ConstrainedBox(
           constraints: BoxConstraints(
@@ -217,83 +361,121 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
       ],
     );
   }
-}
 
-class _RequestTypeChooser extends StatefulWidget {
-  final List<String> availableRequestTypes;
-  final TextEditingController fieldController;
+  Widget _buildQuarter() => _buildDropdown<int>(
+        width: 60.0,
+        valueBuilder: (e) {
+          switch (e) {
+            case 1:
+              return 'I';
+            case 2:
+              return 'II';
+            case 3:
+              return 'III';
+            case 4:
+              return 'IV';
+            default:
+              return '$e??';
+          }
+        },
+        futureBuilder: () => Future.value([1, 2, 3, 4]),
+        validator: (val) => val != null && _counterType != null,
+        valueProvider: () => _checkQuarter,
+        onChanged: (newValue) => setState(() {
+          _checkQuarter = newValue;
+        }),
+      );
 
-  const _RequestTypeChooser(
-    this.availableRequestTypes,
-    this.fieldController,
-  ) : assert(availableRequestTypes != null);
+  Widget _buildCheckYearSelector() => _buildDropdown<int>(
+        width: 80.0,
+        valueBuilder: (e) => e.toString(),
+        futureBuilder: () => Future.value(_getYears().toList()),
+        valueProvider: () => _checkYear,
+        validator: (val) => false,
+        //val != null && _counterType == null,
+        onChanged: (newValue) => setState(() {
+          _checkYear = newValue;
+        }),
+      );
 
-  @override
-  __RequestTypeChooserState createState() => __RequestTypeChooserState();
-}
-
-class __RequestTypeChooserState extends State<_RequestTypeChooser> {
-  List<String> _availableRequestTypes;
-
-  bool _isExtended = false;
-
-  @override
-  void initState() {
-    super.initState();
-    final all = widget.availableRequestTypes;
-    final curr = widget.fieldController.text;
-
-    _availableRequestTypes = all.contains(curr) ? all : [curr, ...all];
+  Iterable<int> _getYears() sync* {
+    final currentYear = DateTime.now().year;
+    for (int year = currentYear; year >= 1980; year--) yield year;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return _isExtended
-        ? Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _createFormField(),
-              const SizedBox(width: 6.0),
-              SizedBox(
-                width: 120.0,
-                child: TextFormField(
-                  controller: widget.fieldController,
-                  autovalidateMode: AutovalidateMode.always,
-                  validator: (val) => val.isEmpty ? "Значение пусто" : null,
-                  onFieldSubmitted: (value) => setState(() {
-                    if (value.isNotEmpty) {
-                      _availableRequestTypes.insert(0, value);
-                      _availableRequestTypes =
-                          _availableRequestTypes.toSet().toList();
-                    }
-                    _isExtended = false;
-                  }),
-                ),
-              ),
-            ],
-          )
-        : _createFormField();
-  }
+  Widget _buildStreetSelector() => _buildDropdown<Street>(
+        errorText: 'Выберите улицу',
+        width: 200.0,
+        valueBuilder: (e) => e.name,
+        futureBuilder: () => widget.streetRepository.getAll(),
+        valueProvider: () => _street,
+        onChanged: (newValue) => setState(() {
+          _street = newValue;
+        }),
+      );
 
-  Widget _createFormField() => SizedBox(
+  Widget _buildCounterTypeSelector() => _buildDropdown<CounterType>(
+        width: 100.0,
+        valueBuilder: (e) => e.name,
+        futureBuilder: () => widget.counterTypesRepository.getAll(),
+        valueProvider: () => _counterType,
+        onChanged: (newValue) => setState(() {
+          _counterType = newValue;
+        }),
+      );
+
+  Widget _buildRequestTypeSelector() => _buildDropdown<RequestType>(
+        errorText: 'Тип не выбран',
         width: 164.0,
-        child: DropdownButtonFormField<String>(
-          autovalidateMode: AutovalidateMode.always,
-          validator: (value) =>
-              value == null || value.isEmpty ? "Тип не выбран" : null,
-          value: widget.fieldController.text,
-          items: _availableRequestTypes
-              .map(
-                (e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e),
-                ),
-              )
-              .toList(),
-          onChanged: (value) => setState(() {
-            _isExtended = value == "Другое";
-            widget.fieldController.text = value;
-          }),
-        ),
+        valueBuilder: (e) => e.shortName,
+        futureBuilder: () => widget.requestTypeRepository.getAll(),
+        valueProvider: () => _requestType,
+        onChanged: (newValue) => setState(() {
+          _requestType = newValue;
+        }),
+      );
+
+  Widget _buildDropdown<T>({
+    String errorText,
+    double width,
+    String Function(T) valueBuilder,
+    Future<List<T>> Function() futureBuilder,
+    T Function() valueProvider,
+    bool Function(T) validator,
+    void Function(T) onChanged,
+  }) =>
+      FutureBuilder<List<T>>(
+        future: futureBuilder(),
+        builder: (context, snap) {
+          return snap.hasData
+              ? SizedBox(
+                  width: width,
+                  child: DropdownButtonFormField<T>(
+                    autovalidateMode: AutovalidateMode.always,
+                    validator: (value) => value == null &&
+                            (errorText != null ||
+                                (validator != null && !validator(value)))
+                        ? errorText
+                        : null,
+                    value: valueProvider(),
+                    items:
+                        (errorText == null ? [null, ...snap.data] : snap.data)
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e == null ? '' : valueBuilder(e),
+                                    overflow: TextOverflow.fade),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (newValue) => onChanged(newValue),
+                  ),
+                )
+              : SizedBox(
+                  width: 18.0,
+                  height: 18.0,
+                  child: CircularProgressIndicator(),
+                );
+        },
       );
 }
