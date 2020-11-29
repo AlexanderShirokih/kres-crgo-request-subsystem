@@ -29,39 +29,55 @@ class WorksheetMasterScreen extends StatelessWidget {
         _repositoryModule = repositoryModule;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        endDrawer: _buildEndDrawer(),
-        appBar: _buildAppBar(),
-        body: BlocConsumer<WorksheetMasterBloc, WorksheetMasterState>(
-          cubit: _worksheetBloc,
-          listener: (context, state) {
-            if (state is WorksheetMasterPopState) {
-              Navigator.pop(context);
-            } else if (state is WorksheetMasterShowImporterState) {
-              _onShowImporterScreen(context, state);
-            }
-          },
-          builder: (context, state) {
-            if (state is WorksheetMasterSearchingState) {
-              return Stack(children: [
-                Positioned.fill(child: _buildBody(context, state)),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 12.0, right: 12.0),
-                    child: SearchBox(
-                      textWatcher: (String searchText) => _worksheetBloc
-                          .add(WorksheetMasterSearchEvent(searchText)),
+  Widget build(BuildContext context) => BlocProvider.value(
+        value: _worksheetBloc,
+        child: Scaffold(
+          endDrawer: _buildEndDrawer(),
+          appBar: _buildAppBar(),
+          body: BlocProvider.value(
+            value: _worksheetBloc,
+            child: BlocConsumer<WorksheetMasterBloc, WorksheetMasterState>(
+              cubit: _worksheetBloc,
+              listener: (context, state) {
+                if (state is WorksheetMasterPopState) {
+                  Navigator.pop(context);
+                } else if (state is WorksheetMasterShowImporterState) {
+                  _onShowImporterScreen(context, state);
+                } else if (state is WorksheetNotificationState) {
+                  _showNotification(context, state.message);
+                }
+              },
+              builder: (context, state) {
+                if (state is WorksheetMasterSearchingState) {
+                  return Stack(children: [
+                    Positioned.fill(child: _buildBody(context, state)),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 12.0, right: 12.0),
+                        child: SearchBox(
+                          textWatcher: (String searchText) => _worksheetBloc
+                              .add(WorksheetMasterSearchEvent(searchText)),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ]);
-            } else {
-              return _buildBody(context, state);
-            }
-          },
+                  ]);
+                } else {
+                  return _buildBody(context, state);
+                }
+              },
+            ),
+          ),
         ),
       );
+
+  void _showNotification(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
 
   Widget _buildBody(BuildContext context, WorksheetMasterState state) => Row(
         children: [
@@ -200,7 +216,7 @@ class WorksheetMasterScreen extends StatelessWidget {
                             showDialog(
                               context: context,
                               barrierDismissible: false,
-                              child: ConfirmationDialog(
+                              builder: (_) => ConfirmationDialog(
                                 message:
                                     "Удалить страницу ${current.getName()}?",
                               ),

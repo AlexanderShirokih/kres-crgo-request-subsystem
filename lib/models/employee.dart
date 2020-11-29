@@ -21,6 +21,10 @@ AssignmentType fromString(String type) {
   }
 }
 
+extension AssignmentTypeExt on AssignmentType {
+  String value() => describeEnum(this);
+}
+
 /// Couples employee and assignment type
 class EmployeeAssignment extends Equatable {
   /// Associated employee
@@ -42,6 +46,9 @@ class EmployeeAssignment extends Equatable {
         employee: Employee.fromJson(data['employee']),
         type: data['type'] != null ? fromString(data['type']) : null,
       );
+
+  @override
+  bool get stringify => true;
 }
 
 enum EmployeeStatus { WORKS, FIRED }

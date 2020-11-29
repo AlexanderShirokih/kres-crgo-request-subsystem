@@ -79,7 +79,7 @@ class DocumentService {
   RequestSetService _gerOrCreateRequestService(RequestSet set) {
     var cached = _serviceCache[set];
     if (cached == null) {
-      cached = RequestSetService(set);
+      cached = RequestSetService(_requestsSetRepository, set);
       _serviceCache[set] = cached;
     }
     return cached;

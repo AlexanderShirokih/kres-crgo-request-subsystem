@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:kres_requests2/data/api_server.dart';
 import 'package:kres_requests2/data/models/server_request.dart';
+import 'package:kres_requests2/models/employee.dart';
 import 'package:kres_requests2/models/request_set.dart';
 
 import 'api_repository.dart';
@@ -19,6 +20,32 @@ class RequestsSetRepository with ApiRepositoryMixin {
   RequestsSetWrapper _currentRequestsSets;
 
   RequestsSetRepository(this._apiServer) : assert(_apiServer != null);
+
+  /// Assigns employee to the request set
+  Future<void> assignEmployee(
+    RequestSet r,
+    Employee emp,
+    AssignmentType type,
+  ) async {
+    assert(r != null && emp != null && type != null);
+    final response = await _apiServer.getData(
+      ServerRequest.post(
+          'requests/${r.id}/employees/${emp.id}/${type.value()}'),
+    );
+
+    ensureOk(response);
+  }
+
+  /// Removes employee from request set
+  Future<void> removeEmployee(RequestSet r, Employee emp) async {
+    assert(r != null && emp != null);
+
+    final response = await _apiServer.getData(
+      ServerRequest.delete('requests/${r.id}/employees/${emp.id}'),
+    );
+
+    ensureOk(response);
+  }
 
   /// Creates new request set
   /// Updates data if ID is not `null`

@@ -59,9 +59,8 @@ class ApiServer {
         request.method,
         encodedBody,
       );
-
       var jsonResponse = response.body.isEmpty
-          ? ""
+          ? <String, dynamic>{}
           : convert.jsonDecode(convert.utf8.decode(response.bodyBytes));
 
       if (response.statusCode == 200) {
@@ -104,7 +103,9 @@ class ApiServer {
     } catch (unk) {
       return ServerResponse(
         422,
-        ServerError(error: 'Unknown error', message: unk.toString()),
+        ServerError(
+            error: 'Unknown error[${unk.runtimeType}]',
+            message: unk.toString()),
         null,
         url,
       );

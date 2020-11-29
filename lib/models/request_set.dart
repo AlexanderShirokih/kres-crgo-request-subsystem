@@ -16,7 +16,7 @@ class RequestSet {
   /// List of requests
   final List<Request> requests;
 
-  final List<EmployeeAssignment> assignedEmployees;
+  final Set<EmployeeAssignment> assignedEmployees;
 
   RequestSet({
     this.id,
@@ -44,7 +44,7 @@ class RequestSet {
           : (data['assignedEmployees'] as List<dynamic>)
               .cast<Map<String, dynamic>>()
               .map((e) => EmployeeAssignment.fromJson(e))
-              .toList(),
+              .toSet(),
     );
   }
 }

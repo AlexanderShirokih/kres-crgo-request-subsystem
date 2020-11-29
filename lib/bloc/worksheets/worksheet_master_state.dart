@@ -49,12 +49,19 @@ enum WorksheetImporterType {
 class WorksheetMasterShowImporterState extends WorksheetMasterState {
   final WorksheetImporterType importerType;
 
-  const WorksheetMasterShowImporterState(
-    this.importerType,
-  );
+  const WorksheetMasterShowImporterState(this.importerType);
 
   @override
   List<Object> get props => [importerType];
+}
+
+class WorksheetNotificationState extends WorksheetMasterState {
+  final String message;
+
+  const WorksheetNotificationState(this.message) : assert(message != null);
+
+  @override
+  List<Object> get props => [message];
 }
 
 class WorksheetMasterSearchingState extends WorksheetMasterState {

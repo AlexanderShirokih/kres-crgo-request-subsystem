@@ -39,6 +39,12 @@ class WorksheetMasterBloc
           () => Stream.value(
               WorksheetMasterIdleState(_documentService.getActive())),
           rebuildSearch: true);
+    } else if (event is WorksheetShowNotificationEvent) {
+      yield* _keepSearchingState(() async* {
+        final current = state;
+        yield WorksheetNotificationState(event.message);
+        yield current;
+      });
     }
   }
 

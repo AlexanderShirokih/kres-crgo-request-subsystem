@@ -27,6 +27,15 @@ class WorksheetMasterSearchEvent extends WorksheetMasterEvent {
   List<Object> get props => [searchText];
 }
 
+class WorksheetShowNotificationEvent extends WorksheetMasterEvent {
+  final String message;
+
+  WorksheetShowNotificationEvent(this.message) : assert(message != null);
+
+  @override
+  List<Object> get props => [message];
+}
+
 enum WorksheetAction { remove, makeActive }
 
 class WorksheetMasterWorksheetActionEvent extends WorksheetMasterEvent {
