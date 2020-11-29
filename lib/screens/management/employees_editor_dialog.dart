@@ -4,7 +4,7 @@ import 'package:kres_requests2/models/position.dart';
 import 'package:kres_requests2/repo/positions_repository.dart';
 import 'package:kres_requests2/screens/management/base_editor_dialog.dart';
 
-import 'commons.dart';
+import '../common.dart';
 
 /// Dialog for editing [Employee] items
 class EmployeeEditorDialog extends BaseEditorDialog {

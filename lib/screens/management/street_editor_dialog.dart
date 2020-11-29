@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kres_requests2/models/address.dart';
 import 'package:kres_requests2/repo/districts_repository.dart';
 
-import 'commons.dart';
+import '../common.dart';
 
 /// Dialog for editing [Street] items
 class StreetEditorDialog extends StatefulWidget {

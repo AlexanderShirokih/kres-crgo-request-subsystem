@@ -7,6 +7,7 @@ import 'package:kres_requests2/domain/document_service.dart';
 import 'package:kres_requests2/domain/request_set_service.dart';
 
 import 'package:kres_requests2/models/request.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 import 'package:kres_requests2/screens/editor/reorderable_list_view.dart';
 import 'package:kres_requests2/screens/editor/request_item_view.dart';
@@ -15,17 +16,20 @@ import 'request_editor_dialog.dart';
 import 'worksheet_move_dialog.dart';
 
 class WorkSheetEditorView extends StatefulWidget {
+  final RepositoryModule repositoryModule;
   final RequestSetService requestSetService;
   final DocumentService documentService;
   final void Function() onDocumentsChanged;
   final List<Request> highlighted;
 
   const WorkSheetEditorView({
+    @required this.repositoryModule,
     @required this.documentService,
     @required this.requestSetService,
     @required this.onDocumentsChanged,
     @required this.highlighted,
-  })  : assert(documentService != null),
+  })  : assert(repositoryModule != null),
+        assert(documentService != null),
         assert(requestSetService != null),
         assert(onDocumentsChanged != null);
 
@@ -123,6 +127,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                           context: context,
                           barrierDismissible: false,
                           builder: (_) => RequestEditorDialog(
+                            repositoryModule: widget.repositoryModule,
                             editingRequest: requests[index],
                           ),
                         ).then((edited) {
@@ -190,7 +195,9 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                 showDialog(
                     context: context,
                     barrierDismissible: false,
-                    builder: (_) => RequestEditorDialog()).then((created) {
+                    builder: (_) => RequestEditorDialog(
+                          repositoryModule: widget.repositoryModule,
+                        )).then((created) {
                   if (created != null) {
                     setState(() {
                       requests.add(created);

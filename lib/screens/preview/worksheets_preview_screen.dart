@@ -1,16 +1,13 @@
 import 'dart:math';
 
-import 'package:intl/intl.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
+import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/domain/document_service.dart';
 import 'package:kres_requests2/domain/request_set_service.dart';
-
 import 'package:kres_requests2/models/employee.dart';
-import 'package:kres_requests2/screens/common.dart';
-import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 
 import 'exporter_dialogs.dart';
 import 'print_dialog.dart';
@@ -175,6 +172,13 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
             );
         },
       );
+
+  final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
+
+  String getSuggestedName(String ext) {
+    String fmtDate(DateTime d) => _dateFormat.format(d);
+    return "Заявки ${fmtDate(DateTime.now())}$ext";
+  }
 
   Future _showPrintDialog(BuildContext context) => showDialog<String>(
         context: context,

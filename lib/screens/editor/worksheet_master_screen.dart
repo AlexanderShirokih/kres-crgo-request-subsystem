@@ -85,6 +85,7 @@ class WorksheetMasterScreen extends StatelessWidget {
           child: Container(
             height: double.maxFinite,
             child: WorkSheetEditorView(
+              repositoryModule: _repositoryModule,
               documentService: _documentService,
               requestSetService: _documentService.getEditableWorksheet(),
               onDocumentsChanged: () => _worksheetBloc

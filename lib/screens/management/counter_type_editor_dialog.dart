@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kres_requests2/models/counting_point.dart';
 
 import 'base_editor_dialog.dart';
-import 'commons.dart';
+import '../common.dart';
 
 /// Dialog for editing [CounterType] items
 class CounterTypeEditorDialog extends BaseEditorDialog<CounterType> {
