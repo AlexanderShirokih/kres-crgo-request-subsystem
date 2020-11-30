@@ -15,8 +15,6 @@ class NamedWorksheet {
 }
 
 class CountersImporter {
-  static const _kDefaultRequestName = 'замена';
-
   const CountersImporter();
 
   Future<NamedWorksheet> importAsRequestsList(

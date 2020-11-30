@@ -20,12 +20,12 @@ class PrintDialog extends StatelessWidget {
         height: 380.0,
         child: BlocProvider.value(
           value: ExporterBloc(
-            repositoryModule: context.repository<RepositoryModule>(),
+            repositoryModule: context.read<RepositoryModule>(),
             worksheets: worksheets,
           ),
           child: Builder(
             builder: (context) => BlocConsumer(
-              cubit: context.bloc<ExporterBloc>(),
+              cubit: context.read<ExporterBloc>(),
               builder: (context, state) {
                 if (state is ExporterListPrintersState) {
                   return _ListPrintersView(
@@ -87,7 +87,7 @@ class __ListPrintersViewState extends State<_ListPrintersView> {
             icon: FaIcon(FontAwesomeIcons.sync),
             label: Text('Обновить'),
             onPressed: () => context
-                .bloc<ExporterBloc>()
+                .watch<ExporterBloc>()
                 .add(ExporterShowPrintersListEvent()),
           )
         ],
@@ -157,7 +157,7 @@ class __ListPrintersViewState extends State<_ListPrintersView> {
         leading: FaIcon(FontAwesomeIcons.print),
         title: Text(printerName),
         onTap: () =>
-            context.bloc<ExporterBloc>().add(ExporterPrintDocumentEvent(
+            context.watch<ExporterBloc>().add(ExporterPrintDocumentEvent(
                   printerName,
                   noLists,
                 )),

@@ -30,10 +30,8 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
   @override
   void initState() {
     super.initState();
-    selectedWorksheets = document
-        .getEditableWorksheets()
-        .where((element) => !element.isEmpty)
-        .where((element) => !element.validator().hasErrors());
+    selectedWorksheets =
+        document.getEditableWorksheets().where((element) => !element.isEmpty);
   }
 
   _WorksheetsPreviewScreenState(this.document);
@@ -260,18 +258,14 @@ class _WorksheetCardGroupState extends State<_WorksheetCardGroup> {
             child: WorksheetCard(
               worksheet: worksheet,
               isSelected: _checkedCards[worksheet],
-              onChanged: worksheet.validator().hasErrors()
-                  ? null
-                  : (isChecked) => setState(() {
-                        _checkedCards[worksheet] = isChecked;
-                        widget.onStatusChanged(
-                          widget.worksheets
-                              .where((worksheet) =>
-                                  _checkedCards[worksheet] &&
-                                  !worksheet.validator().hasErrors())
-                              .toList(),
-                        );
-                      }),
+              onChanged: (isChecked) => setState(() {
+                _checkedCards[worksheet] = isChecked;
+                widget.onStatusChanged(
+                  widget.worksheets
+                      .where((worksheet) => _checkedCards[worksheet])
+                      .toList(),
+                );
+              }),
             ),
           );
         },
@@ -468,7 +462,8 @@ class WorksheetCard extends StatelessWidget {
           );
 
   Widget _printWorksheetStatus(BuildContext context) {
-    final errors = worksheet.validator().validate().take(3).toList();
+    // TODO: Fetch errors from server
+    final errors = [];
 
     if (errors.isEmpty) {
       return Row(
