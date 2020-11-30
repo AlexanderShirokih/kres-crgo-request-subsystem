@@ -1,4 +1,3 @@
-import 'package:kres_requests2/domain/request_set_validator.dart';
 import 'package:kres_requests2/models/employee.dart';
 import 'package:kres_requests2/models/request.dart';
 import 'package:kres_requests2/models/request_set.dart';
@@ -120,26 +119,56 @@ class RequestSetService {
   /// Returns list of all requests
   List<Request> getRequests() => List.unmodifiable(_requestSet.requests ?? []);
 
-  /// Swaps requests in list
-  /// TODO: Pooled task
+  /// Swaps requests in list. Currently only on the client side
   void swap(Request toRemove, Request toInsertAfter) {
-    // final idx = allRequests.indexOf(toInsertAfter);
-    // allRequests.remove(toRemove);
-    // allRequests.insert(idx, toRemove);
+    final requests = _requestSet.requests;
+    final idx = requests.indexOf(toInsertAfter);
+    requests.remove(toRemove);
+    requests.insert(idx, toRemove);
+  }
+
+  /// Adds new request to the worksheet
+  Future<bool> addRequest(Request request) async {
+    assert(request.id == null);
+
+    try {
+      Request added = await _repository.addRequest(_requestSet, request);
+      if (added != null) {
+        _requestSet.requests.add(added);
+      } else
+        return false;
+    } on ApiException {
+      return false;
+    }
+    return true;
   }
 
   /// Updates `old` request with `edited` values
-  /// TODO: Pooled task
-  void update(Request old, Request edited) {
-    // final oldIdx = allRequests.indexOf(old);
-    // allRequests[oldIdx] = edited;
+  Future<bool> update(Request old, Request edited) async {
+    assert(old.id == edited.id);
+
+    try {
+      await _repository.updateRequest(edited);
+      final oldIdx = _requestSet.requests.indexWhere((e) => e.id == old.id);
+      _requestSet.requests[oldIdx] = edited;
+    } on ApiException {
+      return false;
+    }
+
+    return true;
   }
 
   /// Removes all requests in the selection list
-  /// TODO : Pooled task
-  void remove(Set<Request> selectionList) {
-    // for (final selected in _selectionList)
-    //   _worksheet.requests.remove(selected);
+  Future<bool> remove(Set<Request> selectionList) async {
+    try {
+      for (final request in selectionList) {
+        await _repository.removeRequest(request);
+        _requestSet.requests.remove(request);
+      }
+    } on ApiException {
+      return false;
+    }
+    return true;
   }
 
   /// Returns underlying `RequestSet`
@@ -159,6 +188,4 @@ class RequestSetService {
     }
     return true;
   }
-
-  RequestSetValidator validator() => RequestSetValidator(_requestSet);
 }

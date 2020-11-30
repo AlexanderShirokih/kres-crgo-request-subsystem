@@ -128,7 +128,7 @@ class ApiServer {
       case RequestMethod.POST:
         return _httpClient.post(url, headers: headers, body: jsonBody);
       case RequestMethod.PUT:
-        return _httpClient.post(url, headers: headers, body: jsonBody);
+        return _httpClient.put(url, headers: headers, body: jsonBody);
     }
     throw ('Unknown request method!');
   }

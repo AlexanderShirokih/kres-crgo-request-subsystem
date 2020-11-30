@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:intl/intl.dart';
 import 'package:kres_requests2/data/api_server.dart';
 import 'package:kres_requests2/data/models/server_request.dart';
 import 'package:kres_requests2/models/employee.dart';
+import 'package:kres_requests2/models/request.dart';
 import 'package:kres_requests2/models/request_set.dart';
 
 import 'api_repository.dart';
@@ -152,5 +155,42 @@ class RequestsSetRepository with ApiRepositoryMixin {
           .map((e) => RequestSet.fromJson(e))
           .toList(),
     );
+  }
+
+  /// Adds a new request to request set
+  Future<Request> addRequest(RequestSet target, Request request) async {
+    final requestEncoder = Request.encoder();
+
+    final response = await _apiServer.getData(
+      ServerRequest.put('$_kRequestSet/${target.id}',
+          body: requestEncoder.toJson(request)),
+    );
+
+    print(json.encode(requestEncoder.toJson(request)));
+
+    return getResponseData(response, (body) => requestEncoder.fromJson(body));
+  }
+
+  /// Updates an existing request
+  Future<void> updateRequest(Request request) async {
+    final requestEncoder = Request.encoder();
+
+    final response = await _apiServer.getData(
+      ServerRequest.post('$_kRequestSet/${request.id}',
+          body: requestEncoder.toJson(request)),
+    );
+
+    ensureOk(response);
+  }
+
+  /// Removes request from the database
+  Future<void> removeRequest(Request request) async {
+    assert(request != null && request.id != null);
+
+    final response = await _apiServer.getData(
+      ServerRequest.delete('$_kRequestSet/${request.id}'),
+    );
+
+    ensureOk(response);
   }
 }

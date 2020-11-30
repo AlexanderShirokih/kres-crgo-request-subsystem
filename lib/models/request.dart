@@ -85,7 +85,27 @@ class Request extends Equatable {
     this.countingPoint,
   });
 
-  static Request fromJson(Map<String, dynamic> data) => Request(
+  static Request fromJson(Map<String, dynamic> data) =>
+      encoder().fromJson(data);
+
+  @override
+  List<Object> get props => [
+        id,
+        additional,
+        reason,
+        requestType,
+        accountInfo,
+        countingPoint,
+      ];
+
+  static Encoder<Request> encoder() => _RequestEncoder();
+}
+
+class _RequestEncoder extends Encoder<Request> {
+  const _RequestEncoder();
+
+  @override
+  Request fromJson(Map<String, dynamic> data) => Request(
         id: data['id'],
         additional: data['additional'],
         reason: data['reason'],
@@ -101,12 +121,12 @@ class Request extends Equatable {
       );
 
   @override
-  List<Object> get props => [
-        id,
-        additional,
-        reason,
-        requestType,
-        accountInfo,
-        countingPoint,
-      ];
+  Map<String, dynamic> toJson(Request e) => {
+        'id': e.id,
+        'additional': e.additional,
+        'reason': e.reason,
+        'requestType': e.requestType?.toJson(),
+        'accountInfo': e.accountInfo?.toJson(),
+        'countingPoint': e.countingPoint?.toJson(),
+      };
 }

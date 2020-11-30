@@ -127,7 +127,7 @@ class RequestItemView extends StatelessWidget {
                           ),
                           const SizedBox(height: 10.0),
                           Text(
-                            request.additional,
+                            request.additional ?? '',
                             style: TextStyle(fontSize: 16.0),
                           ),
                         ],

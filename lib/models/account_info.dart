@@ -67,4 +67,13 @@ class AccountInfo extends Equatable {
         apartmentNumber,
         phoneNumber,
       ];
+
+  Map<String, dynamic> toJson() => {
+        'baseId': baseId,
+        'name': name,
+        'street': street?.toJson(),
+        'homeNumber': homeNumber,
+        'apartmentNumber': apartmentNumber,
+        'phoneNumber': phoneNumber,
+      };
 }

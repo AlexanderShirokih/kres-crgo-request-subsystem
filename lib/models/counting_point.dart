@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:kres_requests2/models/encoder.dart';
 import 'package:kres_requests2/models/entity.dart';
+import 'package:kres_requests2/utils/utils.dart';
 
 /// Describes API request for adding or updating counting point info's
 class CountingPoint extends Equatable {
@@ -46,6 +47,11 @@ class CountingPoint extends Equatable {
     str.write(counterType.name);
     str.write(' ');
     str.write(counterNumber);
+    str.write(' ');
+    str.write('п.');
+    str.write(quarterToString(checkQuarter));
+    str.write('-');
+    str.write(checkYear?.toString()?.substring(2) ?? '?');
 
     return str.toString();
   }
@@ -74,6 +80,17 @@ class CountingPoint extends Equatable {
         checkYear,
         checkQuarter,
       ];
+
+  Map<String, dynamic> toJson() => {
+        'counterNumber': counterNumber,
+        'counterType': counterType?.toJson(),
+        'tpName': tpName,
+        'feederNumber': feederNumber,
+        'pillarNumber': pillarNumber,
+        'power': power,
+        'checkYear': checkYear,
+        'checkQuarter': checkQuarter,
+      };
 }
 
 /// Describes information about counter type
@@ -107,6 +124,8 @@ class CounterType extends Equatable implements Entity<int> {
 
   static CounterType fromJson(Map<String, dynamic> data) =>
       encoder().fromJson(data);
+
+  Map<String, dynamic> toJson() => encoder().toJson(this);
 
   @override
   List<Object> get props => [

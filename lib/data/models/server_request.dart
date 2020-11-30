@@ -55,4 +55,16 @@ class ServerRequest {
           requestParams: requestParams,
           body: body,
         );
+
+  /// Constructs PUT server request at `requestPath`
+  ServerRequest.put(
+    String requestPath, {
+    dynamic body,
+    Map<String, dynamic> requestParams,
+  }) : this(
+          method: RequestMethod.PUT,
+          requestPath: requestPath,
+          requestParams: requestParams,
+          body: body,
+        );
 }

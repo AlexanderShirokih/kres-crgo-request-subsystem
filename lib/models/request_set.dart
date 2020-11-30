@@ -52,6 +52,7 @@ class RequestSet extends Equatable {
 
   @override
   List<Object> get props => [id, name, date, assignedEmployees, requests];
+
 }
 
 /// Wrapper that contains meta info about fetched requests sets

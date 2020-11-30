@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:kres_requests2/models/account_info.dart';
 import 'package:kres_requests2/models/address.dart';
 import 'package:kres_requests2/models/counting_point.dart';
 import 'package:kres_requests2/models/request.dart';
@@ -9,6 +10,7 @@ import 'package:kres_requests2/repo/request_types_repository.dart';
 import 'package:kres_requests2/repo/street_repository.dart';
 
 import '../copyable_textformfield.dart';
+import '../../utils/utils.dart';
 
 class RequestEditorDialog extends StatefulWidget {
   final Request editingRequest;
@@ -40,6 +42,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
   TextEditingController _tpController;
   TextEditingController _feederController;
   TextEditingController _pillarController;
+  TextEditingController _phoneController;
 
   final Request _request;
 
@@ -62,6 +65,8 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
     _requestType = _request?.requestType;
     _street = _request?.accountInfo?.street;
     _counterType = _request?.countingPoint?.counterType;
+    _checkQuarter = _request?.countingPoint?.checkQuarter;
+    _checkYear = _request?.countingPoint?.checkYear;
 
     _lsController = TextEditingController(
         text: _request?.accountInfo?.baseId?.toString()?.padLeft(6, '0') ?? "");
@@ -69,6 +74,8 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
         TextEditingController(text: _request?.accountInfo?.homeNumber);
     _apartmentController =
         TextEditingController(text: _request?.accountInfo?.apartmentNumber);
+    _phoneController =
+        TextEditingController(text: _request?.accountInfo?.phoneNumber);
     _nameController = TextEditingController(text: _request?.accountInfo?.name);
     _counterNumberController =
         TextEditingController(text: _request?.countingPoint?.counterNumber);
@@ -78,6 +85,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
         text: _request?.countingPoint?.feederNumber?.toString());
     _pillarController =
         TextEditingController(text: _request?.countingPoint?.pillarNumber);
+
     _additionalController = TextEditingController(text: _request?.additional);
   }
 
@@ -93,6 +101,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
     _tpController.dispose();
     _feederController.dispose();
     _pillarController.dispose();
+    _phoneController.dispose();
   }
 
   @override
@@ -178,27 +187,34 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
           RaisedButton(
             color: Theme.of(context).accentColor,
             padding: EdgeInsets.all(18.0),
-            onPressed: () {
-              Navigator.pop(
-                context,
-                null, // TODO: Unimplemented!
-                // Request(
-                //   name: _sanitize(_nameController.text),
-                //   additionalInfo: _sanitize(_additionalController.text),
-                //   address: _sanitize(_addressController.text),
-                //   counterInfo: _sanitize(_counterController.text),
-                //   accountId: _lsController.text.isNotEmpty
-                //       ? int.parse(_lsController.text)
-                //       : null,
-                //   reqType: _sanitize(_requestTypeController.text),
-                //   fullReqType: context
-                //       .repository<RepositoryModule>()
-                //       .getConfigRepository()
-                //       .getFullRequestName(_requestTypeController.text),
-                //   reason: _request.reason,
-                // ),
-              );
-            },
+            onPressed: () => Navigator.pop(
+              context,
+              Request(
+                id: _request?.id,
+                reason: _request?.reason,
+                requestType: _requestType,
+                additional: _additionalController.text,
+                accountInfo: AccountInfo(
+                  baseId: int.parse(_sanitize(_lsController.text)),
+                  name: _sanitize(_nameController.text),
+                  street: _street,
+                  homeNumber: _sanitize(_homeController.text),
+                  apartmentNumber: _sanitize(_apartmentController.text),
+                  phoneNumber: _sanitize(_phoneController.text),
+                ),
+                countingPoint: _counterType == null
+                    ? null
+                    : CountingPoint(
+                        checkQuarter: _checkQuarter,
+                        checkYear: _checkYear,
+                        counterNumber: _counterNumberController.text,
+                        counterType: _counterType,
+                        feederNumber: int.parse(_feederController.text),
+                        pillarNumber: _pillarController.text,
+                        tpName: _tpController.text,
+                      ),
+              ),
+            ),
             child: Text("Сохранить"),
           ),
       ],
@@ -364,20 +380,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
 
   Widget _buildQuarter() => _buildDropdown<int>(
         width: 60.0,
-        valueBuilder: (e) {
-          switch (e) {
-            case 1:
-              return 'I';
-            case 2:
-              return 'II';
-            case 3:
-              return 'III';
-            case 4:
-              return 'IV';
-            default:
-              return '$e??';
-          }
-        },
+        valueBuilder: (e) => quarterToString(e),
         futureBuilder: () => Future.value([1, 2, 3, 4]),
         validator: (val) => val != null && _counterType != null,
         valueProvider: () => _checkQuarter,

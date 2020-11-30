@@ -1,11 +1,12 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
 import 'package:kres_requests2/domain/document_service.dart';
 import 'package:kres_requests2/domain/request_set_service.dart';
-
 import 'package:kres_requests2/models/request.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
@@ -122,31 +123,8 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                       onLongPress: () => setState(() {
                         _selectionList = {requests[index]};
                       }),
-                      onDoubleTap: () {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (_) => RequestEditorDialog(
-                            repositoryModule: widget.repositoryModule,
-                            editingRequest: requests[index],
-                          ),
-                        ).then((edited) {
-                          if (edited != null)
-                            setState(() {
-                              // If previous value was selected then update
-                              // selection references
-                              final old = requests[index];
-                              if (_selectionList != null &&
-                                  _selectionList.contains(old)) {
-                                _selectionList
-                                  ..remove(old)
-                                  ..add(edited);
-                              }
-                              widget.requestSetService.update(old, edited);
-                            });
-                          widget.onDocumentsChanged();
-                        });
-                      },
+                      onDoubleTap: () =>
+                          _showRequestEditor(context, requests[index]),
                       child: RequestItemView(
                         defaultGroupIndex: _lastGroupIndex,
                         position: index + 1,
@@ -159,7 +137,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                         isHighlighted: widget.highlighted != null &&
                             widget.highlighted.contains(requests[index]),
                         request: requests[index],
-                        key: ValueKey(requests[index].accountInfo.baseId),
+                        key: ValueKey(requests[index]),
                         onChanged: (isSelected) => setState(() {
                           final value = requests[index];
                           if (isSelected) {
@@ -191,20 +169,7 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
             child: FloatingActionButton(
               child: FaIcon(FontAwesomeIcons.plus),
               tooltip: "Добавить заявку",
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) => RequestEditorDialog(
-                          repositoryModule: widget.repositoryModule,
-                        )).then((created) {
-                  if (created != null) {
-                    setState(() {
-                      requests.add(created);
-                    });
-                  }
-                });
-              },
+              onPressed: () => _showRequestEditor(context, null),
             ),
           ),
         ),
@@ -309,8 +274,11 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                     ),
                   ).then((confirmed) {
                     if (confirmed != null && confirmed) {
+                      _handleResult(
+                          context,
+                          () =>
+                              widget.requestSetService.remove(_selectionList));
                       setState(() {
-                        widget.requestSetService.remove(_selectionList);
                         _selectionList = null;
                       });
                     }
@@ -322,6 +290,50 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
         ),
       ],
     );
+  }
+
+  void _showRequestEditor(BuildContext context, Request editable) {
+    showDialog<Request>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => RequestEditorDialog(
+        repositoryModule: widget.repositoryModule,
+        editingRequest: editable,
+      ),
+    ).then((edited) {
+      if (edited != null) {
+        if (editable == null)
+          _handleResult(
+              context, () => widget.requestSetService.addRequest(edited));
+        else
+          setState(() {
+            // If previous value was selected then update
+            // selection references
+            if (_selectionList != null && _selectionList.contains(editable)) {
+              _selectionList
+                ..remove(editable)
+                ..add(edited);
+            }
+            _handleResult(context,
+                () => widget.requestSetService.update(editable, edited));
+          });
+      }
+    });
+  }
+
+  void _handleResult(BuildContext context, Future<bool> Function() action) {
+    action().then((isOk) {
+      if (isOk) {
+        if (mounted) {
+          context
+              .read<WorksheetMasterBloc>()
+              .add(WorksheetMasterRefreshDocumentStateEvent());
+        }
+      } else {
+        context.read<WorksheetMasterBloc>().add(
+            WorksheetShowNotificationEvent('Не удалось выполнить действие'));
+      }
+    });
   }
 
   void _showWorksheetMoveDialog() => showDialog(
