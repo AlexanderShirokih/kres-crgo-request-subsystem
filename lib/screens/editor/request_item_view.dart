@@ -127,6 +127,11 @@ class RequestItemView extends StatelessWidget {
                           ),
                           const SizedBox(height: 10.0),
                           Text(
+                            request.countingPoint?.joinConnectionInfo() ?? '',
+                            style: TextStyle(fontSize: 16.0),
+                          ),
+                          const SizedBox(height: 10.0),
+                          Text(
                             request.additional ?? '',
                             style: TextStyle(fontSize: 16.0),
                           ),

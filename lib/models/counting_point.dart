@@ -41,6 +41,24 @@ class CountingPoint extends Equatable {
     this.checkQuarter,
   });
 
+  String joinConnectionInfo() {
+    StringBuffer str = StringBuffer();
+
+    if (tpName != null && tpName.isNotEmpty) {
+      str.write('ТП ');
+      str.write(tpName);
+    }
+    if (feederNumber != null) {
+      str.write(' Ф ');
+      str.write(feederNumber);
+    }
+    if (pillarNumber != null && pillarNumber.isNotEmpty) {
+      str.write(' оп. ');
+      str.write(pillarNumber);
+    }
+    return str.toString();
+  }
+
   String joinToString() {
     StringBuffer str = StringBuffer();
 
