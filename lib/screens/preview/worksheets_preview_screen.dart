@@ -2,39 +2,32 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
+import 'package:kres_requests2/bloc/preview/preview_bloc.dart';
 import 'package:kres_requests2/domain/document_service.dart';
 import 'package:kres_requests2/domain/request_set_service.dart';
 import 'package:kres_requests2/models/employee.dart';
+import 'package:kres_requests2/models/request_set.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
+import 'package:kres_requests2/screens/common.dart';
 
 import 'exporter_dialogs.dart';
 import 'print_dialog.dart';
 
-class WorksheetsPreviewScreen extends StatefulWidget {
-  final DocumentService document;
+class WorksheetsPreviewScreen extends StatelessWidget {
+  final RepositoryModule repositoryModule;
+  final PreviewBloc _previewBloc;
 
-  const WorksheetsPreviewScreen(this.document) : assert(document != null);
-
-  @override
-  _WorksheetsPreviewScreenState createState() =>
-      _WorksheetsPreviewScreenState(document);
-}
-
-class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
-  DocumentService document;
-
-  List<RequestSetService> selectedWorksheets;
-
-  @override
-  void initState() {
-    super.initState();
-    selectedWorksheets =
-        document.getEditableWorksheets().where((element) => !element.isEmpty);
-  }
-
-  _WorksheetsPreviewScreenState(this.document);
+  WorksheetsPreviewScreen(DocumentService document, this.repositoryModule)
+      : _previewBloc = PreviewBloc(
+          document,
+          repositoryModule.getExportRepository(),
+        ),
+        assert(document != null),
+        assert(repositoryModule != null);
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +35,11 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
       appBar: AppBar(
         title: Text('Вывод документа'),
       ),
-      body: widget.document.isEmpty
-          ? Center(
+      body: BlocBuilder<PreviewBloc, PreviewState>(
+        cubit: _previewBloc,
+        builder: (context, state) {
+          if (state is PreviewEmptyDocumentState) {
+            return Center(
               child: Text(
                 'Документ пуст',
                 style: Theme.of(context)
@@ -51,76 +47,105 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
                     .headline4
                     .copyWith(color: Theme.of(context).textTheme.caption.color),
               ),
-            )
-          : Builder(builder: (ctx) => _buildPage(ctx)),
+            );
+          } else if (state is PreviewDataState) {
+            return BlocProvider.value(
+              value: _previewBloc,
+              child: Builder(
+                  builder: (ctx) => _buildPage(ctx, state.validatedWorksheets)),
+            );
+          } else if (state is PreviewValidationState) {
+            return Center(
+              child: Text(
+                'Проверка документа...',
+                style: Theme.of(context)
+                    .textTheme
+                    .caption
+                    .copyWith(fontSize: 36.0),
+              ),
+            );
+          } else {
+            return LoadingView();
+          }
+        },
+      ),
     );
   }
 
-  Widget _buildPage(BuildContext context) => Row(
+  Widget _buildPage(BuildContext context,
+          Map<RequestSetService, WorksheetInfo> worksheets) =>
+      Row(
         mainAxisSize: MainAxisSize.max,
         children: [
-          _buildActionsContainer(context),
-          Expanded(
-            child: _WorksheetCardGroup(
-              worksheets: document
-                  .getEditableWorksheets()
-                  .where((worksheet) => !worksheet.getRequests().isNotEmpty)
-                  .toList(),
-              onStatusChanged: (newWorksheets) => setState(() {
-                selectedWorksheets = newWorksheets;
-              }),
-            ),
+          _buildActionsContainer(
+            context,
+            worksheets,
           ),
+          Expanded(child: _WorksheetCardGroup(worksheets)),
         ],
       );
 
-  bool hasPrintableWorksheets() => selectedWorksheets.isNotEmpty;
+  Widget _buildActionsContainer(
+    BuildContext context,
+    Map<RequestSetService, WorksheetInfo> data,
+  ) {
+    final checkedItems = data.entries.where((e) => e.value.isChecked);
+    final hasPrintableWorksheets = checkedItems.isNotEmpty;
+    final selected = checkedItems.map((e) => e.key.getRequestSet()).toList();
 
-  Widget _buildActionsContainer(BuildContext context) => Container(
-        width: 340.0,
-        height: double.maxFinite,
-        color: Theme.of(context).primaryColor,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _buildActionBarItem(
-                  context: context,
-                  icon: FontAwesomeIcons.fileExcel,
-                  label: 'Экспорт в Excel',
-                  tooltip:
-                      'Сохранить выбранные листы в формате Книга Microsoft '
-                      'Excel 2007-365 (Только списки работ)',
-                  onPressed: hasPrintableWorksheets()
-                      ? () => _showExportDialog(context, ExportFormat.Excel)
-                      : null,
-                ),
-                _buildActionBarItem(
-                  context: context,
-                  icon: FontAwesomeIcons.filePdf,
-                  label: 'Экспорт в PDF',
-                  tooltip: 'Сохранить выбранные листы в формате PDF',
-                  onPressed: hasPrintableWorksheets()
-                      ? () => _showExportDialog(context, ExportFormat.Pdf)
-                      : null,
-                ),
-                _buildActionBarItem(
-                  context: context,
-                  icon: FontAwesomeIcons.print,
-                  label: 'Печать',
-                  tooltip: 'Отправить выбранные листы на печать',
-                  onPressed: hasPrintableWorksheets()
-                      ? () => _showPrintDialog(context)
-                      : null,
-                ),
-              ],
-            ),
+    return Container(
+      width: 340.0,
+      height: double.maxFinite,
+      color: Theme.of(context).primaryColor,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildActionBarItem(
+                context: context,
+                icon: FontAwesomeIcons.fileExcel,
+                label: 'Экспорт в Excel',
+                tooltip: 'Сохранить выбранные листы в формате Книга Microsoft '
+                    'Excel 2007-365 (Только списки работ)',
+                onPressed: hasPrintableWorksheets
+                    ? () => _showExportDialog(
+                          context,
+                          selected,
+                          ExportFormat.Excel,
+                        )
+                    : null,
+              ),
+              _buildActionBarItem(
+                context: context,
+                icon: FontAwesomeIcons.filePdf,
+                label: 'Экспорт в PDF',
+                tooltip: 'Сохранить выбранные листы в формате PDF',
+                onPressed: hasPrintableWorksheets
+                    ? () => _showExportDialog(
+                          context,
+                          selected,
+                          ExportFormat.Pdf,
+                        )
+                    : null,
+              ),
+              _buildActionBarItem(
+                context: context,
+                icon: FontAwesomeIcons.print,
+                label: 'Печать',
+                tooltip: 'Отправить выбранные листы на печать',
+                onPressed: hasPrintableWorksheets
+                    ? () => _showPrintDialog(context, selected)
+                    : null,
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    );
+  }
 
   Widget _buildActionBarItem({
     BuildContext context,
@@ -150,13 +175,17 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
         ),
       );
 
-  Future _showExportDialog(BuildContext context, ExportFormat format) =>
+  Future _showExportDialog(
+    BuildContext context,
+    List<RequestSet> selected,
+    ExportFormat format,
+  ) =>
       showDialog<String>(
         context: context,
         barrierDismissible: false,
         builder: (_) => ExporterDialog(
           format,
-          selectedWorksheets.map((e) => e.getRequestSet()).toList(),
+          selected,
           (ext) => getSuggestedName(ext),
         ),
       ).then(
@@ -171,19 +200,20 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
         },
       );
 
-  final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
-
   String getSuggestedName(String ext) {
-    String fmtDate(DateTime d) => _dateFormat.format(d);
+    final dateFormat = DateFormat('dd.MM.yyyy');
+    String fmtDate(DateTime d) => dateFormat.format(d);
     return "Заявки ${fmtDate(DateTime.now())}$ext";
   }
 
-  Future _showPrintDialog(BuildContext context) => showDialog<String>(
+  Future _showPrintDialog(
+    BuildContext context,
+    List<RequestSet> selected,
+  ) =>
+      showDialog<String>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => PrintDialog(
-          selectedWorksheets.map((e) => e.getRequestSet()).toList(),
-        ),
+        builder: (_) => PrintDialog(selected),
       ).then(
         (resultMessage) {
           if (resultMessage != null)
@@ -197,35 +227,12 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
       );
 }
 
-class _WorksheetCardGroup extends StatefulWidget {
-  final List<RequestSetService> worksheets;
-
-  final void Function(List<RequestSetService>) onStatusChanged;
-
-  const _WorksheetCardGroup({
-    @required this.worksheets,
-    @required this.onStatusChanged,
-  })  : assert(worksheets != null),
-        assert(onStatusChanged != null);
-
-  @override
-  _WorksheetCardGroupState createState() => _WorksheetCardGroupState();
-}
-
-class _WorksheetCardGroupState extends State<_WorksheetCardGroup> {
+class _WorksheetCardGroup extends StatelessWidget {
   static const _tileMaxWidth = 500.0;
 
-  Map<RequestSetService, bool> _checkedCards;
+  final Map<RequestSetService, WorksheetInfo> worksheets;
 
-  @override
-  void initState() {
-    super.initState();
-    _checkedCards = Map.fromIterable(
-      widget.worksheets,
-      key: (k) => k,
-      value: (_) => true,
-    );
-  }
+  const _WorksheetCardGroup(this.worksheets) : assert(worksheets != null);
 
   @override
   Widget build(BuildContext context) {
@@ -234,7 +241,7 @@ class _WorksheetCardGroupState extends State<_WorksheetCardGroup> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final crossAxisCount = max(1, constraints.maxWidth ~/ _tileMaxWidth);
-          return crossAxisCount > 1 && widget.worksheets.length > 1
+          return crossAxisCount > 1 && worksheets.length > 1
               ? GridView.count(
                   crossAxisCount: crossAxisCount,
                   children: _buildChildren(context),
@@ -249,23 +256,23 @@ class _WorksheetCardGroupState extends State<_WorksheetCardGroup> {
     );
   }
 
-  List<Widget> _buildChildren(BuildContext context) => widget.worksheets.map(
-        (worksheet) {
+  List<Widget> _buildChildren(BuildContext context) => worksheets.entries.map(
+        (MapEntry<RequestSetService, WorksheetInfo> worksheet) {
           return ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: _tileMaxWidth,
             ),
             child: WorksheetCard(
-              worksheet: worksheet,
-              isSelected: _checkedCards[worksheet],
-              onChanged: (isChecked) => setState(() {
-                _checkedCards[worksheet] = isChecked;
-                widget.onStatusChanged(
-                  widget.worksheets
-                      .where((worksheet) => _checkedCards[worksheet])
-                      .toList(),
-                );
-              }),
+              worksheet: worksheet.key,
+              errors: worksheet.value.errors,
+              isSelected: worksheet.value.isChecked,
+              onChanged: (isChecked) {
+                if (worksheet.value.errors.isEmpty) {
+                  context.read<PreviewBloc>().add(
+                        PreviewSelectionChangedEvent(worksheet.key, isChecked),
+                      );
+                }
+              },
             ),
           );
         },
@@ -276,12 +283,14 @@ class WorksheetCard extends StatelessWidget {
   static final _dateFormat = DateFormat('dd.MM.yyyy');
   final ValueChanged<bool> onChanged;
   final RequestSetService worksheet;
+  final List<String> errors;
   final bool isSelected;
 
   const WorksheetCard({
     @required this.worksheet,
     @required this.isSelected,
     @required this.onChanged,
+    @required this.errors,
   })  : assert(worksheet != null),
         assert(isSelected != null);
 
@@ -291,7 +300,7 @@ class WorksheetCard extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Material(
         child: InkWell(
-          onTap: () => onChanged?.call(!isSelected),
+          onTap: () => onChanged(!isSelected),
           child: Card(
             elevation: 5.0,
             child: Container(
@@ -373,6 +382,7 @@ class WorksheetCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
         children: [
           _printEmployeeLabel(ctx, label),
           const SizedBox(width: 6.0),
@@ -462,9 +472,6 @@ class WorksheetCard extends StatelessWidget {
           );
 
   Widget _printWorksheetStatus(BuildContext context) {
-    // TODO: Fetch errors from server
-    final errors = [];
-
     if (errors.isEmpty) {
       return Row(
         mainAxisSize: MainAxisSize.min,

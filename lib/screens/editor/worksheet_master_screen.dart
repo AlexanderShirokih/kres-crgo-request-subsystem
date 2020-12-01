@@ -139,8 +139,10 @@ class WorksheetMasterScreen extends StatelessWidget {
                   builder: (_) =>
                       BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
                     cubit: _worksheetBloc,
-                    builder: (context, state) =>
-                        WorksheetsPreviewScreen(_documentService),
+                    builder: (context, state) => WorksheetsPreviewScreen(
+                      _documentService,
+                      _repositoryModule,
+                    ),
                   ),
                 ),
               ),

@@ -118,8 +118,9 @@ class StartupScreen extends StatelessWidget {
         ),
       ),
       StartupScreenButtonContainer(
-        onPressed: () => _startupBloc.add(StartupCreateNewRequestsSet(
-            null, RequestsSetSource.ImportMegaBilling)),
+        onPressed: null,
+        // _startupBloc.add(StartupCreateNewRequestsSet(
+        // null, RequestsSetSource.ImportMegaBilling)),
         child: SimpleTextStartupTile(
           title: 'Импорт заявок',
           description:

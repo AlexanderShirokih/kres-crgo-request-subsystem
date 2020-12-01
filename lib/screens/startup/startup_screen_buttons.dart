@@ -10,8 +10,7 @@ class StartupScreenButtonContainer extends StatelessWidget {
   const StartupScreenButtonContainer({
     @required this.onPressed,
     @required this.child,
-  })  : assert(child != null),
-        assert(onPressed != null);
+  })  : assert(child != null);
 
   @override
   Widget build(BuildContext context) => Padding(

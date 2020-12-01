@@ -63,7 +63,7 @@ class ApiServer {
           ? <String, dynamic>{}
           : convert.jsonDecode(convert.utf8.decode(response.bodyBytes));
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode <= 299) {
         // Success
         return ServerResponse(response.statusCode, null, jsonResponse, url);
       } else if (response.statusCode == 401) {
@@ -117,7 +117,6 @@ class ApiServer {
     _httpClient.close();
   }
 
-  /// TODO: Get ready to accept multipart forms
   Future<http.Response> _doNetworkCall(String url, Map<String, String> headers,
       RequestMethod method, String jsonBody) {
     switch (method) {
