@@ -5,7 +5,6 @@ import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/models/optional_data.dart';
 import 'package:kres_requests2/models/document.dart';
@@ -54,14 +53,6 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
       return;
     }
 
-    Document _copyToTarget(DocumentService source) {
-      // TODO: Unimplemented
-      throw UnimplementedError();
-      // targetDocument
-      //   ..addWorksheets(source.worksheets);
-      // return targetDocument;
-    }
-
     yield ImportLoadingState(file);
 
     Future<ImporterState> state =
@@ -72,19 +63,13 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
         if (importedDocument.hasError()) {
           throw importedDocument.error;
         }
-
-        final document = importedDocument.data;
-        final newTarget =
-            targetDocument == null ? document : _copyToTarget(document);
-
-        return WorksheetReadyState(newTarget);
+        // TODO: Unimplemented
+        return WorksheetReadyState(null);
       },
     );
 
     yield await state.catchError((e, s) {
-      if (e is ImporterProcessorMissingException) {
-        return ImporterProccessMissingState();
-      } else if (e is ErrorWrapper) {
+      if (e is ErrorWrapper) {
         return ImportErrorState(e.error, e.stackTrace);
       } else {
         return ImportErrorState(e.toString(), s.toString());

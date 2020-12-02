@@ -13,11 +13,6 @@ class ExporterIdle extends ExporterState {
   List<Object> get props => [message];
 }
 
-class ExporterMissingState extends ExporterState {
-  @override
-  List<Object> get props => [];
-}
-
 class ExporterErrorState extends ExporterState {
   final ErrorWrapper error;
 

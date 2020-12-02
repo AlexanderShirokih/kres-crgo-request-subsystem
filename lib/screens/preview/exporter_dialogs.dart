@@ -21,11 +21,13 @@ extension on ExportFormat {
 }
 
 class ExporterDialog extends StatelessWidget {
+  final RepositoryModule repositoryModule;
   final List<RequestSet> worksheets;
   final String suggestedExportBasename;
   final ExportFormat exportFormat;
 
   ExporterDialog(
+    this.repositoryModule,
     this.exportFormat,
     this.worksheets,
     String Function(String) suggestedNameProvider,
@@ -45,7 +47,7 @@ class ExporterDialog extends StatelessWidget {
         child: BlocProvider.value(
           value: ExporterBloc(
             exportFormat: exportFormat,
-            repositoryModule: context.read<RepositoryModule>(),
+            repositoryModule: repositoryModule,
             fileChooser: _showFileChooser,
             worksheets: worksheets,
           ),
@@ -69,9 +71,6 @@ class ExporterDialog extends StatelessWidget {
                 if (state is ExporterClosingState) {
                   Navigator.of(context)
                       .pop(state.isCompleted ? 'Экспорт завершён' : null);
-                } else if (state is ExporterMissingState) {
-                  Navigator.of(context)
-                      .pop('Ошибка: Модуль экспорта файлов отсутcтвует');
                 }
               },
             ),

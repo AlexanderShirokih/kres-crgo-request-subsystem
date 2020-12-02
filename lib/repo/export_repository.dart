@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:kres_requests2/data/api_server.dart';
 import 'package:kres_requests2/data/models/server_request.dart';
 import 'package:kres_requests2/models/request_set.dart';
@@ -33,5 +36,60 @@ class ExportRepository with ApiRepositoryMixin {
         ),
       ),
     );
+  }
+
+  /// Gets a list of available printers installed on server
+  Future<List<String>> getAvailablePrinters() async {
+    final response = await _apiServer.getData(
+      ServerRequest.get('$_kExport/print'),
+    );
+
+    return getResponseData(
+        response, (body) => (body as List<dynamic>).cast<String>());
+  }
+
+  /// Sends document to print on server printer
+  Future<void> printWorksheets(
+      List<RequestSet> worksheets, String printerName, bool noLists) async {
+    final response = await _apiServer.getData(
+      ServerRequest.get(
+        '$_kExport/print/$printerName',
+        requestParams: {
+          'ids': _joinWorksheets(worksheets),
+          'noLists': noLists,
+        },
+      ),
+    );
+
+    ensureOk(response);
+  }
+
+  /// Runs exporter for list and then downloads final document and saves it
+  /// to the `savePath`
+  Future<void> exportToPdf(List<RequestSet> worksheets, String savePath) =>
+      _downloadExportedFile('pdf', worksheets, savePath);
+
+  /// Runs exporter for list and then downloads final document and saves it
+  /// to the `savePath`
+  Future<void> exportToXlsx(List<RequestSet> worksheets, String savePath) =>
+      _downloadExportedFile('xlsx', worksheets, savePath);
+
+  Future<void> _downloadExportedFile(
+      String exportType, List<RequestSet> worksheets, String savePath) async {
+    final response = await _apiServer.getData(
+      ServerRequest.get(
+        '$_kExport/$exportType',
+        requestParams: {'ids': _joinWorksheets(worksheets)},
+      ),
+    );
+
+    Uint8List bytes = getResponseData(response, (body) => body as Uint8List);
+
+    await File(savePath).writeAsBytes(bytes);
+  }
+
+  String _joinWorksheets(List<RequestSet> worksheets) {
+    assert(worksheets != null);
+    return worksheets.map((e) => e.id).join(',');
   }
 }

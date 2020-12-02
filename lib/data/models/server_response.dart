@@ -20,5 +20,5 @@ class ServerResponse {
   bool get hasErrors => !isOk;
 
   /// Returns `true` is response does not contains errors
-  bool get isOk => statusCode == 200 && error == null;
+  bool get isOk => statusCode >= 200 && statusCode < 300 && error == null;
 }

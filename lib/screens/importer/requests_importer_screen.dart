@@ -6,7 +6,6 @@ import 'package:kres_requests2/domain/document_service.dart';
 
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
-import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 
 class RequestsImporterScreen extends BaseImporterScreen {
@@ -16,19 +15,14 @@ class RequestsImporterScreen extends BaseImporterScreen {
     @required DocumentService targetDocument,
     String initialDirectory,
   }) =>
-      RequestsImporterScreen(
-        targetDocument: targetDocument,
-        requestsRepository: repositoryModule.getRequestsRepository(),
-      );
+      RequestsImporterScreen(targetDocument: targetDocument);
 
   RequestsImporterScreen({
     @required DocumentService targetDocument,
-    @required RequestsRepository requestsRepository,
   }) : super(
           title: 'Импорт заявок',
           targetDocument: targetDocument,
           mainWidgetBuilder: (_) => _RequestsImporterIdleView(),
-          importerRepository: requestsRepository,
           forceFileSelection: false,
         );
 

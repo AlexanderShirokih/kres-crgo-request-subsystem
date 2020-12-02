@@ -8,8 +8,11 @@ import 'package:kres_requests2/screens/common.dart';
 
 class PrintDialog extends StatelessWidget {
   final List<RequestSet> worksheets;
+  final RepositoryModule repositoryModule;
 
-  const PrintDialog(this.worksheets) : assert(worksheets != null);
+  const PrintDialog(this.repositoryModule, this.worksheets)
+      : assert(repositoryModule != null),
+        assert(worksheets != null);
 
   @override
   Widget build(BuildContext context) {
@@ -20,12 +23,12 @@ class PrintDialog extends StatelessWidget {
         height: 380.0,
         child: BlocProvider.value(
           value: ExporterBloc(
-            repositoryModule: context.read<RepositoryModule>(),
+            repositoryModule: repositoryModule,
             worksheets: worksheets,
           ),
           child: Builder(
             builder: (context) => BlocConsumer(
-              cubit: context.read<ExporterBloc>(),
+              cubit: context.watch<ExporterBloc>(),
               builder: (context, state) {
                 if (state is ExporterListPrintersState) {
                   return _ListPrintersView(
@@ -49,9 +52,6 @@ class PrintDialog extends StatelessWidget {
                   Navigator.of(context).pop(state.isCompleted
                       ? 'Задание отправлено на печать'
                       : null);
-                } else if (state is ExporterMissingState) {
-                  Navigator.of(context)
-                      .pop('Ошибка: Модуль печати отсутcтвует');
                 }
               },
             ),
@@ -87,7 +87,7 @@ class __ListPrintersViewState extends State<_ListPrintersView> {
             icon: FaIcon(FontAwesomeIcons.sync),
             label: Text('Обновить'),
             onPressed: () => context
-                .watch<ExporterBloc>()
+                .read<ExporterBloc>()
                 .add(ExporterShowPrintersListEvent()),
           )
         ],

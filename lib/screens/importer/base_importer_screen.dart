@@ -15,7 +15,7 @@ abstract class BaseImporterScreen extends StatelessWidget {
 
   const BaseImporterScreen({
     @required this.title,
-    @required this.importerRepository,
+    this.importerRepository,
     @required this.targetDocument,
     @required this.mainWidgetBuilder,
     @required this.forceFileSelection,

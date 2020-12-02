@@ -59,13 +59,21 @@ class ApiServer {
         request.method,
         encodedBody,
       );
-      var jsonResponse = response.body.isEmpty
-          ? <String, dynamic>{}
-          : convert.jsonDecode(convert.utf8.decode(response.bodyBytes));
 
       if (response.statusCode >= 200 && response.statusCode <= 299) {
-        // Success
-        return ServerResponse(response.statusCode, null, jsonResponse, url);
+        final contentType = response.headers['Content-Type'] ??
+            response.headers['content-type'];
+
+        if (contentType == null ||
+            contentType.isEmpty ||
+            contentType.contains('application/json')) {
+          final jsonResponse = _decodeAsJson(response);
+          return ServerResponse(response.statusCode, null, jsonResponse, url);
+        } else {
+          // Treat as binary
+          return ServerResponse(
+              response.statusCode, null, response.bodyBytes, url);
+        }
       } else if (response.statusCode == 401) {
         // Unauthorized
         return ServerResponse(
@@ -75,6 +83,7 @@ class ApiServer {
           url,
         );
       } else {
+        final jsonResponse = _decodeAsJson(response);
         return ServerResponse(
             response.statusCode,
             ServerError(
@@ -115,6 +124,12 @@ class ApiServer {
   /// Closes connection to the server
   void dispose() {
     _httpClient.close();
+  }
+
+  dynamic _decodeAsJson(http.Response response) {
+    return response.body.isEmpty
+        ? <String, dynamic>{}
+        : convert.jsonDecode(convert.utf8.decode(response.bodyBytes));
   }
 
   Future<http.Response> _doNetworkCall(String url, Map<String, String> headers,

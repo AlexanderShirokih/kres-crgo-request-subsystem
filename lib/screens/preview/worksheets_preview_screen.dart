@@ -184,6 +184,7 @@ class WorksheetsPreviewScreen extends StatelessWidget {
         context: context,
         barrierDismissible: false,
         builder: (_) => ExporterDialog(
+          repositoryModule,
           format,
           selected,
           (ext) => getSuggestedName(ext),
@@ -213,7 +214,7 @@ class WorksheetsPreviewScreen extends StatelessWidget {
       showDialog<String>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => PrintDialog(selected),
+        builder: (_) => PrintDialog(repositoryModule, selected),
       ).then(
         (resultMessage) {
           if (resultMessage != null)

@@ -12,7 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:kres_requests2/domain/counters_importer.dart';
 import 'package:kres_requests2/repo/employees_repository.dart';
-import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 
@@ -21,7 +20,6 @@ import 'counter_types_repository.dart';
 /// Repository injection point
 class RepositoryModule {
   final SettingsRepository _settingsRepository;
-  final RequestsRepository _requestsRepository;
   final CountersImporterRepository _countersRepository;
 
   final ApiServer _apiServer;
@@ -44,15 +42,12 @@ class RepositoryModule {
 
     final settingsRepo = SettingsRepository.fromPreferences(sharedPreferences);
 
-    final requestsRepo = RequestsRepository(null);
-
     final countersRepo = CountersImporterRepository(
       importer: CountersImporter(),
     );
 
     return RepositoryModule._(
       settingsRepo,
-      requestsRepo,
       countersRepo,
       apiServer,
       credentialsManager,
@@ -61,13 +56,10 @@ class RepositoryModule {
 
   RepositoryModule._(
     this._settingsRepository,
-    this._requestsRepository,
     this._countersRepository,
     this._apiServer,
     this._credentialsManager,
   );
-
-  RequestsRepository getRequestsRepository() => _requestsRepository;
 
   SettingsRepository getSettingsRepository() => _settingsRepository;
 
