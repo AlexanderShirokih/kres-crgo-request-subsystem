@@ -2,8 +2,10 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/authorization/authorization_bloc.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
+import 'package:kres_requests2/screens/auth/init_config_dialog.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/startup/startup_screen.dart';
 
@@ -34,46 +36,67 @@ class AuthorizationScreen extends StatelessWidget {
             maxWidth: 600.0,
             maxHeight: 450.0,
           ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 5,
-                  blurRadius: 7,
-                  offset: Offset(0, 3),
-                ),
-              ],
-              borderRadius: BorderRadius.circular(24.0),
-            ),
-            padding: const EdgeInsets.all(32.0),
-            child: BlocConsumer<AuthorizationBloc, AuthorizationState>(
-              cubit: _authorizationBloc,
-              builder: (context, state) {
-                if (state is AuthorizationInitial) {
-                  return _buildAuthDialog(context);
-                } else if (state is AuthorizationProcessing) {
-                  return LoadingView('Загрузка данных...');
-                } else
-                  return LoadingView();
-              },
-              listener: (context, state) {
-                if (state is AuthorizationFailed) {
-                  _showError(context, null);
-                } else if (state is AuthorizationError) {
-                  _showError(context, state.errorMessage);
-                } else if (state is AuthorizationFinished) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                          StartupScreen(repositoryModule: _repositoryModule),
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 5,
+                      blurRadius: 7,
+                      offset: Offset(0, 3),
                     ),
-                  );
-                }
-              },
-            ),
+                  ],
+                  borderRadius: BorderRadius.circular(24.0),
+                ),
+                padding: const EdgeInsets.all(32.0),
+                child: BlocConsumer<AuthorizationBloc, AuthorizationState>(
+                  cubit: _authorizationBloc,
+                  builder: (context, state) {
+                    if (state is AuthorizationInitial) {
+                      return _buildAuthDialog(context);
+                    } else if (state is AuthorizationProcessing) {
+                      return LoadingView('Загрузка данных...');
+                    } else
+                      return LoadingView();
+                  },
+                  listener: (context, state) {
+                    if (state is AuthorizationFailed) {
+                      _showError(context, null);
+                    } else if (state is AuthorizationError) {
+                      _showError(context, state.errorMessage);
+                    } else if (state is AuthorizationFinished) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) => StartupScreen(
+                              repositoryModule: _repositoryModule),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: IconButton(
+                    icon: FaIcon(
+                      FontAwesomeIcons.cog,
+                      color: Theme.of(context).accentColor,
+                    ),
+                    tooltip: 'Настройки',
+                    onPressed: () => showDialog(
+                        context: context,
+                        builder: (_) => InitialConfigDialog(
+                            _repositoryModule.getSettingsRepository())),
+                  ),
+                ),
+              )
+            ],
           ),
         ),
       ),

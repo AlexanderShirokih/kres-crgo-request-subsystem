@@ -1,6 +1,11 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Global settings repository
 abstract class SettingsRepository {
+  String get serverHost;
+
+  set serverHost(String host);
+
   String get lastUsedPrinter;
 
   set lastUsedPrinter(String printer);
@@ -13,6 +18,7 @@ abstract class SettingsRepository {
 
 class _PrefsSettingsRepository extends SettingsRepository {
   static const _kLastUsedPrinter = 'last_printer';
+  static const _kLastServer = 'server_host';
 
   final SharedPreferences _prefs;
 
@@ -24,4 +30,10 @@ class _PrefsSettingsRepository extends SettingsRepository {
   @override
   set lastUsedPrinter(String printer) =>
       _prefs.setString(_kLastUsedPrinter, printer);
+
+  @override
+  String get serverHost => _prefs.getString(_kLastServer);
+
+  @override
+  set serverHost(String host) => _prefs.setString(_kLastServer, host);
 }

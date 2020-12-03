@@ -41,6 +41,7 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState> {
     try {
       await _usersRepository.getUserDetails();
       yield AuthorizationFinished();
+      yield AuthorizationInitial();
     } on UnauthorizedException {
       // Empty string indicated authorization error
       yield AuthorizationFailed();

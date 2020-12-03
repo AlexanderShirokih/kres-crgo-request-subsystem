@@ -1,19 +1,19 @@
+import 'package:http/http.dart' as http;
 import 'package:kres_requests2/data/api_server.dart';
 import 'package:kres_requests2/data/credentials_manager.dart';
+import 'package:kres_requests2/domain/counters_importer.dart';
 import 'package:kres_requests2/repo/districts_repository.dart';
+import 'package:kres_requests2/repo/employees_repository.dart';
 import 'package:kres_requests2/repo/export_repository.dart';
 import 'package:kres_requests2/repo/positions_repository.dart';
 import 'package:kres_requests2/repo/request_set_repository.dart';
 import 'package:kres_requests2/repo/request_types_repository.dart';
+import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/repo/street_repository.dart';
 import 'package:kres_requests2/repo/users_repository.dart';
+import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/utils/lazy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:kres_requests2/domain/counters_importer.dart';
-import 'package:kres_requests2/repo/employees_repository.dart';
-import 'package:kres_requests2/repo/settings_repository.dart';
-import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 
 import 'counter_types_repository.dart';
 
@@ -32,11 +32,9 @@ class RepositoryModule {
 
   /// Builds new instance of `RepositoryModule`
   static Future<RepositoryModule> buildRepositoryModule(
-    ApiServer apiServer,
     CredentialsManager credentialsManager,
     SharedPreferences sharedPreferences,
   ) async {
-    assert(apiServer != null);
     assert(credentialsManager != null);
     assert(sharedPreferences != null);
 
@@ -44,6 +42,13 @@ class RepositoryModule {
 
     final countersRepo = CountersImporterRepository(
       importer: CountersImporter(),
+    );
+
+    final apiServer = ApiServer(
+      http.Client(),
+      settingsRepo,
+      8080,
+      credentialsManager,
     );
 
     return RepositoryModule._(

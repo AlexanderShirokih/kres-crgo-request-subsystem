@@ -34,6 +34,7 @@ class StartupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
+          leading: Container(),
           title: Text('Начало работы'),
           actions: [
             Padding(
@@ -45,12 +46,21 @@ class StartupScreen extends StatelessWidget {
                   children: [
                     Text(state.user.name),
                     const SizedBox(width: 16.0),
-                    IconButton(
-                      icon: FaIcon(FontAwesomeIcons.cog),
-                      onPressed: () => Navigator.push(
-                        context,
-                        SettingsScreen.createRoute(repositoryModule),
+                    if (state.user.isModerator())
+                      IconButton(
+                        tooltip: 'Управление',
+                        icon: FaIcon(FontAwesomeIcons.cog),
+                        onPressed: () => Navigator.push(
+                          context,
+                          SettingsScreen.createRoute(
+                              repositoryModule, state.user),
+                        ),
                       ),
+                    const SizedBox(width: 32.0),
+                    IconButton(
+                      tooltip: 'Выйти из профиля',
+                      icon: FaIcon(FontAwesomeIcons.signOutAlt),
+                      onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 ),

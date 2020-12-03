@@ -63,15 +63,14 @@ class LoadingView extends StatelessWidget {
       );
 }
 
-
 /// Builds [Text] wrapped in [ConstrainedBox] with [minWidth]
 Widget buildFixedWidthText(String text, double minWidth) => ConstrainedBox(
-  constraints: BoxConstraints(minWidth: minWidth),
-  child: Text(
-    text,
-    overflow: TextOverflow.ellipsis,
-  ),
-);
+      constraints: BoxConstraints(minWidth: minWidth),
+      child: Text(
+        text,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
 
 bool _validateNotEmptyField(String text) => text == null || text.isEmpty;
 
@@ -83,6 +82,7 @@ Widget buildLabeledTextField({
   bool Function(String) validatorPredicate = _validateNotEmptyField,
   double labelWidth = 160.0,
   double fieldWidth = 300.0,
+  bool obscureText = false,
 }) =>
     Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -93,6 +93,7 @@ Widget buildLabeledTextField({
         SizedBox(
           width: fieldWidth,
           child: TextFormField(
+            obscureText: obscureText,
             controller: fieldController,
             autovalidateMode: AutovalidateMode.always,
             validator: (text) => validatorPredicate(text) ? '' : null,
@@ -124,13 +125,13 @@ Widget buildDropdownField<T>({
             items: items == null
                 ? null
                 : items
-                .map(
-                  (e) => DropdownMenuItem(
-                value: e,
-                child: Text(valueExtractor(e)),
-              ),
-            )
-                .toList(),
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(valueExtractor(e)),
+                      ),
+                    )
+                    .toList(),
             onChanged: onChanged,
           ),
         )

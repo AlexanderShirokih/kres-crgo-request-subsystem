@@ -5,6 +5,7 @@ import 'package:kres_requests2/data/credentials_manager.dart';
 import 'package:kres_requests2/data/models/server_error_model.dart';
 import 'package:kres_requests2/data/models/server_request.dart';
 import 'package:kres_requests2/repo/server_exception.dart';
+import 'package:kres_requests2/repo/settings_repository.dart';
 
 import 'models/server_response.dart';
 
@@ -13,20 +14,22 @@ class ApiServer {
   static const _kProtocol = 'http://';
 
   final http.Client _httpClient;
-  final String _baseUrl;
+  final int _port;
   final CredentialsManager _credentialsManager;
+  final SettingsRepository _settingsRepository;
 
-  const ApiServer(
-      this._httpClient, String host, int port, this._credentialsManager)
-      : assert(host != null),
-        assert(port != null),
-        assert(_credentialsManager != null),
-        _baseUrl = '$_kProtocol$host:$port/';
+  const ApiServer(this._httpClient, this._settingsRepository, this._port,
+      this._credentialsManager)
+      : assert(_port != null),
+        assert(_settingsRepository != null),
+        assert(_credentialsManager != null);
+
+  String _getBaseUrl() =>
+      '$_kProtocol${_settingsRepository.serverHost}:$_port/';
 
   Future<ServerResponse> getData(ServerRequest request) async {
     final requestParams = request.requestParams ?? <String, dynamic>{};
-
-    final baseUrl = '$_baseUrl${request.requestPath}';
+    final baseUrl = '${_getBaseUrl()}${request.requestPath}';
 
     // Encode path params
     StringBuffer params = StringBuffer();
@@ -104,7 +107,7 @@ class ApiServer {
       return ServerResponse(
         0,
         ServerError(
-            error: '${ex.address.address}:${ex.port}',
+            error: '${ex?.address?.address ?? 'No address!'}:${ex.port}',
             message: ex.osError.message),
         null,
         url,
