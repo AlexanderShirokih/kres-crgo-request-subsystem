@@ -3,20 +3,19 @@ import 'package:kres_requests2/data/credentials_manager.dart';
 import 'package:kres_requests2/data/models/credentials.dart';
 import 'package:kres_requests2/data/models/server_request.dart';
 import 'package:kres_requests2/models/user.dart';
-import 'package:kres_requests2/repo/api_repository.dart';
+import 'package:kres_requests2/repo/base_crud_repository.dart';
 
 /// Fetches information about users
-class UsersRepository with ApiRepositoryMixin {
+class UsersRepository extends BaseCRUDRepository<User> {
   static const _kUsers = 'users';
 
   final CredentialsManager _credentialsManager;
-  final ApiServer _apiServer;
 
   Credentials _fetchedUserCredentials;
   User _fetchedUser;
 
-  UsersRepository(this._apiServer, this._credentialsManager)
-      : assert(_apiServer != null);
+  UsersRepository(ApiServer apiServer, this._credentialsManager)
+      : super(apiServer, User.encoder(), _kUsers);
 
   /// Returns information about currently logged in user
   Future<User> getUserDetails() async {
@@ -29,15 +28,13 @@ class UsersRepository with ApiRepositoryMixin {
     _fetchedUser = null;
     _fetchedUserCredentials = credentials;
 
-    final response = await _apiServer.getData(
-      ServerRequest.get(_kUsers),
+    final response = await apiServer.getData(
+      ServerRequest.get('$_kUsers/current'),
     );
 
     _fetchedUser = getResponseData(
       response,
-      (body) => User(
-          name: response.body['name'],
-          hasModerationRights: response.body['hasModerationRights']),
+      (body) => User.encoder().fromJson(body),
     );
 
     return _fetchedUser;

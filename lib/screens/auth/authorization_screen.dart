@@ -64,7 +64,7 @@ class AuthorizationScreen extends StatelessWidget {
                 } else if (state is AuthorizationError) {
                   _showError(context, state.errorMessage);
                 } else if (state is AuthorizationFinished) {
-                  Navigator.pushReplacement(
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (BuildContext context) =>

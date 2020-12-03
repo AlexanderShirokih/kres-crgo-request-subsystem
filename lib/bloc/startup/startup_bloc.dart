@@ -24,7 +24,7 @@ class StartupBloc extends Bloc<StartupEvent, StartupState> {
       : assert(_usersRepository != null),
         assert(requestSetRepository != null),
         super(StartupInitial(
-          const User(name: "--", hasModerationRights: false),
+          const User(name: "--", authority: UserAuthority.GUEST),
         )) {
     _usersRepository
         .getUserDetails()
