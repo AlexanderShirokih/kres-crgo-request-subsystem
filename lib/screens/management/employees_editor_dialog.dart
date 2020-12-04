@@ -39,7 +39,7 @@ class _EmployeeEditorDialogState extends BaseEditorDialogState<Employee> {
       }
     });
 
-    _position = entity.position;
+    _position = entity?.position;
     _accessGroup = entity?.accessGroup;
     _status = entity?.status;
     _nameController = TextEditingController(text: entity?.name ?? '');
