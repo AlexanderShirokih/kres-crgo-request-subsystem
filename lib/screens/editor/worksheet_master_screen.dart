@@ -238,7 +238,7 @@ class WorksheetMasterScreen extends StatelessWidget {
 
   void _handleSavingState(
       BuildContext context, WorksheetMasterSavingState state) {
-    final scaffold = Scaffold.of(context, nullOk: true);
+    final scaffold = Scaffold.of(context);
     void showSnackbar(String message, Duration duration) =>
         scaffold?.showSnackBar(
           SnackBar(

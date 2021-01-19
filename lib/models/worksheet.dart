@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 
-import 'package:kres_requests2/models/employee.dart';
+import 'package:kres_requests2/data/models/employee.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 
 /// Contains info about single working document

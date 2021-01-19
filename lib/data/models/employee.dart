@@ -3,6 +3,9 @@ import 'package:flutter/cupertino.dart';
 
 /// Describes info about employee
 class Employee extends Equatable {
+  /// Internal employee ID used by database
+  int id;
+
   /// Employee name
   final String name;
 
@@ -12,7 +15,7 @@ class Employee extends Equatable {
   /// Electrical access group
   final int accessGroup;
 
-  const Employee({
+  Employee({
     @required this.name,
     @required this.position,
     @required this.accessGroup,

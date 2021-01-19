@@ -7,7 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/employee.dart';
+import 'package:kres_requests2/data/models/employee.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';

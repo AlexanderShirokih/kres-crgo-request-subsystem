@@ -4,9 +4,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:intl/intl.dart';
 
-import 'package:kres_requests2/models/employee.dart';
+import 'package:kres_requests2/data/models/employee.dart';
+import 'package:kres_requests2/domain/repository/employee_repository.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/repo/employees_repository.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
@@ -19,58 +19,87 @@ class WorksheetConfigView extends StatefulWidget {
   State createState() => _WorksheetConfigViewState();
 }
 
+class _Employees {
+  final List<Employee> allEmployees;
+  final List<Employee> chiefEmployees;
+
+  _Employees(this.allEmployees, this.chiefEmployees);
+}
+
 class _WorksheetConfigViewState extends State<WorksheetConfigView> {
   @override
   Widget build(BuildContext context) {
     final w = widget.worksheet;
-    return Form(
-      child: Builder(
-        builder: (ctx) => Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 8.0, top: 24.0),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ..._header(8.0, "Выдающий распоряжение:"),
-                const SizedBox(height: 18.0),
-                _createDropdownEmployeeForm(
-                  positionDesc: "Выберите выдающего распоряжения",
-                  current: w.chiefEmployee,
-                  employees: _getAllEmployees(ctx, 4),
-                  onChanged: (Employee value) => setState(() {
-                    w.chiefEmployee = value;
-                  }),
+    final repo =
+        context.repository<RepositoryModule>().getEmployeesRepository();
+
+    Future<_Employees> _getEmployees() async => _Employees(
+          await _getAllEmployees(repo),
+          await _getAllEmployees(repo, 4),
+        );
+
+    return FutureBuilder<_Employees>(
+      future: _getEmployees(),
+      builder: (context, snap) {
+        if (!snap.hasData) {
+          return SizedBox(
+            width: 12.0,
+            height: 12.0,
+            child: CircularProgressIndicator(),
+          );
+        }
+        return Form(
+          child: Builder(
+            builder: (ctx) => Padding(
+              padding: const EdgeInsets.only(left: 16.0, right: 8.0, top: 24.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ..._header(8.0, "Выдающий распоряжение:"),
+                    const SizedBox(height: 18.0),
+                    _createDropdownEmployeeForm(
+                      positionDesc: "Выберите выдающего распоряжения",
+                      current: w.chiefEmployee,
+                      employees: snap.requireData.chiefEmployees,
+                      onChanged: (Employee value) => setState(() {
+                        w.chiefEmployee = value;
+                      }),
+                    ),
+                    const SizedBox(height: 28.0),
+                    ..._showMainEmployee(snap.requireData.allEmployees, w),
+                    const SizedBox(height: 24.0),
+                    ..._showTeamMembers(ctx, snap.requireData.allEmployees, w),
+                    const SizedBox(height: 24.0),
+                    _DatePicker(w),
+                    const SizedBox(height: 28.0),
+                    ..._showWorkTypes(w),
+                  ],
                 ),
-                const SizedBox(height: 28.0),
-                ..._showMainEmployee(ctx, w),
-                const SizedBox(height: 24.0),
-                ..._showTeamMembers(ctx, w),
-                const SizedBox(height: 24.0),
-                _DatePicker(w),
-                const SizedBox(height: 28.0),
-                ..._showWorkTypes(w),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Iterable<Widget> _showMainEmployee(BuildContext context, Worksheet w) sync* {
+  Iterable<Widget> _showMainEmployee(
+      List<Employee> chiefEmployees, Worksheet w) sync* {
     yield* _header(4.0, "Производитель работ:");
     yield const SizedBox(height: 4.0);
     yield _createDropdownEmployeeForm(
       positionDesc: "Выберите производителя работ",
       current: w.mainEmployee,
-      employees: _getAllEmployees(context),
+      employees: chiefEmployees,
       onChanged: (Employee value) => setState(() {
         w.mainEmployee = value;
       }),
     );
   }
 
-  Iterable<Widget> _showTeamMembers(BuildContext context, Worksheet w) sync* {
+  Iterable<Widget> _showTeamMembers(
+      BuildContext context, List<Employee> allEmployees, Worksheet w) sync* {
     yield Row(
       children: [
         Expanded(
@@ -93,7 +122,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
     );
     yield const SizedBox(height: 4.0);
     yield* _spreadTeamMembers(
-      _getAllEmployees(context),
+      allEmployees,
       w.membersEmployee,
     );
   }
@@ -152,18 +181,16 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
       );
 
   /// Returns a list of all employees, including all currently present
-  /// (even if they is not present if [EmployeesRepository],
+  /// (even if they is not present if [EmployeeRepository],
   /// but exists in [Worksheet] data)
-  List<Employee> _getAllEmployees(BuildContext context, [int minGroup]) {
+  Future<List<Employee>> _getAllEmployees(EmployeeRepository repo,
+      [int minGroup]) async {
     final w = widget.worksheet;
-    final repo =
-        context.repository<RepositoryModule>().getEmployeesRepository();
     final used = w.getUsedEmployee();
-    final all = minGroup == null
-        ? repo.getAllEmployees()
-        : repo.getAllByMinGroup(minGroup);
+    final all =
+        minGroup == null ? repo.getAll() : repo.getAllByMinGroup(minGroup);
 
-    return [...used, ...all].toSet().toList(growable: false);
+    return [...used, ...await all].toSet().toList(growable: false);
   }
 
   Widget _createDropdownEmployeeForm({

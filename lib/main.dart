@@ -1,13 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:kres_requests2/repo/repository_module.dart';
+import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/startup/startup_screen.dart';
-import 'package:window_control/window_control.dart';
 
-import 'screens/common.dart';
+import 'package:window_control/window_control.dart';
 
 void main() => runApp(MyApp());
 
