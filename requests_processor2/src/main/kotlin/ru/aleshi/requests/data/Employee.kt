@@ -6,6 +6,8 @@ data class Employee(
     val accessGroup: Int
 ) {
 
+    fun getFully() = "$name, $position, ${toRoman()} гр."
+
     fun getNameWithGroup() = "$name ${toRoman()} гр."
 
     fun getNameWithPosition() = "$position $name"
@@ -15,7 +17,7 @@ data class Employee(
         when (accessGroup) {
             1 -> "I"
             2 -> "II"
-            3 -> "II"
+            3 -> "III"
             4 -> "IV"
             5 -> "V"
             else -> accessGroup.toString()

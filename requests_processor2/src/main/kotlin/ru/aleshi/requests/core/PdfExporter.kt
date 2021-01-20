@@ -15,7 +15,6 @@ import javax.print.PrintService
 import javax.print.attribute.HashPrintRequestAttributeSet
 import javax.print.attribute.standard.Sides
 
-
 class PdfExporter(private val worksheets: Array<Worksheet>) {
 
     private val loader = PdfExporter::class.java.classLoader
@@ -187,53 +186,68 @@ class PdfExporter(private val worksheets: Array<Worksheet>) {
     }
 
     private fun writeLists(target: PDDocument, worksheets: Array<Worksheet>, font: PDFont) {
-        val listTemplate = PDDocument.load(loader.getResourceAsStream("templates/list.pdf"))
+        val listTemplate = PDDocument.load(loader.getResourceAsStream("templates/application.pdf"))
 
         for (worksheet in worksheets) {
-            val page = target.importPage(listTemplate.getPage(0))
-            PDPageContentStream(target, page, PDPageContentStream.AppendMode.APPEND, false).use { content ->
-                writeListHeading(content, worksheet, font)
+            val listPage = target.importPage(listTemplate.getPage(0))
+            PDPageContentStream(target, listPage, PDPageContentStream.AppendMode.APPEND, false).use { content ->
                 writeListContent(content, worksheet, font)
+            }
+            val headingPage = target.importPage(listTemplate.getPage(1))
+            PDPageContentStream(target, headingPage, PDPageContentStream.AppendMode.APPEND, false).use { content ->
+                writeListHeading(content, worksheet, font)
             }
         }
     }
 
     private fun writeListHeading(content: PDPageContentStream, worksheet: Worksheet, font: PDFont) {
+        val baseline = 770f
         content.apply {
             writeTextAt(
-                30.0f,
-                795.0f,
-                "Приложение к распоряжению № ____________ от ${worksheet.fullDate}",
+                180.0f,
+                baseline,
+                worksheet.mainEmployee.getFully(),
                 font,
                 12.0f
             )
+
+            worksheet.membersEmployee.take(2).forEachIndexed { i, member ->
+                writeTextAt(
+                    180.0f,
+                    baseline - 32.0f - i * 32.0f,
+                    member.getFully(),
+                    font,
+                    12.0f
+                )
+            }
+
             writeTextAt(
-                34.0f,
-                775.0f,
-                "Призводитель работ: ${worksheet.mainEmployee.name}",
+                180.0f,
+                baseline - 112.0f,
+                worksheet.chiefEmployee.getFully(),
                 font,
-                10.0f
+                12.0f
             )
 
-            val members =
-                if (worksheet.membersEmployee.isEmpty()) "--" else worksheet.membersEmployee
-                    .joinToString { it.name }
-
             writeTextAt(
-                34.0f,
-                760.0f,
-                if (worksheet.membersEmployee.size > 1) "Члены бригады: $members" else "Член бригады: $members",
+                180.0f,
+                baseline - 249.0f,
+                worksheet.chiefEmployee.getFully(),
                 font,
-                10.0f
+                12.0f
             )
+
+            writeTextAt(63.0f, baseline - 298.0f, worksheet.day, font, 12.0f)
+            writeTextAt(153.0f, baseline - 298.0f, worksheet.month, font, 12.0f)
+            writeTextAt(225.0f, baseline - 298.0f, worksheet.year.take(4), font, 12.0f)
         }
     }
 
     private fun writeListContent(content: PDPageContentStream, worksheet: Worksheet, font: PDFont) {
-        worksheet.requests.take(20).forEachIndexed { index, request ->
+        worksheet.requests.take(18).forEachIndexed { index, request ->
             writeSingleListLine(
                 request = request,
-                yOffset = index * 33.2f,
+                yOffset = index * 36f,
                 position = index + 1,
                 font = font,
                 content = content
@@ -248,13 +262,20 @@ class PdfExporter(private val worksheets: Array<Worksheet>) {
         font: PDFont,
         content: PDPageContentStream
     ) = content.apply {
-        writeTextAt(if (position < 10) 58.0f else 55.0f, 723.0f - yOffset, position.toString(), font, 10.0f)
-        writeTextAt(76.0f, 730.0f - yOffset, (request.accountId?.toString()?.padStart(6, '0') ?: "--"), font, 10.0f)
-        writeTextAt(120.0f, 730.0f - yOffset, request.name.take(31), font, 9.0f)
-        writeTextAt(280.0f, 730.0f - yOffset, request.address, font, 9.0f)
-        writeTextAt(480.0f, 731.0f - yOffset, request.reqType, font, 10.0f)
-        writeTextAt(76.0f, 714.0f - yOffset, request.counterInfo.take(36), font, 10.0f)
-        writeTextAt(280.0f, 714.0f - yOffset, request.additionalInfo.take(56), font, 9.0f)
+        val baseline = 665.0f
+        writeTextAt(if (position < 10) 54.0f else 50.0f, baseline + 8.0f - yOffset, position.toString(), font, 12.0f)
+        writeTextAt(
+            76.0f,
+            baseline + 16.0f - yOffset,
+            (request.accountId?.toString()?.padStart(6, '0') ?: "--"),
+            font,
+            10.0f
+        )
+        writeTextAt(120.0f, baseline + 16.0f - yOffset, request.name.take(29), font, 9.0f)
+        writeTextAt(270.0f, baseline + 16.0f - yOffset, request.address, font, 9.0f)
+        writeTextAt(493.0f, baseline + 17.0f - yOffset, request.reqType, font, 10.0f)
+        writeTextAt(76.0f, baseline - 1.0f - yOffset, request.counterInfo.take(36), font, 10.0f)
+        writeTextAt(270.0f, baseline - 3.0f - yOffset, request.additionalInfo.take(56), font, 9.0f)
     }
 
     private fun PDPageContentStream.writeMultiline(
