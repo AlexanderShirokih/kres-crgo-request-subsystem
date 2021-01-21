@@ -56,7 +56,9 @@ class PdfExporter(private val worksheets: Array<Worksheet>) {
                 setPageable(PDFPageable(lists))
                 jobName = "Списки работ"
                 printService = printer
-                print()
+                print(HashPrintRequestAttributeSet().apply {
+                    add(Sides.TWO_SIDED_LONG_EDGE)
+                })
             }
         }
     }
@@ -201,7 +203,7 @@ class PdfExporter(private val worksheets: Array<Worksheet>) {
     }
 
     private fun writeListHeading(content: PDPageContentStream, worksheet: Worksheet, font: PDFont) {
-        val baseline = 770f
+        val baseline = 786f
         content.apply {
             writeTextAt(
                 180.0f,
@@ -211,11 +213,16 @@ class PdfExporter(private val worksheets: Array<Worksheet>) {
                 12.0f
             )
 
-            worksheet.membersEmployee.take(2).forEachIndexed { i, member ->
+            for (i in 0..1) {
+                val text = if (i < worksheet.membersEmployee.size)
+                    worksheet.membersEmployee[i].getFully()
+                else
+                    "-------------------------------------------------"
+
                 writeTextAt(
                     180.0f,
                     baseline - 32.0f - i * 32.0f,
-                    member.getFully(),
+                    text,
                     font,
                     12.0f
                 )
