@@ -2,29 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-import 'package:window_control/window_listener.dart';
-
-import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
+import 'package:kres_requests2/data/settings/employee_module.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 import 'package:kres_requests2/screens/editor/search_box.dart';
-import 'package:kres_requests2/screens/editor/worksheet_editor_screen.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
+import 'package:kres_requests2/screens/editor/worksheet_editor_screen.dart';
 import 'package:kres_requests2/screens/editor/worksheet_tab_view.dart';
-import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
+import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 import 'package:kres_requests2/screens/preview/worksheets_preview_screen.dart';
+import 'package:window_control/window_listener.dart';
 
 class WorksheetMasterScreen extends StatelessWidget {
   final WorksheetMasterBloc _worksheetBloc;
+  final EmployeeModule employeeModule;
 
-  WorksheetMasterScreen({Document document})
-      : _worksheetBloc =
+  WorksheetMasterScreen({
+    Document document,
+    @required this.employeeModule,
+  }) : _worksheetBloc =
             WorksheetMasterBloc(document, savePathChooser: showSaveDialog);
 
   String _getDocumentTitle(Document document) => document.savePath == null
@@ -103,7 +105,10 @@ class WorksheetMasterScreen extends StatelessWidget {
         builder: (context, state) => Container(
           width: 420.0,
           child: Drawer(
-            child: WorksheetConfigView(state.currentDocument.active),
+            child: WorksheetConfigView(
+              employeeModule.employeeRepository,
+              state.currentDocument.active,
+            ),
           ),
         ),
       );
@@ -216,7 +221,7 @@ class WorksheetMasterScreen extends StatelessWidget {
                             showDialog(
                               context: context,
                               barrierDismissible: false,
-                              child: ConfirmationDialog(
+                              builder: (_) => ConfirmationDialog(
                                 message: "Удалить страницу ${current.name}?",
                               ),
                             ).then((result) {

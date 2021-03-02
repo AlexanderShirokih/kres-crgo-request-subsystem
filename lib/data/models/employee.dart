@@ -1,42 +1,36 @@
-import 'package:equatable/equatable.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:kres_requests2/data/repository/persisted_object.dart';
+import 'package:kres_requests2/domain/controller/repository_controller.dart';
+import 'package:kres_requests2/domain/models/employee.dart';
+import 'package:kres_requests2/domain/models/position.dart';
+import 'package:meta/meta.dart';
 
-/// Describes info about employee
-class Employee extends Equatable {
-  /// Internal employee ID used by database
-  int id;
-
-  /// Employee name
-  final String name;
-
-  /// Employee position
-  final String position;
-
-  /// Electrical access group
-  final int accessGroup;
-
-  Employee({
-    @required this.name,
-    @required this.position,
-    @required this.accessGroup,
-  })  : assert(name != null),
-        assert(position != null),
-        assert(accessGroup != null);
-
-  /// Creates [Employee] instance from JSON data
-  factory Employee.fromJson(Map<String, dynamic> data) => Employee(
-        name: data['name'],
-        position: data['position'],
-        accessGroup: data['accessGroup'],
-      );
-
-  /// Converts [Employee] instance to JSON representation
-  Map<String, dynamic> toJson() => {
-        'name': name,
-        'position': position,
-        'accessGroup': accessGroup,
-      };
+class EmployeePersistedBuilder implements PersistedObjectBuilder<Employee> {
+  const EmployeePersistedBuilder();
 
   @override
-  List<Object> get props => [name, position, accessGroup];
+  Employee build(key, Employee entity) => EmployeeEntity(
+        key,
+        name: entity.name,
+        position: entity.position,
+        accessGroup: entity.accessGroup,
+      );
+}
+
+class EmployeeEntity extends Employee implements PersistedObject<int> {
+  @override
+  final int id;
+
+  EmployeeEntity(
+    this.id, {
+    @required String name,
+    @required Position position,
+    @required int accessGroup,
+  }) : super(
+          name: name,
+          position: position,
+          accessGroup: accessGroup,
+        );
+
+  @override
+  List<Object> get props => [id, ...super.props];
 }

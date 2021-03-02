@@ -1,10 +1,11 @@
 // App database holder
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sembast/sembast.dart';
-import 'package:sembast/sembast_io.dart';
+import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class AppDatabase {
   static const String _dbName = 'main.db';
@@ -30,13 +31,29 @@ class AppDatabase {
   }
 
   Future<void> _openDatabase() async {
+    // Init ffi loader if needed.
+    sqfliteFfiInit();
+
     // Get application files directory
-    final appDir = await getApplicationDocumentsDirectory();
+    final appDir = await getApplicationSupportDirectory();
     final dbPath = join(appDir.path, _dbName);
 
     // Open the database
-    final database = await databaseFactoryIo.openDatabase(dbPath);
+    var databaseFactory = databaseFactoryFfi;
 
-    _dbOpenCompleter.complete(database);
+    var db = await databaseFactory.openDatabase(
+      dbPath,
+      options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (database, _) async {
+            final schema = await rootBundle.loadString('assets/sql/schema.sql');
+            await database.execute(schema);
+
+            final data = await rootBundle.loadString('assets/sql/autofill.sql');
+            await database.execute(data);
+          }),
+    );
+
+    _dbOpenCompleter.complete(db);
   }
 }

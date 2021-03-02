@@ -3,8 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/startup/startup_screen.dart';
-
 import 'package:window_control/window_control.dart';
+
+import 'app_module.dart';
 
 void main() => runApp(MyApp());
 
@@ -15,8 +16,8 @@ class MyApp extends StatelessWidget {
     // Warm up [WindowControl] instance
     WindowControl.instance;
 
-    return FutureBuilder<RepositoryModule>(
-      future: _loadRepositories(),
+    return FutureBuilder<AppModule>(
+      future: AppModule.build(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Directionality(
@@ -24,14 +25,17 @@ class MyApp extends StatelessWidget {
             child: ErrorView(errorDescription: snapshot.error.toString()),
           );
         } else if (snapshot.hasData) {
-          return RepositoryProvider.value(
-            value: snapshot.data,
+          return RepositoryProvider<RepositoryModule>.value(
+            value: snapshot.data.repositoryModule,
             child: MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'Заявки КРЭС 2.0',
               theme: ThemeData(
-                  visualDensity: VisualDensity.adaptivePlatformDensity),
-              home: StartupScreen(),
+                primaryColor: Colors.blue,
+                accentColor: Colors.deepOrange,
+                visualDensity: VisualDensity.adaptivePlatformDensity,
+              ),
+              home: StartupScreen(appModule: snapshot.data),
             ),
           );
         }
@@ -39,7 +43,4 @@ class MyApp extends StatelessWidget {
       },
     );
   }
-
-  Future<RepositoryModule> _loadRepositories() =>
-      RepositoryModule.buildRepositoryModule();
 }

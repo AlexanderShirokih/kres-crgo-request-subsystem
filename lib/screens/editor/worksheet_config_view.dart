@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import 'package:intl/intl.dart';
-
-import 'package:kres_requests2/data/models/employee.dart';
+import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/repository/employee_repository.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
 class WorksheetConfigView extends StatefulWidget {
+  final EmployeeRepository employeeRepository;
   final Worksheet worksheet;
 
-  const WorksheetConfigView(this.worksheet);
+  const WorksheetConfigView(this.employeeRepository, this.worksheet);
 
   @override
   State createState() => _WorksheetConfigViewState();
@@ -30,8 +27,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
   @override
   Widget build(BuildContext context) {
     final w = widget.worksheet;
-    final repo =
-        context.repository<RepositoryModule>().getEmployeesRepository();
+    final repo = widget.employeeRepository;
 
     Future<_Employees> _getEmployees() async => _Employees(
           await _getAllEmployees(repo),

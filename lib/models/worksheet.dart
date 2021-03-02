@@ -1,7 +1,6 @@
-import 'package:meta/meta.dart';
-
-import 'package:kres_requests2/data/models/employee.dart';
+import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/models/request_entity.dart';
+import 'package:meta/meta.dart';
 
 /// Contains info about single working document
 class Worksheet {
@@ -54,39 +53,46 @@ class Worksheet {
   void addEmptyWorkType() => workTypes.add("");
 
   /// Converts [Worksheet] to JSON representation
-  Map<String, dynamic> toJson() => {
-        'name': name,
-        'mainEmployee': mainEmployee?.toJson(),
-        'chiefEmployee': chiefEmployee?.toJson(),
-        'membersEmployee': membersEmployee
-            .where((e) => e != null)
-            .map((e) => e.toJson())
-            .toList(),
-        'date': date?.millisecondsSinceEpoch,
-        'requests': requests.map((r) => r.toJson()).toList(),
-        'workTypes': workTypes.toList(),
-      };
+  /// TODO: Create new code
+  Map<String, dynamic> toJson() => throw UnimplementedError();
 
-  factory Worksheet.fromJson(Map<String, dynamic> data) => Worksheet._(
-        name: data['name'] as String,
-        mainEmployee: data['mainEmployee'] == null
-            ? null
-            : Employee.fromJson(data['mainEmployee']),
-        chiefEmployee: data['chiefEmployee'] == null
-            ? null
-            : Employee.fromJson(data['chiefEmployee']),
-        membersEmployee: (data['membersEmployee'] as List<dynamic>)
-            .map((e) => Employee.fromJson(e))
-            .take(6)
-            .toList(),
-        requests: (data['requests'] as List<dynamic>)
-            .map((r) => RequestEntity.fromJson(r))
-            .toList(),
-        date: data['date'] == null
-            ? null
-            : DateTime.fromMillisecondsSinceEpoch(data['date']),
-        workTypes: (data['workTypes'] as List<dynamic>).cast<String>().toSet(),
-      );
+  // {
+  //   'name': name,
+  //   'mainEmployee': mainEmployee?.toMap(),
+  //   'chiefEmployee': chiefEmployee?.toMap(),
+  //   'membersEmployee': membersEmployee
+  //       .where((e) => e != null)
+  //       .map((e) => e.toMap())
+  //       .toList(),
+  //   'date': date?.millisecondsSinceEpoch,
+  //   'requests': requests.map((r) => r.toJson()).toList(),
+  //   'workTypes': workTypes.toList(),
+  // };
+
+  /// TODO: Create new code
+  factory Worksheet.fromJson(Map<String, dynamic> data) =>
+      throw UnimplementedError();
+
+  // Worksheet._(
+  //   name: data['name'] as String,
+  //   mainEmployee: data['mainEmployee'] == null
+  //       ? null
+  //       : Employee.fromMap(data['mainEmployee']),
+  //   chiefEmployee: data['chiefEmployee'] == null
+  //       ? null
+  //       : Employee.fromMap(data['chiefEmployee']),
+  //   membersEmployee: (data['membersEmployee'] as List<dynamic>)
+  //       .map((e) => Employee.fromMap(e))
+  //       .take(6)
+  //       .toList(),
+  //   requests: (data['requests'] as List<dynamic>)
+  //       .map((r) => RequestEntity.fromJson(r))
+  //       .toList(),
+  //   date: data['date'] == null
+  //       ? null
+  //       : DateTime.fromMillisecondsSinceEpoch(data['date']),
+  //   workTypes: (data['workTypes'] as List<dynamic>).cast<String>().toSet(),
+  // );
 
   Worksheet copy({String name}) => Worksheet._(
         name: name ?? this.name,
