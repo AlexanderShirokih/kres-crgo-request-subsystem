@@ -29,14 +29,14 @@ class EmployeeDataState extends EmployeeState {
   final bool canSave;
 
   const EmployeeDataState({
-    @required this.employees,
-    @required this.availablePositions,
-    @required this.hasUnsavedChanges,
-    @required this.canSave,
+    required this.employees,
+    required this.availablePositions,
+    required this.hasUnsavedChanges,
+    required this.canSave,
   });
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         employees,
         availablePositions,
         groups,

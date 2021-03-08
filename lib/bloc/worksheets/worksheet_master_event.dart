@@ -13,9 +13,7 @@ class WorksheetMasterSaveEvent extends WorksheetMasterEvent {
   final bool popAfterSave;
 
   const WorksheetMasterSaveEvent(
-      {this.changePath = false, this.popAfterSave = false})
-      : assert(changePath != null),
-        assert(popAfterSave != null);
+      {this.changePath = false, this.popAfterSave = false});
 
   @override
   List<Object> get props => [changePath];
@@ -45,13 +43,12 @@ class WorksheetMasterRefreshDocumentStateEvent extends WorksheetMasterEvent {
 }
 
 class WorksheetMasterSearchEvent extends WorksheetMasterEvent {
-
-  final String searchText;
+  final String? searchText;
 
   WorksheetMasterSearchEvent([this.searchText]);
 
   @override
-  List<Object> get props => [searchText];
+  List<Object?> get props => [searchText];
 }
 
 enum WorksheetAction { remove, makeActive }

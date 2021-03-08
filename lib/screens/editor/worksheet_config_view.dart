@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/repository/employee_repository.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
 class WorksheetConfigView extends StatefulWidget {
   final EmployeeRepository employeeRepository;
@@ -56,9 +55,9 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
                     const SizedBox(height: 18.0),
                     _createDropdownEmployeeForm(
                       positionDesc: "Выберите выдающего распоряжения",
-                      current: w.chiefEmployee,
+                      current: w.chiefEmployee!,
                       employees: snap.requireData.chiefEmployees,
-                      onChanged: (Employee value) => setState(() {
+                      onChanged: (Employee? value) => setState(() {
                         w.chiefEmployee = value;
                       }),
                     ),
@@ -86,9 +85,9 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
     yield const SizedBox(height: 4.0);
     yield _createDropdownEmployeeForm(
       positionDesc: "Выберите производителя работ",
-      current: w.mainEmployee,
+      current: w.mainEmployee!,
       employees: chiefEmployees,
-      onChanged: (Employee value) => setState(() {
+      onChanged: (Employee? value) => setState(() {
         w.mainEmployee = value;
       }),
     );
@@ -107,9 +106,10 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
         IconButton(
           icon: FaIcon(FontAwesomeIcons.plus),
           tooltip: "Добавить члена бригады",
-          onPressed: w.membersEmployee.length < 6
+          onPressed: w.membersEmployee!.length < 6
               ? () => setState(() {
-                    w.membersEmployee.add(null);
+                    throw UnimplementedError();
+                    // w.membersEmployee!.add();
                   })
               : null,
         ),
@@ -119,7 +119,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
     yield const SizedBox(height: 4.0);
     yield* _spreadTeamMembers(
       allEmployees,
-      w.membersEmployee,
+      w.membersEmployee!,
     );
   }
 
@@ -169,7 +169,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
             current: teamMembers[i],
             employees: employees,
             onChanged: (value) => setState(() {
-              teamMembers[i] = value;
+              teamMembers[i] = value!;
             }),
             onRemove: () => setState(() => teamMembers.removeAt(i)),
           ),
@@ -180,7 +180,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
   /// (even if they is not present if [EmployeeRepository],
   /// but exists in [Worksheet] data)
   Future<List<Employee>> _getAllEmployees(EmployeeRepository repo,
-      [int minGroup]) async {
+      [int? minGroup]) async {
     final w = widget.worksheet;
     final used = w.getUsedEmployee();
     final all =
@@ -190,11 +190,11 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
   }
 
   Widget _createDropdownEmployeeForm({
-    String positionDesc,
-    Employee current,
-    List<Employee> employees,
-    void Function(Employee) onChanged,
-    void Function() onRemove,
+    required String positionDesc,
+    required Employee current,
+    required List<Employee> employees,
+    required void Function(Employee?) onChanged,
+    void Function()? onRemove,
   }) =>
       Row(
         mainAxisSize: MainAxisSize.min,
@@ -268,12 +268,12 @@ class __DatePickerState extends State<_DatePicker> {
                   initialValue: widget.worksheet.date,
                   builder: (state) => state.hasError
                       ? Text(
-                          state.errorText,
+                          state.errorText ?? 'error!',
                           style: TextStyle(
                             color: Theme.of(context).errorColor,
                           ),
                         )
-                      : Text(_dateFormat.format(state.value),
+                      : Text(_dateFormat.format(state.value!),
                           style: Theme.of(context).textTheme.subtitle1),
                   validator: (value) => value == null ? "Выберите дату" : null,
                   autovalidateMode: AutovalidateMode.always,
@@ -311,7 +311,7 @@ class __WorkTypesListState extends State<_WorkTypesList> {
     final worksheet = widget.worksheet;
 
     return Column(
-      children: worksheet.workTypes
+      children: worksheet.workTypes!
           .map(
             (e) => ListTile(
               leading: IconButton(
@@ -319,16 +319,16 @@ class __WorkTypesListState extends State<_WorkTypesList> {
                   FontAwesomeIcons.timesCircle,
                   size: 16.0,
                 ),
-                onPressed: () => setState(() => worksheet.workTypes.remove(e)),
+                onPressed: () => setState(() => worksheet.workTypes!.remove(e)),
               ),
               title: e.isNotEmpty
                   ? Text(e)
-                  : CopyableTextField(
+                  : TextField(
                       onSubmitted: (value) {
                         if (value.isNotEmpty) {
                           setState(() {
-                            worksheet.workTypes.remove("");
-                            worksheet.workTypes.add(value);
+                            worksheet.workTypes!.remove("");
+                            worksheet.workTypes!.add(value);
                           });
                         }
                       },

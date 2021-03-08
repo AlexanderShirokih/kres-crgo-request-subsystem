@@ -8,7 +8,7 @@ import 'package:kres_requests2/models/worksheet.dart';
 class Document {
   /// Current document save path.
   /// `null` values means document save path is not defined
-  File savePath;
+  File? savePath;
 
   /// Document worksheets
   List<Worksheet> get worksheets => List.unmodifiable(_worksheets);
@@ -47,12 +47,10 @@ class Document {
     this.updateDate,
   );
 
-  Document({this.savePath, List<Worksheet> worksheets})
-      : _worksheets = worksheets,
-        assert(worksheets != null);
+  Document({this.savePath, required List<Worksheet> worksheets})
+      : _worksheets = worksheets;
 
-  Document.empty() {
-    _worksheets = [];
+  Document.empty() : _worksheets = [] {
     addEmptyWorksheet();
   }
 
@@ -62,13 +60,13 @@ class Document {
         ),
       );
 
-  Worksheet addEmptyWorksheet({String name}) {
+  Worksheet addEmptyWorksheet({String? name}) {
     final worksheet = Worksheet(name: _getUniqueName(name));
     _worksheets.add(worksheet);
     return worksheet;
   }
 
-  String _getUniqueName(String name) {
+  String _getUniqueName(String? name) {
     name ??= "Лист ${_worksheets.length + 1}";
     String worksheetName;
     var attempt = 0;
@@ -96,7 +94,7 @@ class Document {
     if (savePath == null) throw ('savePath == null!');
 
     updateDate = DateTime.now();
-    await savePath.writeAsString(json.encode(toJson()));
+    await savePath!.writeAsString(json.encode(toJson()));
   }
 
   bool get isEmpty => _worksheets.every((worksheet) => worksheet.isEmpty);

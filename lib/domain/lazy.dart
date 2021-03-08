@@ -5,30 +5,27 @@ typedef AsyncLazyBuilder<T> = Future<T> Function();
 class LazyInitializer<T> {
   final LazyBuilder<T> builder;
 
-  T /*?*/ _instance;
+  T? _instance;
 
   LazyInitializer(this.builder);
 
   T call() {
-    _instance ??= builder();
-    return _instance;
+    return _instance ??= builder();
   }
 }
 
 class Lazy<T> {
-  T /*?*/ _instance;
+  T? _instance;
 
   T call(LazyBuilder<T> builder) {
-    _instance ??= builder();
-    return _instance;
+    return _instance ??= builder();
   }
 }
 
 class AsyncLazy<T> {
-  T /*?*/ _instance;
+  T? _instance;
 
   Future<T> call(AsyncLazyBuilder<T> builder) async {
-    _instance ??= await builder();
-    return _instance;
+    return _instance ??= await builder();
   }
 }

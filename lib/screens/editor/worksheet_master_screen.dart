@@ -17,28 +17,27 @@ import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 import 'package:kres_requests2/screens/preview/worksheets_preview_screen.dart';
-import 'package:window_control/window_listener.dart';
 
 class WorksheetMasterScreen extends StatelessWidget {
   final WorksheetMasterBloc _worksheetBloc;
   final EmployeeModule employeeModule;
 
   WorksheetMasterScreen({
-    Document document,
-    @required this.employeeModule,
+    Document? document,
+    required this.employeeModule,
   }) : _worksheetBloc =
             WorksheetMasterBloc(document, savePathChooser: showSaveDialog);
 
   String _getDocumentTitle(Document document) => document.savePath == null
       ? "Несохранённый документ"
-      : document.savePath.path;
+      : document.savePath?.path ?? 'error';
 
   @override
   Widget build(BuildContext context) => Scaffold(
         endDrawer: _buildEndDrawer(),
         appBar: _buildAppBar(),
         body: BlocConsumer<WorksheetMasterBloc, WorksheetMasterState>(
-          cubit: _worksheetBloc,
+          bloc: _worksheetBloc,
           listener: (context, state) {
             if (state is WorksheetMasterPopState) {
               Navigator.pop(context);
@@ -71,37 +70,33 @@ class WorksheetMasterScreen extends StatelessWidget {
       );
 
   Widget _buildBody(BuildContext context, WorksheetMasterState state) =>
-      WindowListener(
-        onWindowClosing: () =>
+      WillPopScope(
+        onWillPop: () =>
             _showExitConfirmationDialog(state.currentDocument, context),
-        child: WillPopScope(
-          onWillPop: () =>
-              _showExitConfirmationDialog(state.currentDocument, context),
-          child: Row(
-            children: [
-              _createPageController(context, state),
-              Expanded(
-                child: Container(
-                  height: double.maxFinite,
-                  child: WorkSheetEditorView(
-                    document: state.currentDocument,
-                    worksheet: state.currentDocument.active,
-                    onDocumentsChanged: () => _worksheetBloc
-                        .add(WorksheetMasterRefreshDocumentStateEvent()),
-                    highlighted: state is WorksheetMasterSearchingState
-                        ? state.filteredItems[state.currentDocument.active]
-                        : null,
-                  ),
+        child: Row(
+          children: [
+            _createPageController(context, state),
+            Expanded(
+              child: Container(
+                height: double.maxFinite,
+                child: WorkSheetEditorView(
+                  document: state.currentDocument,
+                  worksheet: state.currentDocument.active,
+                  onDocumentsChanged: () => _worksheetBloc
+                      .add(WorksheetMasterRefreshDocumentStateEvent()),
+                  highlighted: state is WorksheetMasterSearchingState
+                      ? state.filteredItems[state.currentDocument.active]
+                      : null,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
 
   Widget _buildEndDrawer() =>
       BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
-        cubit: _worksheetBloc,
+        bloc: _worksheetBloc,
         builder: (context, state) => Container(
           width: 420.0,
           child: Drawer(
@@ -121,7 +116,7 @@ class WorksheetMasterScreen extends StatelessWidget {
           ),
         ),
         title: BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
-          cubit: _worksheetBloc,
+          bloc: _worksheetBloc,
           builder: (_, state) => Text(
               'Редактирование - ${_getDocumentTitle(state.currentDocument)}'),
         ),
@@ -154,7 +149,7 @@ class WorksheetMasterScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) =>
                       BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
-                    cubit: _worksheetBloc,
+                    bloc: _worksheetBloc,
                     builder: (context, state) =>
                         WorksheetsPreviewScreen(state.currentDocument),
                   ),
@@ -167,9 +162,9 @@ class WorksheetMasterScreen extends StatelessWidget {
       );
 
   Widget _createActionButton({
-    Widget icon,
-    String tooltip,
-    void Function(BuildContext) onPressed,
+    required Widget icon,
+    required String tooltip,
+    required void Function(BuildContext) onPressed,
   }) =>
       Builder(
         builder: (ctx) => IconButton(
@@ -245,18 +240,18 @@ class WorksheetMasterScreen extends StatelessWidget {
       BuildContext context, WorksheetMasterSavingState state) {
     final scaffold = Scaffold.of(context);
     void showSnackbar(String message, Duration duration) =>
-        scaffold?.showSnackBar(
+        scaffold.showSnackBar(
           SnackBar(
             content: Text(message),
             duration: duration,
           ),
         );
 
-    scaffold?.removeCurrentSnackBar();
+    scaffold.removeCurrentSnackBar();
     if (state.error != null) {
-      print("${state.error.error}\n${state.error.stackTrace}");
+      print("${state.error!.error}\n${state.error!.stackTrace}");
       showSnackbar(
-        'Не удалось сохранить! ${state.error.error}',
+        'Не удалось сохранить! ${state.error!.error}',
         const Duration(seconds: 6),
       );
     } else if (state.completed) {
@@ -316,39 +311,40 @@ class WorksheetMasterScreen extends StatelessWidget {
         MaterialPageRoute(builder: (_) => importerScreen),
       ).then(
         (resultDoc) =>
-            _worksheetBloc.add(WorksheetMasterImportResultsEvent(resultDoc)),
+            _worksheetBloc.add(WorksheetMasterImportResultsEvent(resultDoc!)),
       );
 
   Future<bool> _showExitConfirmationDialog(
       Document document, BuildContext context) async {
     if (document.isEmpty) return true;
-
-    return await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: Text('Сохранить документ перед выходом?'),
-        actionsPadding: EdgeInsets.only(right: 24.0, bottom: 12.0),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Отмена'),
-          ),
-          const SizedBox(width: 12.0),
-          FlatButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Нет'),
-          ),
-          const SizedBox(width: 12.0),
-          RaisedButton(
-            color: Theme.of(ctx).primaryColor,
-            textColor: Theme.of(ctx).primaryTextTheme.bodyText2.color,
-            onPressed: () => _worksheetBloc
-                .add(WorksheetMasterSaveEvent(popAfterSave: true)),
-            child: Text('Да'),
-          ),
-        ],
-      ),
-    );
+    return true;
+    // TODO: Stub
+    // return await showDialog<bool>(
+    //   context: context,
+    //   barrierDismissible: false,
+    //   builder: (ctx) => AlertDialog(
+    //     title: Text('Сохранить документ перед выходом?'),
+    //     actionsPadding: EdgeInsets.only(right: 24.0, bottom: 12.0),
+    //     actions: [
+    //       OutlinedButton(
+    //         onPressed: () => Navigator.pop(ctx, false),
+    //         child: Text('Отмена'),
+    //       ),
+    //       const SizedBox(width: 12.0),
+    //       FlatButton(
+    //         onPressed: () => Navigator.pop(ctx, true),
+    //         child: Text('Нет'),
+    //       ),
+    //       const SizedBox(width: 12.0),
+    //       RaisedButton(
+    //         color: Theme.of(ctx).primaryColor,
+    //         textColor: Theme.of(ctx).primaryTextTheme.bodyText2.color,
+    //         onPressed: () => _worksheetBloc
+    //             .add(WorksheetMasterSaveEvent(popAfterSave: true)),
+    //         child: Text('Да'),
+    //       ),
+    //     ],
+    //   ),
+    // );
   }
 }

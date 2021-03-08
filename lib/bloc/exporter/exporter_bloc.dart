@@ -1,40 +1,35 @@
 import 'dart:async';
 
-import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-
-import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/models/optional_data.dart';
+import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 
 part 'exporter_event.dart';
-
 part 'exporter_state.dart';
 
 enum ExportFormat { Pdf, Excel }
 
 class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
   final List<Worksheet> worksheets;
-  final Future<String> Function() fileChooser;
-  final ExportFormat exportFormat;
+  final Future<String?> Function()? fileChooser;
+  final ExportFormat? exportFormat;
 
   final RequestsRepository _requestsRepository;
   final SettingsRepository _settingsRepository;
 
   ExporterBloc({
-    @required this.worksheets,
-    @required RepositoryModule repositoryModule,
+    required RepositoryModule repositoryModule,
+    required this.worksheets,
     this.exportFormat,
     this.fileChooser,
-  })
-      :assert(worksheets != null),
-        assert(repositoryModule != null),
-        _requestsRepository = repositoryModule.getRequestsRepository(),
+  })  : _requestsRepository = repositoryModule.getRequestsRepository(),
         _settingsRepository = repositoryModule.getSettingsRepository(),
         super(ExporterIdle()) {
+    // ignore: unnecessary_null_comparison
     if (fileChooser != null)
       add(ExporterShowSaveDialogEvent());
     else
@@ -71,17 +66,16 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
   Stream<ExporterState> _listPrinters() async* {
     yield ExporterIdle(message: 'Поиск доступных принтеров');
 
-    final result =
-    await _requestsRepository.listPrinters();
+    final result = await _requestsRepository.listPrinters();
 
     if (result.hasError()) {
-      yield ExporterErrorState(result.error);
+      yield ExporterErrorState(result.error!);
     } else {
-      final availablePrinters = result.data;
-      final preferred = availablePrinters.contains(
-          _settingsRepository.lastUsedPrinter)
-          ? _settingsRepository.lastUsedPrinter
-          : null;
+      final availablePrinters = result.data!;
+      final preferred =
+          availablePrinters.contains(_settingsRepository.lastUsedPrinter)
+              ? _settingsRepository.lastUsedPrinter
+              : null;
 
       yield ExporterListPrintersState(
         preferred,
@@ -90,8 +84,8 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
     }
   }
 
-  Stream<ExporterState> _printDocument(String printerName,
-      bool noLists) async* {
+  Stream<ExporterState> _printDocument(
+      String printerName, bool noLists) async* {
     _settingsRepository.lastUsedPrinter = printerName;
 
     yield ExporterIdle(
@@ -101,7 +95,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
         worksheets, printerName, noLists);
 
     if (result.hasError()) {
-      yield ExporterErrorState(result.error);
+      yield ExporterErrorState(result.error!);
     } else {
       yield ExporterClosingState(isCompleted: true);
     }
@@ -110,7 +104,11 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
   Stream<ExporterState> _doExport() async* {
     yield ExporterIdle(message: 'Ожидание выбора файла');
 
-    final filePath = await fileChooser();
+    if (fileChooser == null) {
+      throw 'No file chooser passed!';
+    }
+
+    final filePath = await fileChooser!();
     if (filePath == null) {
       yield ExporterClosingState(isCompleted: false);
       return;
@@ -121,7 +119,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
     final result = await _runExporter(filePath);
 
     if (result.hasError()) {
-      yield ExporterErrorState(result.error);
+      yield ExporterErrorState(result.error!);
     } else {
       yield ExporterClosingState(isCompleted: true);
     }
@@ -133,7 +131,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
         return _requestsRepository.exportToPdf(worksheets, savePath);
       case ExportFormat.Excel:
         return _requestsRepository.exportToXlsx(worksheets, savePath);
+      default: throw("Cannot run exporter without export format");
     }
-    throw ('Unknown exporter format');
   }
 }

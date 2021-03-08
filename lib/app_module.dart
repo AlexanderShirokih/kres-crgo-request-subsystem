@@ -4,7 +4,7 @@ import 'repo/repository_module.dart';
 
 /// Root application DI module
 class AppModule {
-  static AppModule _instance;
+  static AppModule? _instance;
   final DatabaseModule databaseModule;
   final RepositoryModule repositoryModule;
 

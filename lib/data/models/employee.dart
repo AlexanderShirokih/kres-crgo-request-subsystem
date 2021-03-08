@@ -2,7 +2,6 @@ import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/position.dart';
-import 'package:meta/meta.dart';
 
 class EmployeePersistedBuilder implements PersistedObjectBuilder<Employee> {
   const EmployeePersistedBuilder();
@@ -22,9 +21,9 @@ class EmployeeEntity extends Employee implements PersistedObject<int> {
 
   EmployeeEntity(
     this.id, {
-    @required String name,
-    @required Position position,
-    @required int accessGroup,
+    required String name,
+    required Position position,
+    required int accessGroup,
   }) : super(
           name: name,
           position: position,
@@ -32,5 +31,18 @@ class EmployeeEntity extends Employee implements PersistedObject<int> {
         );
 
   @override
-  List<Object> get props => [id, ...super.props];
+  List<Object?> get props => [id, ...super.props];
+
+  @override
+  Employee copy({
+    String? name,
+    Position? position,
+    int? accessGroup,
+  }) =>
+      EmployeeEntity(
+        id,
+        name: name ?? this.name,
+        position: position ?? this.position,
+        accessGroup: accessGroup ?? this.accessGroup,
+      );
 }

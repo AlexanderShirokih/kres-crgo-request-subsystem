@@ -16,18 +16,18 @@ class ImportEvent extends ImporterEvent {
 
   const ImportEvent({
     this.attachPath = true,
-  }) : assert(attachPath != null);
+  });
 
   @override
   List<Object> get props => [attachPath];
 }
 
 class ImportErrorEvent extends ImporterEvent {
-  final String error;
-  final String stackTrace;
+  final String? error;
+  final String? stackTrace;
 
   const ImportErrorEvent(this.error, this.stackTrace);
 
   @override
-  List<Object> get props => [error, stackTrace];
+  List<Object?> get props => [error, stackTrace];
 }

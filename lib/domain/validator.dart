@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 /// [Validator] can check entity fields for correct values.
 abstract class Validator<T> {
   /// Validates entity field and returns [Iterable] of errors.
@@ -14,14 +12,14 @@ abstract class Validator<T> {
 /// Describes field validation result
 class ValidationResult {
   /// Field error message. `null` if field is valid.
-  final String /*?*/ errorMessage;
+  final String? errorMessage;
 
   /// Field name
   final String fieldName;
 
   const ValidationResult({
     this.errorMessage,
-    @required this.fieldName,
+    required this.fieldName,
   });
 
   /// `true` if field is valid

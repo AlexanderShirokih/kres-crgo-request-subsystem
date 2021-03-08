@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ConfirmationDialog extends StatelessWidget {
   final String message;
 
-  const ConfirmationDialog({@required this.message}) : assert(message != null);
+  const ConfirmationDialog({required this.message});
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,8 @@
-import 'package:flutter/cupertino.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/data/models/employee.dart';
 import 'package:kres_requests2/data/settings/employee_module.dart';
 import 'package:kres_requests2/data/settings/position_module.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
@@ -15,9 +16,9 @@ class EmployeesScreen extends StatelessWidget {
   final PositionModule positionModule;
 
   const EmployeesScreen({
-    Key key,
-    @required this.employeeModule,
-    @required this.positionModule,
+    Key? key,
+    required this.employeeModule,
+    required this.positionModule,
   }) : super(key: key);
 
   Widget _buildActionButton() =>
@@ -90,6 +91,31 @@ class EmployeesScreen extends StatelessWidget {
                 ],
               ),
               body: BlocBuilder<EmployeeBloc, EmployeeState>(
+                buildWhen: (old, current) {
+                  print("YIELDED!");
+                  if (old is EmployeeDataState &&
+                      current is EmployeeDataState) {
+                    bool shouldRebuild= !IterableEquality(
+                        EqualityBy<Employee, Employee>((e) {
+                      if (e is EmployeeEntity) {
+                        return EmployeeEntity(
+                          e.id,
+                          name: '',
+                          position: e.position,
+                          accessGroup: e.accessGroup,
+                        );
+                      }
+                      return Employee(
+                        name: '',
+                        position: e.position,
+                        accessGroup: e.accessGroup,
+                      );
+                    })).equals(old.employees, current.employees);
+                    print("SHOULD REBUILD=${shouldRebuild}");
+                    return shouldRebuild;
+                  }
+                  return true;
+                },
                 builder: (context, state) {
                   if (state is EmployeeDataState) {
                     return _EmployeeTableContent(
@@ -140,11 +166,11 @@ class _EmployeeTableContent extends StatefulWidget {
   final EmployeeBloc bloc;
 
   const _EmployeeTableContent({
-    Key key,
-    @required this.employees,
-    @required this.positions,
-    @required this.groups,
-    @required this.bloc,
+    Key? key,
+    required this.employees,
+    required this.positions,
+    required this.groups,
+    required this.bloc,
   }) : super(key: key);
 
   @override
@@ -152,7 +178,7 @@ class _EmployeeTableContent extends StatefulWidget {
 }
 
 class __EmployeeTableContentState extends State<_EmployeeTableContent> {
-  ScrollController _scrollController;
+  late ScrollController _scrollController;
   bool _wasRebuilt = false;
 
   @override
@@ -171,11 +197,12 @@ class __EmployeeTableContentState extends State<_EmployeeTableContent> {
   Widget build(BuildContext context) {
     if (widget.employees.isEmpty) {
       return Center(
-          child: Text('Таблица пуста',
-              style: Theme.of(context).textTheme.headline3));
+        child:
+            Text('Таблица пуста', style: Theme.of(context).textTheme.headline3),
+      );
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
       if (_wasRebuilt) {
         _scrollController.animateTo(
           100000.0,
@@ -199,11 +226,11 @@ class __EmployeeTableContentState extends State<_EmployeeTableContent> {
               child: DataTable(
                 dataTextStyle: Theme.of(context)
                     .textTheme
-                    .headline5
+                    .headline5!
                     .copyWith(color: Colors.grey),
                 headingTextStyle: Theme.of(context)
                     .textTheme
-                    .bodyText2
+                    .bodyText2!
                     .copyWith(fontSize: 18.0),
                 columns: _createHeader(),
                 rows: _createData(widget.employees),
@@ -225,6 +252,7 @@ class __EmployeeTableContentState extends State<_EmployeeTableContent> {
   List<DataRow> _createData(List<Employee> employees) {
     return employees.map((e) {
       return DataRow(
+        key: ValueKey(e),
         cells: [
           DataCell(_createNameField(e)),
           DataCell(_createPositionDropdown(e)),
@@ -240,19 +268,16 @@ class __EmployeeTableContentState extends State<_EmployeeTableContent> {
   }
 
   Widget _createDeleteButton(Employee e) => _DeleteButton(
-        key: ValueKey(e),
         onPressed: () => widget.bloc.add(EmployeeDeleteItem(e)),
       );
 
   Widget _createNameField(Employee e) => _EditableNameCell(
-        key: ValueKey(e),
         width: 260.0,
         name: e.name,
         onChanged: (newValue) => _fireItemChanged(e, e.copy(name: newValue)),
       );
 
   Widget _createPositionDropdown(Employee e) => SizedBox(
-        key: ValueKey(e),
         width: 140.0,
         child: DropdownButton<Position>(
           onChanged: (newPosition) =>
@@ -292,8 +317,8 @@ class _DeleteButton extends StatefulWidget {
   final VoidCallback onPressed;
 
   const _DeleteButton({
-    Key key,
-    @required this.onPressed,
+    Key? key,
+    required this.onPressed,
   }) : super(key: key);
 
   @override
@@ -329,10 +354,10 @@ class _EditableNameCell extends StatefulWidget {
   final Function(String) onChanged;
 
   const _EditableNameCell({
-    Key key,
-    @required this.name,
-    @required this.width,
-    @required this.onChanged,
+    Key? key,
+    required this.name,
+    required this.width,
+    required this.onChanged,
   }) : super(key: key);
 
   @override
@@ -341,17 +366,17 @@ class _EditableNameCell extends StatefulWidget {
 
 class _EditableTextFieldState extends State<_EditableNameCell> {
   /*late*/
-  TextEditingController _textController;
+  // TextEditingController _textController;
 
   @override
   void initState() {
     super.initState();
-    _textController = TextEditingController(text: widget.name);
+    // _textController = TextEditingController(text: widget.name);
   }
 
   @override
   void dispose() {
-    _textController.dispose();
+    // _textController.dispose();
     super.dispose();
   }
 
@@ -360,11 +385,16 @@ class _EditableTextFieldState extends State<_EditableNameCell> {
     return SizedBox(
       width: widget.width,
       child: TextFormField(
+        initialValue: widget.name,
+        onFieldSubmitted: (val) {
+          print("SUBMITTED!");
+        },
         autovalidateMode: AutovalidateMode.always,
         maxLength: 50,
-        validator: (value) => value.isEmpty ? "Введите ФИО" : null,
-        controller: _textController,
-        onEditingComplete: () => widget.onChanged(_textController.text),
+        validator: (value) => value!.isEmpty ? "Введите ФИО" : null,
+        // controller: _textController,
+        autofocus: false,
+        onChanged: (text) => widget.onChanged(text),
         decoration: InputDecoration(
           border: InputBorder.none,
           counter: SizedBox(),

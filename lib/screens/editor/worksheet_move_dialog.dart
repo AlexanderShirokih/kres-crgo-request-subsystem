@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
@@ -17,14 +16,11 @@ class WorksheetMoveDialog extends StatefulWidget {
   final MoveMethod moveMethod;
 
   const WorksheetMoveDialog({
-    @required this.document,
-    @required this.movingRequests,
-    @required this.sourceWorksheet,
-    @required this.moveMethod,
-  })  : assert(sourceWorksheet != null),
-        assert(movingRequests != null),
-        assert(document != null),
-        assert(moveMethod != null);
+    required this.document,
+    required this.movingRequests,
+    required this.sourceWorksheet,
+    required this.moveMethod,
+  });
 
   @override
   _WorksheetMoveDialogState createState() => _WorksheetMoveDialogState(
@@ -63,10 +59,10 @@ class _WorksheetMoveDialogState extends State<WorksheetMoveDialog> {
       _document.worksheets.where((worksheet) => worksheet != _sourceWorksheet);
 
   void _moveRequests(Worksheet targetWorksheet) {
-    targetWorksheet.requests.addAll(_movingRequests);
+    targetWorksheet.requests!.addAll(_movingRequests);
     if (_moveMethod == MoveMethod.Move)
       for (RequestEntity e in _movingRequests)
-        _sourceWorksheet.requests.remove(e);
+        _sourceWorksheet.requests!.remove(e);
   }
 
   @override
@@ -79,7 +75,7 @@ class _WorksheetMoveDialogState extends State<WorksheetMoveDialog> {
         child: ListView(
           children: [
             ..._getTargetWorksheet().map(
-              (e) => _createListTile(FontAwesomeIcons.file, e.name, () {
+              (e) => _createListTile(FontAwesomeIcons.file, e.name!, () {
                 _moveRequests(e);
                 Navigator.pop(context, true);
               }),

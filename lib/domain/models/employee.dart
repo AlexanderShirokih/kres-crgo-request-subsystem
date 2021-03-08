@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
 
 import 'position.dart';
 
@@ -35,18 +34,16 @@ class Employee extends Equatable {
   final int accessGroup;
 
   Employee({
-    @required this.name,
-    @required this.position,
-    @required this.accessGroup,
-  })  : assert(name != null),
-        assert(position != null),
-        assert(accessGroup != null);
+    required this.name,
+    required this.position,
+    required this.accessGroup,
+  });
 
   /// Creates deep copy with customizable params
   Employee copy({
-    String /*?*/ name,
-    Position /*?*/ position,
-    int /*?*/ accessGroup,
+    String? name,
+    Position? position,
+    int? accessGroup,
   }) {
     return Employee(
       name: name ?? this.name,
@@ -56,5 +53,5 @@ class Employee extends Equatable {
   }
 
   @override
-  List<Object> get props => [name, position, accessGroup];
+  List<Object?> get props => [name, position, accessGroup];
 }

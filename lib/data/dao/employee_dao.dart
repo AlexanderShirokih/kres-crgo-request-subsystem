@@ -9,14 +9,15 @@ import 'dao.dart';
 
 extension EmployeeEncoder on Employee {
   /// Converts [Employee] instance to JSON representation
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap({bool putIds = true}) {
     // Cascading is not allowed, so position should be already inserted
     if (position is! PersistedObject<int>) {
       throw PersistenceException.notPersisted();
     }
 
     return {
-      if (this is PersistedObject<int>) 'id': (this as PersistedObject<int>).id,
+      if (this is PersistedObject<int> && putIds)
+        'id': (this as PersistedObject<int>).id,
       'name': name,
       'position_id': (position as PersistedObject<int>).id,
       'access_group': accessGroup,
@@ -56,7 +57,12 @@ class EmployeeDao implements Dao<Employee, EmployeeEntity> {
   /// Updates [Employee] record in the storage
   @override
   Future<void> update(EmployeeEntity employee) async {
-    await _database.update(_table, employee.toMap());
+    await _database.update(
+      _table,
+      employee.toMap(putIds: false),
+      where: 'id=?',
+      whereArgs: [employee.id],
+    );
   }
 
   /// Deletes [Employee] record from the storage

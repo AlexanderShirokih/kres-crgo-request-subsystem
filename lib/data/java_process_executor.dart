@@ -1,19 +1,17 @@
 import 'dart:io';
 
 import 'package:kres_requests2/data/process_executor.dart';
-import 'package:meta/meta.dart';
 
 import 'models/java_process_info.dart';
 
 class JavaProcessExecutor extends ProcessExecutor {
-  final String Function() javaHome;
+  final String? Function() javaHome;
   final JavaProcessInfo javaProcessInfo;
 
   const JavaProcessExecutor({
-    @required this.javaHome,
-    @required this.javaProcessInfo,
-  })  : assert(javaHome != null),
-        assert(javaProcessInfo != null);
+    required this.javaHome,
+    required this.javaProcessInfo,
+  });
 
   @override
   Future<ProcessResult> runProcess(List<String> args) async {

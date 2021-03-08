@@ -1,6 +1,6 @@
 class ImporterException implements Exception {
   final String message;
-  final Object parent;
+  final Object? parent;
 
   const ImporterException(this.message, [this.parent]);
 

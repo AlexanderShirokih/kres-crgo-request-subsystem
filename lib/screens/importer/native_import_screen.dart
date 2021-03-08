@@ -1,21 +1,20 @@
-import 'package:file_chooser/file_chooser.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-
+import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
-import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/models/document.dart';
 
 class NativeImporterScreen extends BaseImporterScreen {
-  final String initialDirectory;
-  final Document targetDocument;
+  final String? initialDirectory;
+  final Document? targetDocument;
   final NativeImporterRepository importerRepository;
   final bool importAll;
 
   NativeImporterScreen({
-    @required this.importerRepository,
+    required this.importerRepository,
     this.targetDocument,
     this.initialDirectory,
     this.importAll = false,
@@ -28,23 +27,21 @@ class NativeImporterScreen extends BaseImporterScreen {
         );
 
   @override
-  Future<String> showOpenDialog(BuildContext context) async {
-    final res = await showOpenPanel(
+  Future<String?> showOpenDialog(BuildContext context) async {
+    final res = await openFile(
       initialDirectory: initialDirectory,
-      allowsMultipleSelection: false,
-      canSelectDirectories: false,
       confirmButtonText: 'Открыть',
-      allowedFileTypes: [
-        FileTypeFilterGroup(
+      acceptedTypeGroups: [
+        XTypeGroup(
           label: "Документ заявок",
-          fileExtensions: ["json"],
+          extensions: ["json"],
         )
       ],
     );
 
-    if (res.canceled) return null;
+    if (res == null) return null;
 
-    return res.paths[0];
+    return res.path;
   }
 
   @override
@@ -71,9 +68,8 @@ class SelectWorksheetsDialog extends StatefulWidget {
 class _SelectWorksheetsDialogState extends State<SelectWorksheetsDialog> {
   List<bool> _selected;
 
-  _SelectWorksheetsDialogState(int length) {
-    _selected = List.filled(length, true, growable: false);
-  }
+  _SelectWorksheetsDialogState(int length)
+      : _selected = List.filled(length, true, growable: false);
 
   @override
   Widget build(BuildContext context) {
@@ -87,10 +83,10 @@ class _SelectWorksheetsDialogState extends State<SelectWorksheetsDialog> {
             widget.tables.length,
             (i) => CheckboxListTile(
               value: _selected[i],
-              title: Text(widget.tables[i].name),
-              subtitle: Text('Заявок: ${widget.tables[i].requests.length}'),
+              title: Text(widget.tables[i].name!),
+              subtitle: Text('Заявок: ${widget.tables[i].requests!.length}'),
               onChanged: (val) => setState(() {
-                _selected[i] = val;
+                _selected[i] = val!;
               }),
             ),
           ).toList(),

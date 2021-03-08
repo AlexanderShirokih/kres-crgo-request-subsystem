@@ -1,29 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/screens/common.dart';
 
 abstract class BaseImporterScreen extends StatelessWidget {
   final String title;
   final WorksheetImporterRepository importerRepository;
-  final Document targetDocument;
+  final Document? targetDocument;
   final WidgetBuilder mainWidgetBuilder;
   final bool forceFileSelection;
 
   const BaseImporterScreen({
-    @required this.title,
-    @required this.importerRepository,
-    @required this.targetDocument,
-    @required this.mainWidgetBuilder,
-    @required this.forceFileSelection,
-  })  : assert(title != null),
-        assert(importerRepository != null),
-        assert(mainWidgetBuilder != null);
+    required this.title,
+    required this.importerRepository,
+    required this.targetDocument,
+    required this.mainWidgetBuilder,
+    required this.forceFileSelection,
+  });
 
-  Future<String> showOpenDialog(BuildContext context);
+  Future<String?> showOpenDialog(BuildContext context);
 
   dynamic getImporterParams(BuildContext context);
 
@@ -42,7 +39,7 @@ abstract class BaseImporterScreen extends StatelessWidget {
           ),
           child: Builder(
             builder: (ctx) => BlocConsumer<ImporterBloc, ImporterState>(
-              cubit: ctx.bloc<ImporterBloc>(),
+              bloc: ctx.read<ImporterBloc>(),
               builder: (_, state) {
                 if (state is ImportLoadingState) {
                   return LoadingView("Загрузка файла ${state.path}");
@@ -91,7 +88,7 @@ class _EmptyStateView extends StatelessWidget {
           RaisedButton(
             padding: EdgeInsets.all(24.0),
             color: Theme.of(context).primaryColor,
-            textColor: Theme.of(context).primaryTextTheme.bodyText2.color,
+            textColor: Theme.of(context).primaryTextTheme.bodyText2!.color,
             child: Text('НАЗАД'),
             onPressed: () => Navigator.pop(context),
           ),

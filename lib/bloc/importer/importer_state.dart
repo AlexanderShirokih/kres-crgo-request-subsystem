@@ -31,20 +31,20 @@ class ImportEmptyState extends ImporterState {
 }
 
 class WorksheetReadyState extends ImporterState {
-  final Document document;
+  final Document? document;
 
   const WorksheetReadyState(this.document);
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [document];
 }
 
 class ImportErrorState extends ImporterState {
-  final String error;
-  final String stackTrace;
+  final String? error;
+  final String? stackTrace;
 
   const ImportErrorState(this.error, this.stackTrace);
 
   @override
-  List<Object> get props => [error, stackTrace];
+  List<Object?> get props => [error, stackTrace];
 }

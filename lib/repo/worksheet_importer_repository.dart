@@ -1,18 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:meta/meta.dart';
-
 import 'package:kres_requests2/domain/counters_importer.dart';
-import 'package:kres_requests2/models/optional_data.dart';
 import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/models/optional_data.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 
 abstract class WorksheetImporterRepository {
   const WorksheetImporterRepository();
 
   /// Runs parser program and returns worksheets containing parsing result
-  Future<OptionalData<Document>> importDocument(
+  Future<OptionalData<Document>?> importDocument(
     String filePath,
     dynamic params,
   );
@@ -22,11 +20,11 @@ class CountersImporterRepository extends WorksheetImporterRepository {
   final CountersImporter importer;
 
   const CountersImporterRepository({
-    @required this.importer,
-  }) : assert(importer != null);
+    required this.importer,
+  });
 
   @override
-  Future<OptionalData<Document>> importDocument(
+  Future<OptionalData<Document>?> importDocument(
       String filePath, dynamic tableChooser) {
     return _doImport(filePath, tableChooser as TableChooser)
         .then(
@@ -58,7 +56,7 @@ class NativeImporterRepository extends WorksheetImporterRepository {
   const NativeImporterRepository();
 
   @override
-  Future<OptionalData<Document>> importDocument(
+  Future<OptionalData<Document>?> importDocument(
           String filePath, dynamic tableChooser) =>
       File(filePath)
           .readAsString()
@@ -71,15 +69,15 @@ class NativeImporterRepository extends WorksheetImporterRepository {
           return await _chooseWorksheets(
               document, tableChooser as MultiTableChooser);
       }).then((optDocument) {
-        if (!optDocument.hasError())
-          optDocument?.data?.savePath = File(filePath);
+        if (!optDocument!.hasError())
+          optDocument.data?.savePath = File(filePath);
         return optDocument;
       }).catchError((e, s) => OptionalData.ofError<Document>(e, s));
 
-  Future<OptionalData<Document>> _chooseWorksheets(
+  Future<OptionalData<Document>?> _chooseWorksheets(
           Document document, MultiTableChooser tableChooser) =>
       _chooseWorksheets0(document, tableChooser).then(
-        (worksheets) => worksheets == null || worksheets.isEmpty
+        (worksheets) => worksheets.isEmpty
             ? null
             : OptionalData<Document>(data: document.setWorksheets(worksheets)),
       );

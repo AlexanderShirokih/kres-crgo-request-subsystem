@@ -2,32 +2,28 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
-import 'package:path/path.dart' as path;
 import 'package:equatable/equatable.dart';
-
 import 'package:kres_requests2/bloc/worksheets/worksheet_creation_mode.dart';
+import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/optional_data.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/models/document.dart';
+import 'package:path/path.dart' as path;
 
 part 'worksheet_master_event.dart';
-
 part 'worksheet_master_state.dart';
 
 class WorksheetMasterBloc
     extends Bloc<WorksheetMasterEvent, WorksheetMasterState> {
-  final Future<String> Function(Document, String) savePathChooser;
+  final Future<String?> Function(Document, String) savePathChooser;
 
-  WorksheetMasterBloc(Document document, {@required this.savePathChooser})
-      : assert(savePathChooser != null),
-        super(
+  WorksheetMasterBloc(Document? document, {required this.savePathChooser})
+      : super(
           WorksheetMasterIdleState(
               document ??= Document.empty(),
-              (document?.savePath == null
+              (document.savePath == null
                   ? './'
-                  : path.dirname(document.savePath.path))),
+                  : path.dirname(document.savePath!.path))),
         );
 
   @override
@@ -189,7 +185,7 @@ class WorksheetMasterBloc
 
   // TODO: Create a sort of DocumentRepository and move this method to it
   Map<Worksheet, List<RequestEntity>> _filterRequests(
-      Document document, String searchText) {
+      Document document, String? searchText) {
     if (searchText == null || searchText.isEmpty)
       return <Worksheet, List<RequestEntity>>{};
     searchText = searchText.toLowerCase();
@@ -197,12 +193,17 @@ class WorksheetMasterBloc
     return Map.fromIterable(document.worksheets,
         key: (worksheet) => worksheet,
         value: (worksheet) => worksheet.requests.where((RequestEntity request) {
-              return (request.accountId?.toString()?.padLeft(6, '0') ?? '')
-                      .contains(searchText) ||
-                  request.name.toLowerCase().contains(searchText) ||
-                  request.address.toLowerCase().contains(searchText) ||
-                  request.counterInfo.toLowerCase().contains(searchText) ||
-                  request.additionalInfo.toLowerCase().contains(searchText);
+              final searchingText = searchText ?? '';
+              return (request.accountId?.toString().padLeft(6, '0') ?? '')
+                      .contains(searchingText) ||
+                  request.name.toLowerCase().contains(searchingText) ||
+                  request.address.toLowerCase().contains(searchingText) ||
+                  (request.counterInfo?.toLowerCase().contains(searchingText) ??
+                      false) ||
+                  (request.additionalInfo
+                          ?.toLowerCase()
+                          .contains(searchingText) ??
+                      false);
             }).toList());
   }
 }

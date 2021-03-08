@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/screens/copyable_textformfield.dart';
 
 typedef SearchTextWatcher = void Function(String);
 
 class SearchBox extends StatefulWidget {
   final SearchTextWatcher textWatcher;
 
-  const SearchBox({Key key, @required this.textWatcher})
-      : assert(textWatcher != null),
-        super(key: key);
+  const SearchBox({Key? key, required this.textWatcher}) : super(key: key);
 
   @override
   _SearchBoxState createState() => _SearchBoxState();
@@ -17,8 +14,8 @@ class SearchBox extends StatefulWidget {
 
 class _SearchBoxState extends State<SearchBox>
     with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-  Animation<double> _fadeInAnimation;
+  late AnimationController _controller;
+  late Animation<double> _fadeInAnimation;
 
   @override
   void initState() {
@@ -66,7 +63,7 @@ class _SearchBoxState extends State<SearchBox>
                 ),
                 const SizedBox(width: 8.0),
                 Expanded(
-                  child: CopyableTextField(
+                  child: TextField(
                     autofocus: true,
                     onChanged: widget.textWatcher,
                   ),

@@ -26,7 +26,7 @@ class WorksheetsPreviewScreen extends StatefulWidget {
 class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
   Document currentDocument;
 
-  List<Worksheet> selectedWorksheets;
+  List<Worksheet>? selectedWorksheets;
 
   @override
   void initState() {
@@ -48,10 +48,8 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
           ? Center(
               child: Text(
                 'Документ пуст',
-                style: Theme.of(context)
-                    .textTheme
-                    .headline4
-                    .copyWith(color: Theme.of(context).textTheme.caption.color),
+                style: Theme.of(context).textTheme.headline4!.copyWith(
+                    color: Theme.of(context).textTheme.caption!.color),
               ),
             )
           : Builder(builder: (ctx) => _buildPage(ctx)),
@@ -75,7 +73,7 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
         ],
       );
 
-  bool hasPrintableWorksheets() => selectedWorksheets.isNotEmpty;
+  bool hasPrintableWorksheets() => selectedWorksheets?.isNotEmpty ?? false;
 
   Widget _buildActionsContainer(BuildContext context) => Container(
         width: 340.0,
@@ -124,11 +122,11 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
       );
 
   Widget _buildActionBarItem({
-    BuildContext context,
-    IconData icon,
-    String label,
-    String tooltip,
-    VoidCallback onPressed,
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String tooltip,
+    VoidCallback? onPressed,
   }) =>
       Material(
         color: Theme.of(context).primaryColor,
@@ -140,7 +138,7 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
                 const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
             leading: FaIcon(
               icon,
-              color: Theme.of(context).primaryTextTheme.bodyText2.color,
+              color: Theme.of(context).primaryTextTheme.bodyText2!.color,
             ),
             title: Text(
               label,
@@ -157,7 +155,7 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
         barrierDismissible: false,
         builder: (_) => ExporterDialog(
           format,
-          selectedWorksheets,
+          selectedWorksheets!,
           (ext) => getSuggestedName(currentDocument, ext),
         ),
       ).then(
@@ -175,7 +173,7 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
   Future _showPrintDialog(BuildContext context) => showDialog<String>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => PrintDialog(selectedWorksheets),
+        builder: (_) => PrintDialog(selectedWorksheets!),
       ).then(
         (resultMessage) {
           if (resultMessage != null)
@@ -195,10 +193,9 @@ class _WorksheetCardGroup extends StatefulWidget {
   final void Function(List<Worksheet>) onStatusChanged;
 
   const _WorksheetCardGroup({
-    @required this.worksheets,
-    @required this.onStatusChanged,
-  })  : assert(worksheets != null),
-        assert(onStatusChanged != null);
+    required this.worksheets,
+    required this.onStatusChanged,
+  });
 
   @override
   _WorksheetCardGroupState createState() => _WorksheetCardGroupState();
@@ -207,7 +204,7 @@ class _WorksheetCardGroup extends StatefulWidget {
 class _WorksheetCardGroupState extends State<_WorksheetCardGroup> {
   static const _tileMaxWidth = 500.0;
 
-  Map<Worksheet, bool> _checkedCards;
+  late Map<Worksheet, bool> _checkedCards;
 
   @override
   void initState() {
@@ -249,15 +246,15 @@ class _WorksheetCardGroupState extends State<_WorksheetCardGroup> {
           ),
           child: WorksheetCard(
             worksheet: worksheet,
-            isSelected: _checkedCards[worksheet],
+            isSelected: _checkedCards[worksheet] ?? false,
             onChanged: worksheet.hasErrors()
                 ? null
                 : (isChecked) => setState(() {
-                      _checkedCards[worksheet] = isChecked;
+                      _checkedCards[worksheet] = isChecked!;
                       widget.onStatusChanged(
                         widget.worksheets
                             .where((worksheet) =>
-                                _checkedCards[worksheet] &&
+                                _checkedCards[worksheet]! &&
                                 !worksheet.hasErrors())
                             .toList(),
                       );
@@ -270,16 +267,15 @@ class _WorksheetCardGroupState extends State<_WorksheetCardGroup> {
 
 class WorksheetCard extends StatelessWidget {
   static final _dateFormat = DateFormat('dd.MM.yyyy');
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool?>? onChanged;
   final Worksheet worksheet;
   final bool isSelected;
 
   const WorksheetCard({
-    @required this.worksheet,
-    @required this.isSelected,
-    @required this.onChanged,
-  })  : assert(worksheet != null),
-        assert(isSelected != null);
+    required this.worksheet,
+    required this.isSelected,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -302,7 +298,7 @@ class WorksheetCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        worksheet.name,
+                        worksheet.name!,
                         style: Theme.of(context).textTheme.headline5,
                       ),
                       Expanded(
@@ -323,8 +319,8 @@ class WorksheetCard extends StatelessWidget {
                   const SizedBox(height: 8.0),
                   _showDate(context),
                   const SizedBox(height: 8.0),
-                  _showSubtitle(
-                      context, 'Заявок:', Text('${worksheet.requests.length}')),
+                  _showSubtitle(context, 'Заявок:',
+                      Text('${worksheet.requests!.length}')),
                   const SizedBox(height: 8.0),
                   _printWorksheetStatus(context),
                 ],
@@ -345,19 +341,19 @@ class WorksheetCard extends StatelessWidget {
             _printSingleEmployeeField(
               ctx,
               'Выдающий задание:',
-              worksheet.chiefEmployee,
+              worksheet.chiefEmployee!,
             ),
             const SizedBox(height: 8.0),
             _printSingleEmployeeField(
               ctx,
               'Производитель работ:',
-              worksheet.mainEmployee,
+              worksheet.mainEmployee!,
             ),
             const SizedBox(height: 8.0),
             _printMultipleChildField(
               ctx,
               'Члены бригады:',
-              worksheet.membersEmployee,
+              worksheet.membersEmployee!,
             ),
           ],
         ),
@@ -395,7 +391,7 @@ class WorksheetCard extends StatelessWidget {
         width: 180.0,
         child: Text(
           label,
-          style: Theme.of(ctx).textTheme.subtitle1.copyWith(fontSize: 18.0),
+          style: Theme.of(ctx).textTheme.subtitle1!.copyWith(fontSize: 18.0),
         ),
       );
 
@@ -407,7 +403,7 @@ class WorksheetCard extends StatelessWidget {
           )
         : Text(
             emp.name,
-            style: Theme.of(ctx).textTheme.subtitle1.copyWith(
+            style: Theme.of(ctx).textTheme.subtitle1!.copyWith(
                   fontWeight: FontWeight.w600,
                   fontSize: 18.0,
                 ),
@@ -420,7 +416,7 @@ class WorksheetCard extends StatelessWidget {
         'Дата выдачи:',
         worksheet.date == null
             ? Text('Не выбрано', style: _createErrorTextStyle(context))
-            : Text('${_dateFormat.format(worksheet.date)}'),
+            : Text('${_dateFormat.format(worksheet.date!)}'),
       );
 
   Widget _showSubtitle(BuildContext context, String label, Widget child) => Row(
@@ -438,7 +434,7 @@ class WorksheetCard extends StatelessWidget {
         ],
       );
 
-  Widget _joinWorkTypes(BuildContext ctx) => worksheet.workTypes.isEmpty
+  Widget _joinWorkTypes(BuildContext ctx) => worksheet.workTypes!.isEmpty
       ? Text(
           'Не выбран ни один вид работ',
           style: _createErrorTextStyle(ctx),
@@ -446,12 +442,12 @@ class WorksheetCard extends StatelessWidget {
         )
       : Flexible(
           child: Text(
-            worksheet.workTypes.join(', '),
+            worksheet.workTypes!.join(', '),
           ),
         );
 
   TextStyle _createErrorTextStyle(BuildContext ctx) =>
-      Theme.of(ctx).textTheme.subtitle1.copyWith(
+      Theme.of(ctx).textTheme.subtitle1!.copyWith(
             color: Theme.of(ctx).errorColor,
             fontWeight: FontWeight.w800,
             fontSize: 18.0,

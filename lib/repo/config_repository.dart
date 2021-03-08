@@ -27,7 +27,7 @@ class ConfigRepository {
   };
 
   // TODO: Make full implementation
-  String getFullRequestName(String shortName) {
+  String? getFullRequestName(String shortName) {
     return _reqMap[shortName] ?? null;
   }
 }

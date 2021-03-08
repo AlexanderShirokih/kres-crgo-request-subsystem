@@ -12,7 +12,7 @@ class AppDatabase {
 
   static final AppDatabase _instance = AppDatabase._();
 
-  Completer<Database> _dbOpenCompleter;
+  Completer<Database>? _dbOpenCompleter;
 
   AppDatabase._();
 
@@ -27,7 +27,7 @@ class AppDatabase {
     }
 
     // Await for database is opened and returns it's instance
-    return _dbOpenCompleter.future;
+    return _dbOpenCompleter!.future;
   }
 
   Future<void> _openDatabase() async {
@@ -54,6 +54,6 @@ class AppDatabase {
           }),
     );
 
-    _dbOpenCompleter.complete(db);
+    _dbOpenCompleter!.complete(db);
   }
 }

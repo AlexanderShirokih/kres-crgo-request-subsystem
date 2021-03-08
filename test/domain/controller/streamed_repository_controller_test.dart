@@ -28,8 +28,8 @@ class _MockRepositoryController extends Mock
     implements AbstractRepositoryController<_TestEntity> {}
 
 void main() {
-  AbstractRepositoryController<_TestEntity> mockController;
-  StreamedRepositoryController<_TestEntity> streamedController;
+  late AbstractRepositoryController<_TestEntity> mockController;
+  late StreamedRepositoryController<_TestEntity> streamedController;
 
   setUp(() {
     mockController = _MockRepositoryController();

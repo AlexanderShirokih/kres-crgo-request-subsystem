@@ -1,14 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:kres_requests2/models/optional_data.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
-
 import 'package:kres_requests2/data/process_executor.dart';
+import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/models/optional_data.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/models/document.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 abstract class AbstractRequestProcessor {
   const AbstractRequestProcessor();
@@ -39,8 +38,7 @@ abstract class AbstractRequestProcessor {
 class RequestProcessorImpl extends AbstractRequestProcessor {
   final ProcessExecutor _requestsProcessExecutor;
 
-  const RequestProcessorImpl(this._requestsProcessExecutor)
-      : assert(_requestsProcessExecutor != null);
+  const RequestProcessorImpl(this._requestsProcessExecutor);
 
   @override
   Future<bool> isAvailable() => _requestsProcessExecutor.isAvailable();
@@ -129,7 +127,7 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
   OptionalData<T> _createFromProcessResult<T>(
           Map<String, dynamic> json, T Function(dynamic) resultBuilder) =>
       OptionalData(
-          data: json['data'] != null ? resultBuilder(json['data']) : null,
+          data: json['data'] != null ? resultBuilder(json['data']!) : null,
           error: ErrorWrapper(json['error'], json['stackTrace']));
 
   String _getWorksheetName(String filePath) =>

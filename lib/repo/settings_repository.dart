@@ -1,13 +1,13 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class SettingsRepository {
-  String get javaPath;
+  String? get javaPath;
 
-  set javaPath(String file);
+  set javaPath(String? file);
 
-  String get lastUsedPrinter;
+  String? get lastUsedPrinter;
 
-  set lastUsedPrinter(String printer);
+  set lastUsedPrinter(String? printer);
 
   const SettingsRepository();
 
@@ -21,18 +21,29 @@ class _PrefsSettingsRepository extends SettingsRepository {
 
   final SharedPreferences _prefs;
 
-  const _PrefsSettingsRepository(this._prefs) : assert(_prefs != null);
+  const _PrefsSettingsRepository(this._prefs);
 
   @override
-  String get javaPath => _prefs.getString(_kJavaPath);
+  String? get javaPath => _prefs.getString(_kJavaPath);
 
   @override
-  set javaPath(String path) => _prefs.setString(_kJavaPath, path);
+  set javaPath(String? path) {
+    if (path == null) {
+      _prefs.remove(_kJavaPath);
+    } else {
+      _prefs.setString(_kJavaPath, path);
+    }
+  }
 
   @override
-  String get lastUsedPrinter => _prefs.getString(_kLastUsedPrinter);
+  String? get lastUsedPrinter => _prefs.getString(_kLastUsedPrinter);
 
   @override
-  set lastUsedPrinter(String printer) =>
+  set lastUsedPrinter(String? printer) {
+    if (printer == null) {
+      _prefs.remove(_kLastUsedPrinter);
+    } else {
       _prefs.setString(_kLastUsedPrinter, printer);
+    }
+  }
 }

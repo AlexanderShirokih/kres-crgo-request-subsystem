@@ -1,21 +1,20 @@
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:file_chooser/file_chooser.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
-import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
+import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 
 class RequestsImporterScreen extends BaseImporterScreen {
-  final String initialDirectory;
+  final String? initialDirectory;
 
   factory RequestsImporterScreen.fromContext({
-    @required BuildContext context,
-    @required Document targetDocument,
-    String initialDirectory,
+    required BuildContext context,
+    required Document targetDocument,
+    String? initialDirectory,
   }) =>
       RequestsImporterScreen(
         targetDocument: targetDocument,
@@ -25,8 +24,8 @@ class RequestsImporterScreen extends BaseImporterScreen {
       );
 
   RequestsImporterScreen({
-    @required Document targetDocument,
-    @required RequestsRepository requestsRepository,
+    required Document targetDocument,
+    required RequestsRepository requestsRepository,
     this.initialDirectory,
   }) : super(
           title: 'Импорт заявок',
@@ -37,21 +36,17 @@ class RequestsImporterScreen extends BaseImporterScreen {
         );
 
   @override
-  Future<String> showOpenDialog(BuildContext context) async {
-    final res = await showOpenPanel(
-      allowsMultipleSelection: false,
-      canSelectDirectories: false,
+  Future<String?> showOpenDialog(BuildContext context) async {
+    return await openFile(
       initialDirectory: initialDirectory,
       confirmButtonText: 'Открыть',
-      allowedFileTypes: [
-        FileTypeFilterGroup(
+      acceptedTypeGroups: [
+        XTypeGroup(
           label: "Файлы Excel 97-2003",
-          fileExtensions: ["xls"],
+          extensions: ["xls"],
         )
       ],
-    );
-
-    return res.canceled ? null : res.paths[0];
+    ).then((file) => file?.path);
   }
 
   @override
@@ -75,13 +70,13 @@ class _RequestsImporterIdleView extends StatelessWidget {
           const SizedBox(height: 42.0),
           RaisedButton.icon(
             color: Theme.of(context).primaryColor,
-            textColor: Theme.of(context).primaryTextTheme.bodyText2.color,
+            textColor: Theme.of(context).primaryTextTheme.bodyText2!.color,
             padding: EdgeInsets.all(22.0),
             icon: FaIcon(FontAwesomeIcons.fileExcel),
             label: Text(
               'Открыть отчёт',
             ),
-            onPressed: () => context.bloc<ImporterBloc>().add(ImportEvent()),
+            onPressed: () => context.read<ImporterBloc>().add(ImportEvent()),
           )
         ],
       ),

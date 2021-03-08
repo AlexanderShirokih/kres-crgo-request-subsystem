@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/startup/startup_screen.dart';
-import 'package:window_control/window_control.dart';
 
 import 'app_module.dart';
 
@@ -13,9 +12,6 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Warm up [WindowControl] instance
-    WindowControl.instance;
-
     return FutureBuilder<AppModule>(
       future: AppModule.build(),
       builder: (context, snapshot) {
@@ -26,7 +22,7 @@ class MyApp extends StatelessWidget {
           );
         } else if (snapshot.hasData) {
           return RepositoryProvider<RepositoryModule>.value(
-            value: snapshot.data.repositoryModule,
+            value: snapshot.requireData.repositoryModule,
             child: MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'Заявки КРЭС 2.0',
@@ -35,7 +31,7 @@ class MyApp extends StatelessWidget {
                 accentColor: Colors.deepOrange,
                 visualDensity: VisualDensity.adaptivePlatformDensity,
               ),
-              home: StartupScreen(appModule: snapshot.data),
+              home: StartupScreen(appModule: snapshot.requireData),
             ),
           );
         }

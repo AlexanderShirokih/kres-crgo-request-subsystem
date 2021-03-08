@@ -1,12 +1,11 @@
 import 'dart:io';
 
-import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
-
 import 'package:kres_requests2/domain/importer_exception.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/repo/config_repository.dart';
+import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
-typedef TableChooser = Future<String> Function(List<String>);
+typedef TableChooser = Future<String?> Function(List<String>);
 
 class NamedWorksheet {
   final String name;
@@ -20,8 +19,7 @@ class CountersImporter {
 
   final ConfigRepository _configRepository;
 
-  const CountersImporter(this._configRepository)
-      : assert(_configRepository != null);
+  const CountersImporter(this._configRepository);
 
   Future<NamedWorksheet> importAsRequestsList(
       String filePath, TableChooser chooser) async {
@@ -31,11 +29,14 @@ class CountersImporter {
     final chosenTableName =
         await chooser(excel.tables.keys.toList(growable: false));
 
-    if (chosenTableName == null) return NamedWorksheet(null, <RequestEntity>[]);
+    if (chosenTableName == null)
+      return NamedWorksheet("Unnamed", <RequestEntity>[]);
 
     final table = excel.tables[chosenTableName];
 
-    return NamedWorksheet(table.name ?? "NoName", _processRows(table.rows));
+    if (table == null) throw 'No table found!';
+
+    return NamedWorksheet(table.name, _processRows(table.rows));
   }
 
   List<RequestEntity> _processRows(List<List<dynamic>> rows) {
@@ -44,7 +45,8 @@ class CountersImporter {
 
     return (hasHeader ? rows.skip(1) : rows)
         .where((row) =>
-            row.fold(0, (acc, cell) => acc + (cell == null ? 1 : 0)) < 3)
+            row.fold(0, (acc, cell) => (acc as int) + (cell == null ? 1 : 0)) <
+            3)
         .map((row) {
       try {
         final rawName = row[2].toString();

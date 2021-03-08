@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import 'package:kres_requests2/models/request_entity.dart';
 
 /// Describes single item of request entity
@@ -11,38 +10,34 @@ class RequestItemView extends StatelessWidget {
   final bool isHighlighted;
 
   // true - selected, false - not selected, null - not in selection mode
-  final bool isSelected;
+  final bool? isSelected;
 
   // A group (mark) attachment
   final int groupIndex;
 
   final int defaultGroupIndex;
 
-  final void Function(bool) onChanged;
+  final void Function(bool?) onChanged;
 
   final GroupChangeCallback groupChangeCallback;
 
   const RequestItemView({
-    @required this.position,
-    @required this.isSelected,
-    @required this.isHighlighted,
-    @required this.request,
-    @required this.onChanged,
-    @required this.groupChangeCallback,
-    @required this.groupIndex,
-    @required this.defaultGroupIndex,
-    Key key,
-  })  : assert(onChanged != null),
-        assert(position != null),
-        assert(request != null),
-        assert(groupIndex != null),
-        super(key: key);
+    required this.position,
+    required this.isSelected,
+    required this.isHighlighted,
+    required this.request,
+    required this.onChanged,
+    required this.groupChangeCallback,
+    required this.groupIndex,
+    required this.defaultGroupIndex,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        if (isSelected != null) onChanged(!isSelected);
+        if (isSelected != null) onChanged(!isSelected!);
       },
       child: Card(
         color: isHighlighted ? Colors.yellow : Colors.white,
@@ -70,7 +65,7 @@ class RequestItemView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        request.accountId?.toString()?.padLeft(6, '0') ?? "--",
+                        request.accountId?.toString().padLeft(6, '0') ?? "--",
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 20.0,
@@ -116,7 +111,7 @@ class RequestItemView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            request.counterInfo,
+                            request.counterInfo!,
                             style: TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.w600,
@@ -124,7 +119,7 @@ class RequestItemView extends StatelessWidget {
                           ),
                           const SizedBox(height: 10.0),
                           Text(
-                            request.additionalInfo,
+                            request.additionalInfo!,
                             style: TextStyle(fontSize: 16.0),
                           ),
                         ],
@@ -153,12 +148,12 @@ class RequestItemView extends StatelessWidget {
     RequestEntity request,
     BuildContext context,
   ) {
-    if (request.reason != null && request.reason.isNotEmpty) {
+    if (request.reason != null && request.reason!.isNotEmpty) {
       return [
         const SizedBox(height: 16.0),
         Text(
-          request.reason,
-          style: Theme.of(context).textTheme.caption.copyWith(fontSize: 16.0),
+          request.reason!,
+          style: Theme.of(context).textTheme.caption!.copyWith(fontSize: 16.0),
         ),
       ];
     }
@@ -174,13 +169,11 @@ class _MarkWidget extends StatefulWidget {
   final int defaultGroupIndex;
 
   const _MarkWidget({
-    Key key,
-    @required this.groupIndex,
-    @required this.defaultGroupIndex,
-    @required this.changeCallback,
-  })  : assert(groupIndex != null),
-        assert(changeCallback != null),
-        super(key: key);
+    Key? key,
+    required this.groupIndex,
+    required this.defaultGroupIndex,
+    required this.changeCallback,
+  }) : super(key: key);
 
   @override
   __MarkWidgetState createState() => __MarkWidgetState();

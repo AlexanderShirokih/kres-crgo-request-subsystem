@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/repository/repository.dart';
@@ -22,7 +23,7 @@ class _InsertEntity<E> extends Equatable implements _EditorAction<E> {
   }
 
   @override
-  List<Object> get props => [newEntity];
+  List<Object?> get props => [newEntity];
 }
 
 class _DeleteEntity<E> extends Equatable implements _EditorAction<E> {
@@ -36,7 +37,7 @@ class _DeleteEntity<E> extends Equatable implements _EditorAction<E> {
   }
 
   @override
-  List<Object> get props => [entity];
+  List<Object?> get props => [entity];
 }
 
 class _UpdateEntity<E> extends Equatable implements _EditorAction<E> {
@@ -62,7 +63,7 @@ class _UpdateEntity<E> extends Equatable implements _EditorAction<E> {
   }
 
   @override
-  List<Object> get props => [old, edited];
+  List<Object?> get props => [old, edited];
 }
 
 /// Factory that builds `E extends PersistedEntity`
@@ -101,7 +102,7 @@ class RepositoryController<E> implements AbstractRepositoryController<E> {
 
   final ListQueue<_EditorAction<E>> _operations = ListQueue();
 
-  List<E> /*?*/ _data;
+  List<E>? _data;
 
   RepositoryController(
     this._persistedObjectBuilder,
@@ -109,8 +110,7 @@ class RepositoryController<E> implements AbstractRepositoryController<E> {
   );
 
   Future<List<E>> _requireData() async {
-    _data ??= await _repository.getAll();
-    return _data;
+    return _data ??= await _repository.getAll();
   }
 
   @override
@@ -119,12 +119,22 @@ class RepositoryController<E> implements AbstractRepositoryController<E> {
       _data = await _repository.getAll();
     }
 
-    return _applyOperations(_data);
+    return _applyOperations(_data!);
   }
 
   /// Returns `true` if operations history is not empty
   @override
-  bool get hasUncommittedChanges => _operations.isNotEmpty;
+  bool get hasUncommittedChanges {
+    if (_operations.isEmpty) {
+      return false;
+    }
+
+    if (_data != null) {
+      final modifiedList = _applyOperations(_data!);
+      return !IterableEquality().equals(_data, modifiedList);
+    }
+    return true;
+  }
 
   /// Adds new entity to editing history
   @override
@@ -159,7 +169,7 @@ class RepositoryController<E> implements AbstractRepositoryController<E> {
 
   void _addOperation(_EditorAction<E> operation) => _operations.add(operation);
 
-  List<E> _applyOperations(List<E> /*?*/ source) {
+  List<E> _applyOperations(List<E>? source) {
     final copy = source == null ? <E>[] : List.of(source);
     final iterator = _operations.iterator;
 
@@ -183,12 +193,12 @@ class RepositoryController<E> implements AbstractRepositoryController<E> {
           throw 'Ghost detected!';
         }
 
-        final updateId = (updates as PersistedObject).id;
-        final currentIdx = _data
+        final updateId = updates.id;
+        final currentIdx = _data!
             .cast<PersistedObject>()
             .indexWhere((element) => element.id == updateId);
 
-        if (currentIdx != -1 && _data[currentIdx] != updates) {
+        if (currentIdx != -1 && _data![currentIdx] != updates) {
           // Entity was updated
           await _repository.update(updates);
         }
@@ -199,7 +209,7 @@ class RepositoryController<E> implements AbstractRepositoryController<E> {
 
     // Find deleted objects
     if (_data != null) {
-      for (final toDelete in _data
+      for (final toDelete in _data!
           .cast<PersistedObject>()
           .where((e) => !existing.any((newList) => newList.id == e.id))) {
         await _repository.delete(toDelete as E);

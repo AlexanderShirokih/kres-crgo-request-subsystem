@@ -1,12 +1,11 @@
-import 'package:file_chooser/file_chooser.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as path;
-
-import 'package:kres_requests2/repo/repository_module.dart';
-import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/screens/common.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
+import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/repo/repository_module.dart';
+import 'package:kres_requests2/screens/common.dart';
+import 'package:path/path.dart' as path;
 
 extension on ExportFormat {
   String formatExtension() {
@@ -16,7 +15,6 @@ extension on ExportFormat {
       case ExportFormat.Excel:
         return "xlsx";
     }
-    throw ('Unknown export format!');
   }
 }
 
@@ -29,10 +27,7 @@ class ExporterDialog extends StatelessWidget {
     this.exportFormat,
     this.worksheets,
     String Function(String) suggestedNameProvider,
-  )   : assert(exportFormat != null),
-        assert(worksheets != null),
-        assert(suggestedNameProvider != null),
-        suggestedExportBasename =
+  ) : suggestedExportBasename =
             suggestedNameProvider('.${exportFormat.formatExtension()}');
 
   @override
@@ -52,14 +47,14 @@ class ExporterDialog extends StatelessWidget {
           child: Builder(
             builder: (context) => BlocConsumer<ExporterBloc, ExporterState>(
               builder: (context, state) {
-                if (state is ExporterErrorState && state.error != null) {
+                if (state is ExporterErrorState) {
                   return ErrorView(
                     errorDescription: state.error.error,
                     stackTrace: state.error.stackTrace,
                   );
                 }
                 if (state is ExporterIdle) {
-                  return LoadingView(state.message);
+                  return LoadingView(state.message!);
                 } else
                   return Center(
                     child: CircularProgressIndicator(),
@@ -81,24 +76,25 @@ class ExporterDialog extends StatelessWidget {
     );
   }
 
-  Future<String> _showFileChooser() async {
+  Future<String?> _showFileChooser() async {
     final extension = exportFormat.formatExtension();
     final dotExtension = '.$extension';
-    final res = await showSavePanel(
-      suggestedFileName:
-          _correctExtension(suggestedExportBasename, dotExtension),
+    final res = await getSavePath(
+      suggestedName: _correctExtension(suggestedExportBasename, dotExtension),
       confirmButtonText: 'Сохранить',
-      allowedFileTypes: [
-        FileTypeFilterGroup(
+      acceptedTypeGroups: [
+        XTypeGroup(
           label: "Документ ${extension.toUpperCase()}",
-          fileExtensions: [extension],
+          extensions: [extension],
         )
       ],
     );
 
-    if (res.canceled) return null;
+    if (res == null) {
+      return null;
+    }
 
-    return _correctExtension(res.paths[0], dotExtension);
+    return _correctExtension(res, dotExtension);
   }
 
   String _correctExtension(String filePath, String ext) {

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import 'package:kres_requests2/bloc/worksheets/worksheet_creation_mode.dart';
-import 'package:kres_requests2/screens/copyable_textformfield.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 
 class AddNewWorkSheetTabView extends StatefulWidget {
@@ -69,10 +66,10 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
       );
 
   Widget _buildItemTile({
-    String title,
-    String tooltip,
-    IconData icon,
-    WorksheetCreationMode mode,
+    required String title,
+    String? tooltip,
+    required IconData icon,
+    WorksheetCreationMode? mode,
   }) {
     Widget _buildListTile() => ListTile(
           trailing: FaIcon(icon),
@@ -100,25 +97,22 @@ class WorkSheetTabView extends StatefulWidget {
   final bool isActive;
   final int filteredItemsCount;
   final void Function() onSelect;
-  final void Function() onRemove;
+  final void Function()? onRemove;
 
   const WorkSheetTabView({
-    @required this.filteredItemsCount,
-    @required this.worksheet,
-    @required this.isActive,
-    @required this.onSelect,
-    @required this.onRemove,
-  })  : assert(filteredItemsCount != null),
-        assert(worksheet != null),
-        assert(isActive != null),
-        assert(onSelect != null);
+    required this.filteredItemsCount,
+    required this.worksheet,
+    required this.isActive,
+    required this.onSelect,
+    required this.onRemove,
+  });
 
   @override
   _WorkSheetTabViewState createState() => _WorkSheetTabViewState();
 }
 
 class _WorkSheetTabViewState extends State<WorkSheetTabView> {
-  TextEditingController _controller;
+  late TextEditingController _controller;
   bool _isEditable = false;
 
   @override
@@ -156,14 +150,14 @@ class _WorkSheetTabViewState extends State<WorkSheetTabView> {
                     )
                   : null,
               title: _isEditable
-                  ? CopyableTextField(
+                  ? TextField(
                       controller: _controller,
                       onSubmitted: (text) => setState(() {
                         widget.worksheet.name = text;
                         _isEditable = false;
                       }),
                     )
-                  : Text(widget.worksheet.name),
+                  : Text(widget.worksheet.name!),
               trailing: widget.onRemove != null
                   ? IconButton(
                       icon: FaIcon(FontAwesomeIcons.times),

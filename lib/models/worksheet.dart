@@ -1,33 +1,32 @@
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/models/request_entity.dart';
-import 'package:meta/meta.dart';
 
 /// Contains info about single working document
 class Worksheet {
   /// Worksheet name
-  String name;
+  String? name;
 
   /// Производитель работ
-  Employee mainEmployee;
+  Employee? mainEmployee;
 
   /// Выдающий распоряжение
-  Employee chiefEmployee;
+  Employee? chiefEmployee;
 
   /// Члены бригады
-  List<Employee> membersEmployee = [];
+  List<Employee>? membersEmployee = [];
 
   /// Список заявок
-  List<RequestEntity> requests;
+  List<RequestEntity>? requests;
 
   /// Дата выдачи
-  DateTime date;
+  DateTime? date;
 
   /// Выбранные виды работ
-  Set<String> workTypes = {};
+  Set<String>? workTypes = {};
 
   Worksheet({
-    @required this.name,
-    List<RequestEntity> requests,
+    required this.name,
+    List<RequestEntity>? requests,
   }) {
     this.requests = requests == null ? [] : requests;
   }
@@ -42,15 +41,18 @@ class Worksheet {
     this.date,
   });
 
-  bool get isEmpty => requests.isEmpty;
+  bool get isEmpty => requests?.isEmpty ?? true;
 
   void insertDefaultWorkTypes() {
-    workTypes.addAll(
-      requests.where((e) => e.fullReqType != null).map((e) => e.fullReqType),
+    workTypes!.addAll(
+      requests!
+          .where((e) => e.fullReqType != null)
+          .map((e) => e.fullReqType)
+          .cast<String>(),
     );
   }
 
-  void addEmptyWorkType() => workTypes.add("");
+  void addEmptyWorkType() => workTypes!.add("");
 
   /// Converts [Worksheet] to JSON representation
   /// TODO: Create new code
@@ -94,7 +96,7 @@ class Worksheet {
   //   workTypes: (data['workTypes'] as List<dynamic>).cast<String>().toSet(),
   // );
 
-  Worksheet copy({String name}) => Worksheet._(
+  Worksheet copy({String? name}) => Worksheet._(
         name: name ?? this.name,
         workTypes: this.workTypes,
         requests: this.requests,
@@ -105,23 +107,25 @@ class Worksheet {
       );
 
   List<Employee> getUsedEmployee() =>
-      [mainEmployee, chiefEmployee, ...membersEmployee];
+      [mainEmployee!, chiefEmployee!, ...membersEmployee!];
 
   /// Returns `true` if [employee] used more than once at any positions
   bool isUsedElseWhere(Employee employee) =>
-      getUsedEmployee().fold(0, (acc, e) => acc += (e == employee ? 1 : 0)) > 1;
+      getUsedEmployee()
+          .fold(0, (acc, e) => acc = (acc as int) + (e == employee ? 1 : 0)) >
+      1;
 
   Iterable<String> validate() sync* {
     if (chiefEmployee == null) yield "Не выбран выдающий задание";
 
     if (mainEmployee == null) yield "Не выбран производитель работ";
 
-    if (membersEmployee.any((emp) => emp == null))
+    if (membersEmployee!.any((emp) => emp == null))
       yield "Поле члена бригады пусто";
 
-    if (requests.isEmpty) yield "Нет заявок для печати";
+    if (requests!.isEmpty) yield "Нет заявок для печати";
 
-    if (requests.length > 18)
+    if (requests!.length > 18)
       yield "Слишком много заявок для печати на одном листе";
 
     if (date == null) yield "Не выбрана дата";

@@ -5,7 +5,7 @@ class PositionEntity extends Position implements PersistedObject<int> {
   @override
   final int id;
 
-  PositionEntity(this.id, {String name}) : super(name);
+  PositionEntity(this.id, {required String name}) : super(name);
 
   @override
   List<Object> get props => [...super.props, id];

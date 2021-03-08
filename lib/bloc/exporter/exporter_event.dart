@@ -31,9 +31,7 @@ class ExporterPrintDocumentEvent extends ExporterEvent {
   final String printerName;
   final bool noLists;
 
-  const ExporterPrintDocumentEvent(this.printerName, this.noLists)
-      : assert(printerName != null),
-        assert(noLists != null);
+  const ExporterPrintDocumentEvent(this.printerName, this.noLists);
 
   @override
   List<Object> get props => [printerName, noLists];

@@ -33,15 +33,14 @@ class _TestObjectBuilder implements PersistedObjectBuilder<_TestEntity> {
 }
 
 void main() {
-  EquatableConfig.stringify = true;
   final testEntities = [
     _PersistedTestEntity(1, 'A'),
     _PersistedTestEntity(2, 'B'),
     _PersistedTestEntity(3, 'C'),
   ];
 
-  Repository<_TestEntity> repository;
-  RepositoryController<_TestEntity> controller;
+  late Repository<_TestEntity> repository;
+  late RepositoryController<_TestEntity> controller;
 
   setUp(() {
     repository = _MockRepository();
@@ -200,5 +199,22 @@ void main() {
     verify(repository.update(_PersistedTestEntity(1, 'D')));
     verify(repository.getAll()).called(lessThanOrEqualTo(1));
     verifyNoMoreInteractions(repository);
+  });
+
+  test('Editing with no changes does not creates editing history', () async {
+    await controller.getAll();
+
+    controller.update(
+      _PersistedTestEntity(1, 'A'),
+      _PersistedTestEntity(1, 'A'),
+    );
+
+    expect(controller.hasUncommittedChanges, isFalse);
+
+    await controller.commit();
+
+    verify(repository.getAll()).called(lessThanOrEqualTo(1));
+    verifyNoMoreInteractions(repository);
+
   });
 }

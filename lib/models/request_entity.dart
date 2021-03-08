@@ -1,10 +1,9 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/cupertino.dart';
 
 /// Describes information about work request
 class RequestEntity extends Equatable {
   /// An account number (up to 6 digit)
-  final int accountId;
+  final int? accountId;
 
   /// Requester name
   final String name;
@@ -13,33 +12,30 @@ class RequestEntity extends Equatable {
   final String address;
 
   /// A request type
-  final String reqType;
+  final String? reqType;
 
   /// Full request type
-  final String fullReqType;
+  final String? fullReqType;
 
   /// Additional info, such as additionalInfo, phone number, connection point
-  final String additionalInfo;
+  final String? additionalInfo;
 
   /// Electrical counter info
-  final String counterInfo;
+  final String? counterInfo;
 
   /// Request reason
-  final String reason;
+  final String? reason;
 
   const RequestEntity({
-    @required this.name,
-    @required this.address,
-    @required this.counterInfo,
-    @required this.additionalInfo,
+    required this.name,
+    required this.address,
+    required this.counterInfo,
+    required this.additionalInfo,
     this.accountId,
     this.reqType,
     this.fullReqType,
     this.reason,
-  })  : assert(name != null),
-        assert(address != null),
-        assert(counterInfo != null),
-        assert(additionalInfo != null);
+  });
 
   /// Creates [RequestEntity] instance from JSON
   factory RequestEntity.fromJson(Map<String, dynamic> data) => RequestEntity(
@@ -75,14 +71,14 @@ class RequestEntity extends Equatable {
 
   /// Creates a copy of object with specifying parameters
   RequestEntity copy({
-    int accountId,
-    String name,
-    String address,
-    String reqType,
-    String fullReqType,
-    String counterInfo,
-    String additionalInfo,
-    String reason,
+    int? accountId,
+    String? name,
+    String? address,
+    String? reqType,
+    String? fullReqType,
+    String? counterInfo,
+    String? additionalInfo,
+    String? reason,
   }) =>
       RequestEntity(
         accountId: accountId ?? this.accountId,
@@ -96,7 +92,7 @@ class RequestEntity extends Equatable {
       );
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         accountId,
         name,
         address,

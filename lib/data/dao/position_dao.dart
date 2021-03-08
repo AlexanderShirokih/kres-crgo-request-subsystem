@@ -7,7 +7,7 @@ import 'dao.dart';
 
 extension PositionEncoder on Position {
   /// Converts [Position] instance to JSON representation
-  Map<String, dynamic> toMap() => {
+  Map<String, dynamic> toMap({bool putIds = true}) => {
         if (this is PersistedObject<int>)
           'id': (this as PersistedObject<int>).id,
         'name': name,
@@ -41,7 +41,12 @@ class PositionDao implements Dao<Position, PositionEntity> {
   /// Updates [Position] record in the storage
   @override
   Future<void> update(PositionEntity position) async {
-    await _database.update(_table, position.toMap());
+    await _database.update(
+      _table,
+      position.toMap(putIds: false),
+      where: 'id=?',
+      whereArgs: [position.id],
+    );
   }
 
   /// Deletes [Position] record from the storage

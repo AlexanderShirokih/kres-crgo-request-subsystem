@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:file_chooser/file_chooser.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/data/settings/settings_module.dart';
@@ -13,9 +13,9 @@ class SettingsScreen extends StatefulWidget {
   final SettingsRepository settingsRepository;
 
   const SettingsScreen({
-    Key key,
-    @required this.settingsModule,
-    @required this.settingsRepository,
+    Key? key,
+    required this.settingsModule,
+    required this.settingsRepository,
   }) : super(key: key);
 
   static Route createRoute(
@@ -92,8 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return path;
   }
 
-  Future<String> _showJavaPathSelector() => showOpenPanel(
-        canSelectDirectories: true,
+  Future<String?> _showJavaPathSelector() => getDirectoryPath(
         confirmButtonText: 'Выбрать',
-      ).then((res) => res.canceled ? null : res.paths[0]);
+      );
 }

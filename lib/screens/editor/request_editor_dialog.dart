@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 
-import '../copyable_textformfield.dart';
-
 class RequestEditorDialog extends StatefulWidget {
-  final RequestEntity editingRequest;
+  final RequestEntity? editingRequest;
 
   const RequestEditorDialog({this.editingRequest});
 
@@ -31,28 +28,24 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
     "откл.",
     "Другое"
   ];
-  TextEditingController _lsController;
-  TextEditingController _addressController;
-  TextEditingController _nameController;
-  TextEditingController _counterController;
-  TextEditingController _additionalController;
-  TextEditingController _requestTypeController;
+  late TextEditingController _lsController;
+  late TextEditingController _addressController;
+  late TextEditingController _nameController;
+  late TextEditingController _counterController;
+  late TextEditingController _additionalController;
+  late TextEditingController _requestTypeController;
 
   final RequestEntity _request;
   bool _isValid;
   bool _isNew;
 
-  _RequestEditorDialogState(this._request, this._isNew)
-      : assert(_request != null),
-        assert(_isNew != null) {
-    _isValid = !_isNew;
-  }
+  _RequestEditorDialogState(this._request, this._isNew) : _isValid = !_isNew;
 
   @override
   void initState() {
     super.initState();
     _lsController = TextEditingController(
-        text: _request.accountId?.toString()?.padLeft(6, '0') ?? "");
+        text: _request.accountId?.toString().padLeft(6, '0') ?? "");
     _addressController = TextEditingController(text: _request.address);
     _nameController = TextEditingController(text: _request.name);
     _counterController = TextEditingController(text: _request.counterInfo);
@@ -81,7 +74,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
       title: Text(
         _isNew
             ? 'Создание заявки'
-            : 'Редактирование заявки | Л/С №${_request.accountId?.toString()?.padLeft(6, '0') ?? "--"}',
+            : 'Редактирование заявки | Л/С №${_request.accountId?.toString().padLeft(6, '0') ?? "--"}',
         textAlign: TextAlign.center,
       ),
       content: Container(
@@ -89,7 +82,7 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
         padding: EdgeInsets.all(16.0),
         child: Form(
           onChanged: () {
-            final isValid = _formKey.currentState.validate();
+            final isValid = _formKey.currentState!.validate();
             if (_isValid != isValid)
               setState(() {
                 _isValid = isValid;
@@ -112,9 +105,11 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
                         child: TextFormField(
                           controller: _lsController,
                           autovalidateMode: AutovalidateMode.always,
-                          validator: (value) => value.characters.every(
-                            (element) => element.startsWith(RegExp('[0-9]')),
-                          )
+                          validator: (value) => value?.characters.every(
+                                    (element) =>
+                                        element.startsWith(RegExp('[0-9]')),
+                                  ) ??
+                                  false
                               ? null
                               : "",
                           keyboardType: TextInputType.number,
@@ -191,9 +186,9 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
 
   Iterable<Widget> _createInputField(
     String label,
-    String errorHint,
+    String? errorHint,
     TextEditingController controller, {
-    int limit,
+    int limit = 30,
   }) sync* {
     yield SizedBox(height: 24);
     yield Row(
@@ -207,12 +202,13 @@ class _RequestEditorDialogState extends State<RequestEditorDialog> {
         ),
         const SizedBox(width: 8.0),
         Expanded(
-          child: CopyableTextFormField(
+          child: TextFormField(
             controller: controller,
             autovalidateMode: AutovalidateMode.always,
             maxLength: limit,
-            validator: (value) =>
-                errorHint != null && value.isEmpty ? errorHint : null,
+            validator: (value) => errorHint != null && (value?.isEmpty ?? true)
+                ? errorHint
+                : null,
           ),
         )
       ],
@@ -234,7 +230,7 @@ class _RequestTypeChooser extends StatefulWidget {
 }
 
 class __RequestTypeChooserState extends State<_RequestTypeChooser> {
-  List<String> _availableRequestTypes;
+  late List<String> _availableRequestTypes;
 
   bool _isExtended = false;
 
@@ -260,7 +256,8 @@ class __RequestTypeChooserState extends State<_RequestTypeChooser> {
                 child: TextFormField(
                   controller: widget.fieldController,
                   autovalidateMode: AutovalidateMode.always,
-                  validator: (val) => val.isEmpty ? "Значение пусто" : null,
+                  validator: (val) =>
+                      (val?.isEmpty ?? true) ? "Значение пусто" : null,
                   onFieldSubmitted: (value) => setState(() {
                     if (value.isNotEmpty) {
                       _availableRequestTypes.insert(0, value);
@@ -293,7 +290,7 @@ class __RequestTypeChooserState extends State<_RequestTypeChooser> {
               .toList(),
           onChanged: (value) => setState(() {
             _isExtended = value == "Другое";
-            widget.fieldController.text = value;
+            widget.fieldController.text = value!;
           }),
         ),
       );

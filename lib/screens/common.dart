@@ -1,13 +1,12 @@
-import 'package:intl/intl.dart';
-import 'package:path/path.dart' as path;
-import 'package:file_chooser/file_chooser.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-
+import 'package:intl/intl.dart';
 import 'package:kres_requests2/models/document.dart';
+import 'package:path/path.dart' as path;
 
 class ErrorView extends StatelessWidget {
-  final String errorDescription;
-  final String stackTrace;
+  final String? errorDescription;
+  final String? stackTrace;
 
   const ErrorView({
     this.errorDescription,
@@ -59,7 +58,7 @@ class LoadingView extends StatelessWidget {
             CircularProgressIndicator(),
             const SizedBox(height: 18.0),
             Text(
-              label ?? "...",
+              label,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headline6,
             ),
@@ -68,20 +67,20 @@ class LoadingView extends StatelessWidget {
       );
 }
 
-Future<String> showSaveDialog(
+Future<String?> showSaveDialog(
     Document currentDoc, String currentDirectory) async {
-  final res = await showSavePanel(
-    suggestedFileName: getSuggestedName(currentDoc, '.json'),
+  final res = await getSavePath(
+    suggestedName: getSuggestedName(currentDoc, '.json'),
     initialDirectory: currentDirectory,
     confirmButtonText: 'Сохранить',
-    allowedFileTypes: [
-      FileTypeFilterGroup(
+    acceptedTypeGroups: [
+      XTypeGroup(
         label: "Документ заявок",
-        fileExtensions: ["json"],
+        extensions: ["json"],
       )
     ],
   );
-  return res.canceled ? null : res.paths[0];
+  return res;
 }
 
 final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
@@ -90,5 +89,5 @@ String getSuggestedName(Document currentDocument, String ext) {
   String fmtDate(DateTime d) => _dateFormat.format(d);
   return currentDocument.savePath == null
       ? "Заявки ${fmtDate(currentDocument.updateDate)}$ext"
-      : "${path.basenameWithoutExtension(currentDocument.savePath.path)}$ext";
+      : "${path.basenameWithoutExtension(currentDocument.savePath!.path)}$ext";
 }

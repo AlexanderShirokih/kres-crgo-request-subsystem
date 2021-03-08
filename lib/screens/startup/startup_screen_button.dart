@@ -7,12 +7,10 @@ class StartupScreenButton extends StatelessWidget {
   final void Function() onPressed;
 
   const StartupScreenButton({
-    @required this.label,
-    @required this.iconData,
-    @required this.onPressed,
-  })  : assert(label != null),
-        assert(iconData != null),
-        assert(onPressed != null);
+    required this.label,
+    required this.iconData,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -29,7 +27,7 @@ class StartupScreenButton extends StatelessWidget {
             onPressed: onPressed,
             icon: FaIcon(
               iconData,
-              color: Theme.of(context).primaryTextTheme.bodyText2.color,
+              color: Theme.of(context).primaryTextTheme.bodyText2!.color,
             ),
             label: Text(
               label,

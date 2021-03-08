@@ -9,7 +9,6 @@ import 'package:kres_requests2/domain/models/position.dart';
 import 'package:kres_requests2/domain/repository/employee_repository.dart';
 import 'package:kres_requests2/domain/repository/repository.dart';
 import 'package:kres_requests2/domain/validator.dart';
-import 'package:meta/meta.dart';
 
 part 'employee_event.dart';
 part 'employee_state.dart';
