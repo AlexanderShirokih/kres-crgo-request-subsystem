@@ -8,6 +8,7 @@ import 'package:kres_requests2/domain/models/position.dart';
 import 'package:kres_requests2/domain/repository/repository.dart';
 import 'package:kres_requests2/domain/validator.dart';
 import 'package:kres_requests2/screens/settings/common/bloc/undoable_bloc.dart';
+import 'package:kres_requests2/screens/settings/common/bloc/undoable_data.dart';
 
 part 'employee_data.dart';
 
@@ -34,7 +35,7 @@ class EmployeeBloc extends UndoableBloc<EmployeeData, Employee> {
 
   @override
   Future<EmployeeData> onRefreshData(List<Employee> data) async => EmployeeData(
-        employees: data,
+        data: data,
         availablePositions: await _positionRepository.getAll(),
       );
 }

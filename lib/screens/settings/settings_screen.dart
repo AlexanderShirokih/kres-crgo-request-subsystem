@@ -7,6 +7,7 @@ import 'package:kres_requests2/data/settings/settings_module.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/screens/settings/employees/employees_screen.dart';
+import 'package:kres_requests2/screens/settings/positions/positions_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final SettingsModule settingsModule;
@@ -52,6 +53,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 () => EmployeesScreen(
                   employeeModule: widget.settingsModule.employeeModule,
                   positionModule: widget.settingsModule.positionModule,
+                ),
+              ),
+              _navigableItem(
+                context,
+                'Должности',
+                    () => PositionsScreen(
+                      positionModule: widget.settingsModule.positionModule,
                 ),
               ),
             ],

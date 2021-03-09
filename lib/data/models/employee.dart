@@ -3,6 +3,7 @@ import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/position.dart';
 
+/// Creates [PersistedObjectBuilder] factory that creates new persisted entities
 class EmployeePersistedBuilder implements PersistedObjectBuilder<Employee> {
   const EmployeePersistedBuilder();
 
@@ -15,6 +16,7 @@ class EmployeePersistedBuilder implements PersistedObjectBuilder<Employee> {
       );
 }
 
+/// Employee data object for storing in database
 class EmployeeEntity extends Employee implements PersistedObject<int> {
   @override
   final int id;

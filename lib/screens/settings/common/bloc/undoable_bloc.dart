@@ -4,13 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
 import 'package:kres_requests2/domain/validator.dart';
+import 'package:kres_requests2/screens/settings/common/bloc/undoable_data.dart';
 import 'package:kres_requests2/screens/settings/common/bloc/undoable_events.dart';
 import 'package:kres_requests2/screens/settings/common/bloc/undoable_state.dart';
 import 'package:meta/meta.dart';
 
 /// BLoC that handles actions on a list of data that can have editing history
 /// and can be reverted or applied to [RepositoryController]
-abstract class UndoableBloc<DH extends Object, E extends Object>
+abstract class UndoableBloc<DH extends UndoableDataHolder<E>, E extends Object>
     extends Bloc<UndoableDataEvent, UndoableState<DH>> {
   final StreamedRepositoryController<E> _controller;
   final Validator<E> _validator;
@@ -40,10 +41,10 @@ abstract class UndoableBloc<DH extends Object, E extends Object>
   Future<E> createNewEntity();
 
   @override
-  Stream<DataState<DH>> mapEventToState(UndoableDataEvent event) async* {
+  Stream<DataState<E, DH>> mapEventToState(UndoableDataEvent event) async* {
     if (event is RefreshDataEvent<E>) {
       yield DataState(
-        data: await onRefreshData(event.data),
+        current: await onRefreshData(event.data),
         hasUnsavedChanges: _controller.hasUncommittedChanges,
         canSave:
             _controller.hasUncommittedChanges && _validator.isValid(event.data),

@@ -5,7 +5,7 @@ class Position extends Equatable {
   /// Position name
   final String name;
 
-  const Position(this.name);
+  const Position({required this.name});
 
   @override
   List<Object> get props => [name];

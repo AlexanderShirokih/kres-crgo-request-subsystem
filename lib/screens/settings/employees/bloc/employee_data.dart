@@ -1,9 +1,10 @@
 part of 'employee_bloc.dart';
 
 /// Data holder for employee BLoC
-class EmployeeData extends Equatable {
+class EmployeeData extends Equatable implements UndoableDataHolder<Employee> {
   /// List of all employees
-  final List<Employee> employees;
+  @override
+  final List<Employee> data;
 
   /// List of all available positions
   final List<Position> availablePositions;
@@ -12,13 +13,13 @@ class EmployeeData extends Equatable {
   final List<int> groups = const [2, 3, 4, 5];
 
   const EmployeeData({
-    required this.employees,
+    required this.data,
     required this.availablePositions,
   });
 
   @override
   List<Object?> get props => [
-        employees,
+        data,
         availablePositions,
         groups,
       ];

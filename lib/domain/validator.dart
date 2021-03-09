@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 
 /// [Validator] can check entity fields for correct values.
 abstract class Validator<T> {
+  const Validator();
+
   /// Validates entity field and returns [Iterable] of errors.
   /// If entity is valid returning [Iterable] will empty.
   Iterable<ValidationResult> validate(T entity);
