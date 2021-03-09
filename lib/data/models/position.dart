@@ -22,4 +22,7 @@ class PositionEntity extends Position implements PersistedObject<int> {
 
   @override
   List<Object> get props => [...super.props, id];
+
+  @override
+  Position copy({String? name}) => PositionEntity(id, name: name ?? this.name);
 }

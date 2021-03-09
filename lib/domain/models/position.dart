@@ -9,4 +9,7 @@ class Position extends Equatable {
 
   @override
   List<Object> get props => [name];
+
+  /// Creates a copy with customized parameters
+  Position copy({String? name}) => Position(name: name ?? this.name);
 }
