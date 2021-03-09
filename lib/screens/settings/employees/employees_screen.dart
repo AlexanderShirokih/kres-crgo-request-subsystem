@@ -1,13 +1,15 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/data/models/employee.dart';
+import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/data/settings/employee_module.dart';
 import 'package:kres_requests2/data/settings/position_module.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/position.dart';
 import 'package:kres_requests2/screens/common/save_changes_dialog.dart';
+import 'package:kres_requests2/screens/common/table_view.dart';
+import 'package:kres_requests2/screens/settings/common/bloc/undoable_events.dart';
+import 'package:kres_requests2/screens/settings/common/bloc/undoable_state.dart';
 import 'package:kres_requests2/screens/settings/employees/bloc/employee_bloc.dart';
 
 /// Manages employees.
@@ -20,19 +22,6 @@ class EmployeesScreen extends StatelessWidget {
     required this.employeeModule,
     required this.positionModule,
   }) : super(key: key);
-
-  Widget _buildActionButton() =>
-      BlocBuilder<EmployeeBloc, EmployeeState>(builder: (context, state) {
-        if (state is EmployeeDataState && state.canSave) {
-          return FloatingActionButton(
-            tooltip: 'Сохранить изменения',
-            child: FaIcon(FontAwesomeIcons.solidSave),
-            onPressed: () => context.read<EmployeeBloc>().add(EmployeeApply()),
-          );
-        } else {
-          return const SizedBox();
-        }
-      });
 
   @override
   Widget build(BuildContext context) => BlocProvider(
@@ -47,10 +36,10 @@ class EmployeesScreen extends StatelessWidget {
               // ignore: close_sinks
               final bloc = context.read<EmployeeBloc>();
 
-              if (bloc.state is EmployeeDataState) {
-                final dataState = bloc.state as EmployeeDataState;
+              if (bloc.state is DataState<EmployeeData>) {
+                final dataState = bloc.state as DataState<EmployeeData>;
                 if (dataState.hasUnsavedChanges && dataState.canSave) {
-                  final canPop = await showDialog<bool /*?*/ >(
+                  final canPop = await showDialog<bool?>(
                       context: context, builder: (_) => SaveChangesDialog());
 
                   if (canPop == null) {
@@ -78,51 +67,24 @@ class EmployeesScreen extends StatelessWidget {
               appBar: AppBar(
                 title: Text('Сотрудники'),
                 actions: [
-                  _buildActionButtons(),
+                  _buildAppBarActions(),
                   Builder(
                     builder: (BuildContext context) => ElevatedButton.icon(
                       icon: FaIcon(FontAwesomeIcons.userPlus),
                       label: Text('Добавить сотрудника'),
                       onPressed: () =>
-                          context.read<EmployeeBloc>().add(EmployeeAddItem()),
+                          context.read<EmployeeBloc>().add(AddItemEvent()),
                     ),
                   ),
                   SizedBox(width: 42.0),
                 ],
               ),
-              body: BlocBuilder<EmployeeBloc, EmployeeState>(
-                buildWhen: (old, current) {
-                  print("YIELDED!");
-                  if (old is EmployeeDataState &&
-                      current is EmployeeDataState) {
-                    bool shouldRebuild= !IterableEquality(
-                        EqualityBy<Employee, Employee>((e) {
-                      if (e is EmployeeEntity) {
-                        return EmployeeEntity(
-                          e.id,
-                          name: '',
-                          position: e.position,
-                          accessGroup: e.accessGroup,
-                        );
-                      }
-                      return Employee(
-                        name: '',
-                        position: e.position,
-                        accessGroup: e.accessGroup,
-                      );
-                    })).equals(old.employees, current.employees);
-                    print("SHOULD REBUILD=${shouldRebuild}");
-                    return shouldRebuild;
-                  }
-                  return true;
-                },
+              body: BlocBuilder<EmployeeBloc, UndoableState<EmployeeData>>(
                 builder: (context, state) {
-                  if (state is EmployeeDataState) {
+                  if (state is DataState<EmployeeData>) {
                     return _EmployeeTableContent(
-                      employees: state.employees,
-                      positions: state.availablePositions,
-                      groups: state.groups,
                       bloc: context.watch<EmployeeBloc>(),
+                      data: state.data,
                     );
                   }
                   return Center(
@@ -135,9 +97,24 @@ class EmployeesScreen extends StatelessWidget {
         ),
       );
 
-  Widget _buildActionButtons() =>
-      BlocBuilder<EmployeeBloc, EmployeeState>(builder: (context, state) {
-        if (state is EmployeeDataState) {
+  Widget _buildActionButton() =>
+      BlocBuilder<EmployeeBloc, UndoableState<EmployeeData>>(
+          builder: (context, state) {
+        if (state is DataState<EmployeeData> && state.canSave) {
+          return FloatingActionButton(
+            tooltip: 'Сохранить изменения',
+            child: FaIcon(FontAwesomeIcons.solidSave),
+            onPressed: () => context.read<EmployeeBloc>().add(ApplyEvent()),
+          );
+        } else {
+          return const SizedBox();
+        }
+      });
+
+  Widget _buildAppBarActions() =>
+      BlocBuilder<EmployeeBloc, UndoableState<EmployeeData>>(
+          builder: (context, state) {
+        if (state is DataState<EmployeeData>) {
           return Row(
             children: _spreadActionButtons(context, state).toList(),
           );
@@ -147,12 +124,12 @@ class EmployeesScreen extends StatelessWidget {
       });
 
   Iterable<Widget> _spreadActionButtons(
-      BuildContext context, EmployeeDataState state) sync* {
+      BuildContext context, DataState<EmployeeData> state) sync* {
     if (state.hasUnsavedChanges) {
       yield IconButton(
         icon: Icon(Icons.redo),
         tooltip: 'Отменить',
-        onPressed: () => context.read<EmployeeBloc>().add(EmployeeUndoAction()),
+        onPressed: () => context.read<EmployeeBloc>().add(UndoActionEvent()),
       );
       yield SizedBox(width: 36.0);
     }
@@ -160,16 +137,12 @@ class EmployeesScreen extends StatelessWidget {
 }
 
 class _EmployeeTableContent extends StatefulWidget {
-  final List<Employee> employees;
-  final List<Position> positions;
-  final List<int> groups;
+  final EmployeeData data;
   final EmployeeBloc bloc;
 
   const _EmployeeTableContent({
     Key? key,
-    required this.employees,
-    required this.positions,
-    required this.groups,
+    required this.data,
     required this.bloc,
   }) : super(key: key);
 
@@ -195,7 +168,7 @@ class __EmployeeTableContentState extends State<_EmployeeTableContent> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.employees.isEmpty) {
+    if (widget.data.employees.isEmpty) {
       return Center(
         child:
             Text('Таблица пуста', style: Theme.of(context).textTheme.headline3),
@@ -212,67 +185,55 @@ class __EmployeeTableContentState extends State<_EmployeeTableContent> {
       }
       _wasRebuilt = true;
     });
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Card(
-          elevation: 8.0,
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: 460.0,
-              ),
-              child: DataTable(
-                dataTextStyle: Theme.of(context)
-                    .textTheme
-                    .headline5!
-                    .copyWith(color: Colors.grey),
-                headingTextStyle: Theme.of(context)
-                    .textTheme
-                    .bodyText2!
-                    .copyWith(fontSize: 18.0),
-                columns: _createHeader(),
-                rows: _createData(widget.employees),
-              ),
-            ),
-          ),
-        ),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: 460.0,
+      ),
+      child: TableView(
+        controller: _scrollController,
+        rowsTextStyle:
+            Theme.of(context).textTheme.headline5!.copyWith(color: Colors.grey),
+        headingTextStyle:
+            Theme.of(context).textTheme.bodyText2!.copyWith(fontSize: 18.0),
+        header: _createHeader(),
+        rows: _createData(widget.data.employees),
       ),
     );
   }
 
-  List<DataColumn> _createHeader() => [
-        DataColumn(label: Text('ФИО')),
-        DataColumn(label: Text('Должность')),
-        DataColumn(label: Text('Группа допуска'), numeric: true),
-        DataColumn(label: const SizedBox()),
+  List<TableHeadingColumn> _createHeader() => [
+        TableHeadingColumn(label: Text('ФИО'), preferredWidth: 320.0),
+        TableHeadingColumn(label: Text('Должность'), preferredWidth: 168.0),
+        TableHeadingColumn(
+            label: Text('Группа допуска'), preferredWidth: 168.0),
+        TableHeadingColumn(label: const SizedBox(), preferredWidth: 60.0),
       ];
 
-  List<DataRow> _createData(List<Employee> employees) {
+  List<TableDataRow> _createData(List<Employee> employees) {
     return employees.map((e) {
-      return DataRow(
+      return TableDataRow(
         key: ValueKey(e),
         cells: [
-          DataCell(_createNameField(e)),
-          DataCell(_createPositionDropdown(e)),
-          DataCell(_createGroupDropdown(e)),
-          DataCell(_createDeleteButton(e)),
+          _createNameField(e),
+          _createPositionDropdown(e),
+          _createGroupDropdown(e),
+          _createDeleteButton(e),
         ],
       );
     }).toList();
   }
 
   void _fireItemChanged(Employee source, Employee updated) {
-    widget.bloc.add(EmployeeUpdateItem(source, updated));
+    widget.bloc.add(UpdateItemEvent(source, updated));
   }
 
   Widget _createDeleteButton(Employee e) => _DeleteButton(
-        onPressed: () => widget.bloc.add(EmployeeDeleteItem(e)),
+        onPressed: () => widget.bloc.add(DeleteItemEvent(e)),
       );
 
   Widget _createNameField(Employee e) => _EditableNameCell(
-        width: 260.0,
+        key: e is PersistedObject ? ValueKey((e as PersistedObject).id) : null,
+        width: 320.0,
         name: e.name,
         onChanged: (newValue) => _fireItemChanged(e, e.copy(name: newValue)),
       );
@@ -283,7 +244,7 @@ class __EmployeeTableContentState extends State<_EmployeeTableContent> {
           onChanged: (newPosition) =>
               _fireItemChanged(e, e.copy(position: newPosition)),
           value: e.position,
-          items: widget.positions
+          items: widget.data.availablePositions
               .map(
                 (e) => DropdownMenuItem<Position>(
                   child: Text(e.name),
@@ -294,14 +255,14 @@ class __EmployeeTableContentState extends State<_EmployeeTableContent> {
         ),
       );
 
-  Widget _createGroupDropdown(Employee e) => SizedBox(
-        key: ValueKey(e),
-        width: 100.0,
+  Widget _createGroupDropdown(Employee e) => Padding(
+        padding: EdgeInsets.only(left: 20.0),
         child: DropdownButton<int>(
+          key: ValueKey(e),
           onChanged: (newGroup) =>
               _fireItemChanged(e, e.copy(accessGroup: newGroup)),
           value: e.accessGroup,
-          items: widget.groups
+          items: widget.data.groups
               .map(
                 (e) => DropdownMenuItem<int>(
                   child: Text(e.romanGroup),
@@ -358,48 +319,86 @@ class _EditableNameCell extends StatefulWidget {
     required this.name,
     required this.width,
     required this.onChanged,
-  }) : super(key: key);
+  }) : super(key: null);
 
   @override
-  _EditableTextFieldState createState() => _EditableTextFieldState();
+  __EditableNameCellState createState() => __EditableNameCellState();
 }
 
-class _EditableTextFieldState extends State<_EditableNameCell> {
-  /*late*/
-  // TextEditingController _textController;
+class __EditableNameCellState extends State<_EditableNameCell> {
+  late TextEditingController _controller;
+  late FocusNode _focusNode;
+  late bool _isEditing;
 
   @override
   void initState() {
     super.initState();
-    // _textController = TextEditingController(text: widget.name);
+    _isEditing = widget.name.isEmpty;
+    _focusNode = FocusNode();
+    _controller = TextEditingController(text: widget.name);
+    if (_isEditing) {
+      _focusNode.requestFocus();
+    }
   }
 
   @override
   void dispose() {
-    // _textController.dispose();
+    _focusNode.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
+  void _onEditingDone() => setState(
+        () {
+          _isEditing = false;
+          if (widget.name != _controller.text) {
+            widget.onChanged(_controller.text);
+          }
+        },
+      );
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: widget.width,
-      child: TextFormField(
-        initialValue: widget.name,
-        onFieldSubmitted: (val) {
-          print("SUBMITTED!");
-        },
-        autovalidateMode: AutovalidateMode.always,
-        maxLength: 50,
-        validator: (value) => value!.isEmpty ? "Введите ФИО" : null,
-        // controller: _textController,
-        autofocus: false,
-        onChanged: (text) => widget.onChanged(text),
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          counter: SizedBox(),
-        ),
-        style: Theme.of(context).dataTableTheme.dataTextStyle,
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: TextFormField(
+              controller: _controller,
+              focusNode: _focusNode,
+              readOnly: !_isEditing,
+              autovalidateMode: AutovalidateMode.always,
+              maxLines: 1,
+              maxLength: 50,
+              autofocus: false,
+              validator: (value) => value!.length < 3 ? "Введите ФИО" : null,
+              onEditingComplete: _onEditingDone,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                counter: SizedBox(),
+              ),
+              style: Theme.of(context).dataTableTheme.dataTextStyle,
+            ),
+          ),
+          if (_isEditing)
+            IconButton(
+              icon: FaIcon(FontAwesomeIcons.check),
+              onPressed: _onEditingDone,
+            )
+          else
+            IconButton(
+              icon: FaIcon(FontAwesomeIcons.edit),
+              onPressed: () => setState(
+                () {
+                  _focusNode.requestFocus();
+                  _isEditing = true;
+                },
+              ),
+            ),
+          const SizedBox(width: 24.0),
+        ],
       ),
     );
   }

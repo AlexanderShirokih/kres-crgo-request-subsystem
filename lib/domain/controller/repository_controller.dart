@@ -33,7 +33,12 @@ class _DeleteEntity<E> extends Equatable implements _EditorAction<E> {
 
   @override
   void applyToList(List<E> data) {
-    data.remove(entity);
+    if (!data.remove(entity) && entity is PersistedObject) {
+      final pEntity = entity as PersistedObject;
+      data.removeWhere(
+        (element) => element is PersistedObject && element.id == pEntity.id,
+      );
+    }
   }
 
   @override
@@ -54,7 +59,9 @@ class _UpdateEntity<E> extends Equatable implements _EditorAction<E> {
         data.add(edited);
       }
     } else {
-      int toRemove = data.indexOf(old);
+      final pOld = old as PersistedObject;
+      int toRemove = data.indexWhere(
+          (element) => element is PersistedObject && (element).id == pOld.id);
       if (toRemove != -1) {
         data[toRemove] =
             _persistedObjectBuilder.build((old as PersistedObject).id, edited);

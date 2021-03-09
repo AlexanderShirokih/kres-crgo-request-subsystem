@@ -281,7 +281,7 @@ packages:
       name: http_multi_server
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.0"
+    version: "2.2.0"
   http_parser:
     dependency: transitive
     description:
@@ -302,7 +302,7 @@ packages:
       name: io
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "0.3.5"
   js:
     dependency: transitive
     description:
@@ -533,7 +533,7 @@ packages:
       name: shelf_web_socket
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "0.2.4+1"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -685,7 +685,7 @@ packages:
       name: web_socket_channel
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.0"
+    version: "1.2.0"
   webkit_inspection_protocol:
     dependency: transitive
     description:

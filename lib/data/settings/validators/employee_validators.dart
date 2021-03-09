@@ -12,7 +12,8 @@ class EmployeeValidator extends Validator<Employee> {
     }
 
     if (entity.name.length < 3 || entity.name.length > 50) {
-      yield ValidationResult(errorMessage: '', fieldName: 'name');
+      yield ValidationResult(
+          errorMessage: 'employee.name.range', fieldName: 'name');
     }
   }
 }
