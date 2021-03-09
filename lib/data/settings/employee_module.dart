@@ -9,7 +9,7 @@ import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/repository/employee_repository.dart';
 import 'package:kres_requests2/domain/validator.dart';
 
-import 'validators/employee_validators.dart';
+import 'validators/employee_validator.dart';
 
 /// DI Module that contains [Employee] related dependencies
 class EmployeeModule {

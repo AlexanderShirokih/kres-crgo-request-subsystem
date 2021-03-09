@@ -1,6 +1,6 @@
 part of 'employee_bloc.dart';
 
-/// Employee screen data
+/// Data holder for employee BLoC
 class EmployeeData extends Equatable {
   /// List of all employees
   final List<Employee> employees;

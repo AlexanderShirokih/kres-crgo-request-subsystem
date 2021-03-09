@@ -27,8 +27,8 @@ class EmployeesScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
         create: (_) => EmployeeBloc(
           employeeModule.employeeController,
-          positionModule.positionRepository,
           employeeModule.employeeValidator,
+          positionModule.positionRepository,
         ),
         child: Builder(
           builder: (context) => WillPopScope(
