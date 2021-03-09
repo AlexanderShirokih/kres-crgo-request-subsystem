@@ -1,3 +1,5 @@
+import 'package:equatable/equatable.dart';
+
 /// [Validator] can check entity fields for correct values.
 abstract class Validator<T> {
   /// Validates entity field and returns [Iterable] of errors.
@@ -10,7 +12,7 @@ abstract class Validator<T> {
 }
 
 /// Describes field validation result
-class ValidationResult {
+class ValidationResult extends Equatable {
   /// Field error message. `null` if field is valid.
   final String? errorMessage;
 
@@ -24,4 +26,7 @@ class ValidationResult {
 
   /// `true` if field is valid
   bool get isValid => errorMessage != null;
+
+  @override
+  List<Object?> get props => [errorMessage, fieldName];
 }

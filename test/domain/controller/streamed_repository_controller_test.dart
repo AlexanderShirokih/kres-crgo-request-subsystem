@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
@@ -28,15 +29,16 @@ class _MockRepositoryController extends Mock
     implements AbstractRepositoryController<_TestEntity> {}
 
 void main() {
-  late AbstractRepositoryController<_TestEntity> mockController;
-  late StreamedRepositoryController<_TestEntity> streamedController;
+  AbstractRepositoryController<_TestEntity> mockController;
+  StreamedRepositoryController<_TestEntity> streamedController;
 
   setUp(() {
     mockController = _MockRepositoryController();
     streamedController = StreamedRepositoryController(mockController);
 
     when(mockController.getAll()).thenAnswer(
-      (_) async => [
+          (_) async =>
+      [
         _PersistedTestEntity(1, 'A'),
       ],
     );

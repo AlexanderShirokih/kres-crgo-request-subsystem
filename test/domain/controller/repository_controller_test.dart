@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
@@ -39,8 +40,8 @@ void main() {
     _PersistedTestEntity(3, 'C'),
   ];
 
-  late Repository<_TestEntity> repository;
-  late RepositoryController<_TestEntity> controller;
+  Repository<_TestEntity> repository;
+  RepositoryController<_TestEntity> controller;
 
   setUp(() {
     repository = _MockRepository();
