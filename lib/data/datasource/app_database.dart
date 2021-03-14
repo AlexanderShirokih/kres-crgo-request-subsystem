@@ -41,10 +41,16 @@ class AppDatabase {
     // Open the database
     var databaseFactory = databaseFactoryFfi;
 
+    // TODO: DELETOR
+    await databaseFactory.deleteDatabase(dbPath);
+
     var db = await databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
           version: 1,
+          onConfigure: (database) async {
+            await database.execute("PRAGMA foreign_keys = ON");
+          },
           onCreate: (database, _) async {
             final schema = await rootBundle.loadString('assets/sql/schema.sql');
             await database.execute(schema);

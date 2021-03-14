@@ -18,7 +18,7 @@ class PositionEntity extends Position implements PersistedObject<int> {
   @override
   final int id;
 
-  PositionEntity(this.id, {required String name}) : super(name: name);
+  const PositionEntity(this.id, {required String name}) : super(name: name);
 
   @override
   List<Object> get props => [...super.props, id];

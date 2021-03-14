@@ -76,7 +76,8 @@ class EmployeesScreen extends StatelessWidget {
           onChanged: (newPosition) =>
               _fireItemChanged(bloc, e, e.copy(position: newPosition)),
           value: e.position,
-          items: data.availablePositions
+          items: [...data.availablePositions, e.position]
+              .toSet()
               .map(
                 (e) => DropdownMenuItem<Position>(
                   child: Text(e.name),

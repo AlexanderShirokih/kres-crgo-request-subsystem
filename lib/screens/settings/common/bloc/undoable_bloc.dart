@@ -27,7 +27,7 @@ abstract class UndoableBloc<DH extends UndoableDataHolder<E>, E extends Object>
       add(RefreshDataEvent(event));
     }, onError: (e, s) {
       // TODO: Handle error
-      print('GOT AN ERROR: $e');
+      print('GOT AN ERROR: $e, STACK TRACE:$s');
     });
     _controller.fetchData();
   }
