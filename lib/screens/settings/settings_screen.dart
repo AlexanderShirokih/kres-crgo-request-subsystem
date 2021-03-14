@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:file_selector/file_selector.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/data/settings/settings_module.dart';
@@ -9,6 +7,10 @@ import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/screens/settings/employees/employees_screen.dart';
 import 'package:kres_requests2/screens/settings/positions/positions_screen.dart';
 
+import 'java_path_selector/java_path_selector_screen.dart';
+
+/// The settings screen. Provides access to main app preference tables and
+/// ability to configure main parameters.
 class SettingsScreen extends StatefulWidget {
   final SettingsModule settingsModule;
   final SettingsRepository settingsRepository;
@@ -34,73 +36,95 @@ class SettingsScreen extends StatefulWidget {
   _SettingsScreenState createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _NavigableItem extends Equatable {
+  final Widget icon;
+  final String title;
+  final Widget Function() builder;
+
+  const _NavigableItem({
+    required this.icon,
+    required this.title,
+    required this.builder,
+  });
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text('Настройки'),
+  List<Object?> get props => [icon, title, builder];
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  int? _currentItem;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      _NavigableItem(
+        icon: Icon(Icons.work),
+        title: 'Сотрудники',
+        builder: () => EmployeesScreen(
+          employeeModule: widget.settingsModule.employeeModule,
+          positionModule: widget.settingsModule.positionModule,
         ),
-        body: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 500.0),
-          child: ListView(
-            padding: const EdgeInsets.all(12.0),
-            children: [
-              _itemJavaPath(),
-              // TODO: Navigate throught Router!
-              _navigableItem(
-                context,
-                'Сотрудники',
-                () => EmployeesScreen(
-                  employeeModule: widget.settingsModule.employeeModule,
-                  positionModule: widget.settingsModule.positionModule,
-                ),
-              ),
-              _navigableItem(
-                context,
-                'Должности',
-                    () => PositionsScreen(
-                      positionModule: widget.settingsModule.positionModule,
-                ),
-              ),
-            ],
+      ),
+      _NavigableItem(
+        icon: Icon(Icons.badge),
+        title: 'Должности',
+        builder: () => PositionsScreen(
+          positionModule: widget.settingsModule.positionModule,
+        ),
+      ),
+      _NavigableItem(
+        icon: FaIcon(FontAwesomeIcons.java),
+        title: 'Путь к Java (JAVA_HOME)',
+        builder: () => JavaPathSelectorScreen(
+          settingsRepository: widget.settingsRepository,
+        ),
+      ),
+    ];
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Настройки'),
+      ),
+      body: Row(
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 340.0),
+            child: ListView(
+              padding: const EdgeInsets.all(12.0),
+              children: List.generate(items.length, (index) {
+                final current = items[index];
+                return _navigableItem(
+                  context,
+                  position: index,
+                  icon: current.icon,
+                  title: current.title,
+                  builder: current.builder,
+                );
+              }),
+            ),
           ),
-        ),
-      );
-
-  Widget _navigableItem(
-          BuildContext context, String title, Widget Function() builder) =>
-      ListTile(
-        leading: FaIcon(FontAwesomeIcons.cog),
-        title: Text(title),
-        onTap: () => Navigator.push(
-            context, MaterialPageRoute(builder: (_) => builder())),
-      );
-
-  Widget _itemJavaPath() => ListTile(
-        leading: FaIcon(FontAwesomeIcons.java),
-        title: Text('Путь к Java (JAVA_HOME)'),
-        subtitle: Text(_getCurrentJavaPath()),
-        onTap: () => _showJavaPathSelector().then((newPath) {
-          if (newPath != null) {
-            setState(() {
-              widget.settingsRepository.javaPath = newPath;
-            });
-          }
-        }),
-      );
-
-  String _getCurrentJavaPath() {
-    final path = widget.settingsRepository.javaPath;
-    if (path == null) return '(Не установлено)';
-    final filePath = Directory(path).absolute;
-    if (!filePath.existsSync()) {
-      print("PATH=${filePath.path} is NOT EXISTS!");
-      return '(Не существует!)';
-    }
-    return path;
+          Expanded(
+            child: _currentItem == null
+                ? SizedBox()
+                : items[_currentItem!].builder(),
+          ),
+        ],
+      ),
+    );
   }
 
-  Future<String?> _showJavaPathSelector() => getDirectoryPath(
-        confirmButtonText: 'Выбрать',
+  Widget _navigableItem(
+    BuildContext context, {
+    required int position,
+    required Widget icon,
+    required String title,
+    required Widget Function() builder,
+  }) =>
+      ListTile(
+        selected: position == _currentItem,
+        leading: icon,
+        title: Text(title),
+        onTap: () => setState(() {
+          _currentItem = position;
+        }),
       );
 }

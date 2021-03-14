@@ -24,7 +24,6 @@ class PositionsScreen extends StatelessWidget {
           positionModule.positionController,
           positionModule.positionValidator,
         ),
-        screenTitle: 'Должности',
         addItemButtonName: 'Добавить должность',
         addItemIcon: FaIcon(FontAwesomeIcons.userPlus),
         tableHeader: [

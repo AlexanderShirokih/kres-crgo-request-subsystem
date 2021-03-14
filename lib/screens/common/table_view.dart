@@ -28,10 +28,12 @@ class TableView extends StatelessWidget {
 
   final TextStyle? headingTextStyle;
   final TextStyle? rowsTextStyle;
+  final Widget? headerTrailing;
 
   const TableView({
     Key? key,
     this.headingTextStyle,
+    this.headerTrailing,
     this.rowsTextStyle,
     this.controller,
     required this.header,
@@ -84,17 +86,24 @@ class TableView extends StatelessWidget {
           child: DefaultTextStyle(
             style: headingTextStyle ?? Theme.of(context).textTheme.headline6!,
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: header
-                  .map(
-                    (e) => SizedBox(
-                      width: e.preferredWidth,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: e.label,
-                      ),
+                      .map(
+                        (e) => SizedBox(
+                          width: e.preferredWidth,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: e.label,
+                          ),
+                        ),
+                      )
+                      .toList()
+                      .cast<Widget>() +
+                  [
+                    Expanded(
+                      child: headerTrailing ?? const SizedBox(),
                     ),
-                  )
-                  .toList(),
+                  ],
             ),
           ),
         ),

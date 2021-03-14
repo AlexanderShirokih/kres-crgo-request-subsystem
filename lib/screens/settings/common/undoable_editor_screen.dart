@@ -19,7 +19,6 @@ typedef TableRowBuilder<DH extends UndoableDataHolder<E>, E extends Object>
 /// Supports showing insertion, modifying, deleting of entities.
 class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
     extends StatelessWidget {
-  final String screenTitle;
   final String addItemButtonName;
   final Widget addItemIcon;
   final List<TableHeadingColumn> tableHeader;
@@ -29,7 +28,6 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
   const UndoableEditorScreen({
     Key? key,
     required this.blocBuilder,
-    required this.screenTitle,
     required this.addItemIcon,
     required this.addItemButtonName,
     required this.tableHeader,
@@ -68,45 +66,55 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
 
               return true;
             },
-            child: Scaffold(
-              floatingActionButton: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: _buildActionButton(),
-              ),
-              appBar: AppBar(
-                title: Text(screenTitle),
-                actions: [
-                  _buildAppBarActions(),
-                  Builder(
-                    builder: (BuildContext context) => ElevatedButton.icon(
-                      icon: addItemIcon,
-                      label: Text(addItemButtonName),
-                      onPressed: () => context
-                          .read<UndoableBloc<DH, E>>()
-                          .add(AddItemEvent()),
-                    ),
-                  ),
-                  SizedBox(width: 42.0),
-                ],
-              ),
-              body: BlocBuilder<UndoableBloc<DH, E>, UndoableState<DH>>(
-                builder: (context, state) {
-                  if (state is DataState<E, DH>) {
-                    return _EntityTableContent<DH, E>(
-                      bloc: context.watch<UndoableBloc<DH, E>>(),
-                      dataRowBuilder: (a, b) => dataRowBuilder(
-                        a as UndoableBloc<DH, E>,
-                        b as DH,
+            child: BlocBuilder<UndoableBloc<DH, E>, UndoableState<DH>>(
+              builder: (context, state) {
+                if (state is DataState<E, DH>) {
+                  return Stack(
+                    children: [
+                      _EntityTableContent<DH, E>(
+                        bloc: context.watch<UndoableBloc<DH, E>>(),
+                        headerTrailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ..._spreadActionButtons(context, state),
+                            Builder(
+                              builder: (BuildContext context) =>
+                                  ElevatedButton.icon(
+                                icon: addItemIcon,
+                                label: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0,
+                                    vertical: 16.0,
+                                  ),
+                                  child: Text(addItemButtonName),
+                                ),
+                                onPressed: () => context
+                                    .read<UndoableBloc<DH, E>>()
+                                    .add(AddItemEvent()),
+                              ),
+                            ),
+                            SizedBox(width: 42.0),
+                          ],
+                        ),
+                        dataRowBuilder: dataRowBuilder,
+                        tableHeader: tableHeader,
+                        data: state.current,
                       ),
-                      tableHeader: tableHeader,
-                      data: state.current,
-                    );
-                  }
-                  return Center(
-                    child: Text('Нет данных :('),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(28.0),
+                          child: _buildActionButton(),
+                        ),
+                      ),
+                    ],
                   );
-                },
-              ),
+                }
+                return Center(
+                  child: Text('Нет данных :('),
+                );
+              },
             ),
           ),
         ),
@@ -121,18 +129,6 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
             child: FaIcon(FontAwesomeIcons.solidSave),
             onPressed: () =>
                 context.read<UndoableBloc<DH, E>>().add(ApplyEvent()),
-          );
-        } else {
-          return const SizedBox();
-        }
-      });
-
-  Widget _buildAppBarActions() =>
-      BlocBuilder<UndoableBloc<DH, E>, UndoableState<DH>>(
-          builder: (context, state) {
-        if (state is DataState<E, DH>) {
-          return Row(
-            children: _spreadActionButtons(context, state).toList(),
           );
         } else {
           return const SizedBox();
@@ -157,6 +153,7 @@ class _EntityTableContent<DH extends UndoableDataHolder<E>, E extends Object>
     extends StatefulWidget {
   final DH data;
   final UndoableBloc<DH, E> bloc;
+  final Widget headerTrailing;
   final List<TableHeadingColumn> tableHeader;
   final TableRowBuilder<DH, E> dataRowBuilder;
 
@@ -164,6 +161,7 @@ class _EntityTableContent<DH extends UndoableDataHolder<E>, E extends Object>
     Key? key,
     required this.data,
     required this.bloc,
+    required this.headerTrailing,
     required this.tableHeader,
     required this.dataRowBuilder,
   }) : super(key: key);
@@ -221,6 +219,7 @@ class _EntityTableContentState<DH extends UndoableDataHolder<E>,
         minHeight: 460.0,
       ),
       child: TableView(
+        headerTrailing: widget.headerTrailing,
         controller: _scrollController,
         rowsTextStyle:
             Theme.of(context).textTheme.headline5!.copyWith(color: Colors.grey),

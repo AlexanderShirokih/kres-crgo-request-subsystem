@@ -30,7 +30,6 @@ class EmployeesScreen extends StatelessWidget {
           employeeModule.employeeValidator,
           positionModule.positionRepository,
         ),
-        screenTitle: 'Сотрудники',
         addItemButtonName: 'Добавить сотрудника',
         addItemIcon: FaIcon(FontAwesomeIcons.userPlus),
         tableHeader: [
