@@ -65,6 +65,8 @@ class _EditableNameFieldState extends State<EditableNameField> {
               focusNode: _focusNode,
               readOnly: !_isEditing,
               autovalidateMode: AutovalidateMode.always,
+              // TODO: Move params to constructor
+              // TODO: Can we use Validators?
               maxLines: 1,
               maxLength: 50,
               autofocus: false,

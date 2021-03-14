@@ -6,6 +6,7 @@ import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 import 'package:kres_requests2/screens/settings/employees/employees_screen.dart';
 import 'package:kres_requests2/screens/settings/positions/positions_screen.dart';
+import 'package:kres_requests2/screens/settings/request_types/request_types_screen.dart';
 
 import 'java_path_selector/java_path_selector_screen.dart';
 
@@ -70,6 +71,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: 'Должности',
         builder: () => PositionsScreen(
           positionModule: widget.settingsModule.positionModule,
+        ),
+      ),
+      _NavigableItem(
+        icon: FaIcon(FontAwesomeIcons.wrench),
+        title: 'Типы заявок',
+        builder: () => RequestTypesScreen(
+          requestTypeModule: widget.settingsModule.requestTypeModule,
         ),
       ),
       _NavigableItem(
