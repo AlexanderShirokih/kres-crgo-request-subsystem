@@ -49,6 +49,8 @@ class EmployeesScreen extends StatelessWidget {
         key: ObjectKey(e),
         cells: [
           EditableNameField(
+            validator:
+                employeeModule.employeeValidator.findStringValidator('name'),
             value: e.name,
             onChanged: (newValue) =>
                 _fireItemChanged(bloc, e, e.copy(name: newValue)),

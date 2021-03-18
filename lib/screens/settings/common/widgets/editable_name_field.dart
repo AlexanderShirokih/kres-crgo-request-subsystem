@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/data/settings/validators/string_validator.dart';
 
 /// Text field which is editable only when edit button has pressed.
 /// [onChanged] callback called when user clicks done button or hits enter.
 class EditableNameField extends StatefulWidget {
   /// Initial field text
   final String value;
+
+  final StringValidator validator;
 
   /// Called when text in the text field was updated
   final Function(String) onChanged;
@@ -14,6 +17,7 @@ class EditableNameField extends StatefulWidget {
     Key? key,
     required this.value,
     required this.onChanged,
+    required this.validator,
   }) : super(key: key);
 
   @override
@@ -65,12 +69,13 @@ class _EditableNameFieldState extends State<EditableNameField> {
               focusNode: _focusNode,
               readOnly: !_isEditing,
               autovalidateMode: AutovalidateMode.always,
-              // TODO: Move params to constructor
-              // TODO: Can we use Validators?
               maxLines: 1,
-              maxLength: 50,
+              maxLength: widget.validator.maxLength,
               autofocus: false,
-              validator: (value) => value!.length < 3 ? "Введите ФИО" : null,
+              validator: (value) {
+                final errors = widget.validator.validate(value!);
+                return errors.isEmpty ? null : errors.first.errorMessage;
+              },
               onEditingComplete: _onEditingDone,
               decoration: InputDecoration(
                 border: InputBorder.none,

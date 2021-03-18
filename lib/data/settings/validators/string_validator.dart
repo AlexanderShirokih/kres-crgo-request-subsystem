@@ -23,14 +23,15 @@ class StringValidator extends Validator<String> {
 
   @override
   Iterable<ValidationResult> validate(String entity) sync* {
+    // TODO: move hardcoded strings to i18n file
     if (entity.isEmpty && !canBeEmpty) {
       yield ValidationResult(
-        errorMessage: 'field.name.empty',
+        errorMessage: 'Поле не должно быть пустым!',
         fieldName: fieldName,
       );
     } else if (entity.length < minLength || entity.length > maxLength) {
       yield ValidationResult(
-        errorMessage: 'field.name.range: [$minLength,$maxLength]',
+        errorMessage: 'Требуется от $minLength до $maxLength символов',
         fieldName: fieldName,
       );
     }

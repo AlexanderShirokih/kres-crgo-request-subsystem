@@ -2,12 +2,12 @@ import 'package:kres_requests2/data/dao/employee_dao.dart';
 import 'package:kres_requests2/data/database_module.dart';
 import 'package:kres_requests2/data/models/employee.dart';
 import 'package:kres_requests2/data/settings/position_module.dart';
+import 'package:kres_requests2/data/settings/validators/mapped_validator.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
 import 'package:kres_requests2/domain/lazy.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/repository/employee_repository.dart';
-import 'package:kres_requests2/domain/validator.dart';
 
 import 'validators/employee_validator.dart';
 
@@ -40,5 +40,5 @@ class EmployeeModule {
       EmployeePersistedBuilder();
 
   /// Returns [EmployeeValidator] for validating [Employee] fields
-  Validator<Employee> get employeeValidator => EmployeeValidator();
+  MappedValidator<Employee> get employeeValidator => EmployeeValidator();
 }

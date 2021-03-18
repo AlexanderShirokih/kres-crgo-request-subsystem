@@ -2,13 +2,13 @@ import 'package:kres_requests2/data/dao/position_dao.dart';
 import 'package:kres_requests2/data/database_module.dart';
 import 'package:kres_requests2/data/models/position.dart';
 import 'package:kres_requests2/data/repository/storage_repository.dart';
+import 'package:kres_requests2/data/settings/validators/mapped_validator.dart';
 import 'package:kres_requests2/data/settings/validators/position_validator.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
 import 'package:kres_requests2/domain/lazy.dart';
 import 'package:kres_requests2/domain/models/position.dart';
 import 'package:kres_requests2/domain/repository/repository.dart';
-import 'package:kres_requests2/domain/validator.dart';
 
 /// DI Module that contains [Position] related dependencies
 class PositionModule {
@@ -34,5 +34,5 @@ class PositionModule {
       PositionPersistedBuilder();
 
   /// Returns [PositionValidator] for validating [Position] fields
-  Validator<Position> get positionValidator => PositionValidator();
+  MappedValidator<Position> get positionValidator => PositionValidator();
 }
