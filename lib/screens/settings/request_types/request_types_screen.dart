@@ -44,12 +44,16 @@ class RequestTypesScreen extends StatelessWidget {
         cells: [
           EditableNameField(
             value: e.shortName,
+            validator: requestTypeModule.requestTypeValidator
+                .findStringValidator('shortName'),
             onChanged: (newValue) => bloc.add(
               UpdateItemEvent(e, e.copy(shortName: newValue)),
             ),
           ),
           EditableNameField(
             value: e.fullName,
+            validator: requestTypeModule.requestTypeValidator
+                .findStringValidator('fullName'),
             onChanged: (newValue) => bloc.add(
               UpdateItemEvent(e, e.copy(fullName: newValue)),
             ),

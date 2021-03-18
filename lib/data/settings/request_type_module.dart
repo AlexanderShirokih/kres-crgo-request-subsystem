@@ -2,13 +2,13 @@ import 'package:kres_requests2/data/dao/request_type_dao.dart';
 import 'package:kres_requests2/data/database_module.dart';
 import 'package:kres_requests2/data/models/request_type.dart';
 import 'package:kres_requests2/data/repository/storage_repository.dart';
+import 'package:kres_requests2/data/settings/validators/mapped_validator.dart';
 import 'package:kres_requests2/data/settings/validators/request_type_validator.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
 import 'package:kres_requests2/domain/lazy.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
 import 'package:kres_requests2/domain/repository/repository.dart';
-import 'package:kres_requests2/domain/validator.dart';
 
 /// DI Module that contains [RequestType] related dependencies
 class RequestTypeModule {
@@ -34,5 +34,6 @@ class RequestTypeModule {
       RequestTypePersistedBuilder();
 
   /// Returns [RequestTypeValidator] for validating [RequestType] fields
-  Validator<RequestType> get requestTypeValidator => RequestTypeValidator();
+  MappedValidator<RequestType> get requestTypeValidator =>
+      RequestTypeValidator();
 }
