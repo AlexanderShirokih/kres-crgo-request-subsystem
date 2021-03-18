@@ -2,14 +2,13 @@ import 'package:kres_requests2/data/dao/employee_dao.dart';
 import 'package:kres_requests2/data/database_module.dart';
 import 'package:kres_requests2/data/models/employee.dart';
 import 'package:kres_requests2/data/settings/position_module.dart';
-import 'package:kres_requests2/data/settings/validators/mapped_validator.dart';
+import 'package:kres_requests2/data/validators/employee_validator.dart';
+import 'package:kres_requests2/data/validators/mapped_validator.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
 import 'package:kres_requests2/domain/lazy.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/repository/employee_repository.dart';
-
-import 'validators/employee_validator.dart';
 
 /// DI Module that contains [Employee] related dependencies
 class EmployeeModule {

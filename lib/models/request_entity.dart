@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:kres_requests2/domain/models/request_type.dart';
 
 /// Describes information about work request
 class RequestEntity extends Equatable {
@@ -12,10 +13,7 @@ class RequestEntity extends Equatable {
   final String address;
 
   /// A request type
-  final String? reqType;
-
-  /// Full request type
-  final String? fullReqType;
+  final RequestType? requestType;
 
   /// Additional info, such as additionalInfo, phone number, connection point
   final String? additionalInfo;
@@ -32,18 +30,26 @@ class RequestEntity extends Equatable {
     required this.counterInfo,
     required this.additionalInfo,
     this.accountId,
-    this.reqType,
-    this.fullReqType,
+    this.requestType,
     this.reason,
   });
+
+  /// `true` all fields are empty
+  bool get isNew => this == RequestEntity.empty();
+
+  /// Converts account ID to string
+  String get printableAccountId =>
+      accountId?.toString().padLeft(6, '0') ?? "--";
 
   /// Creates [RequestEntity] instance from JSON
   factory RequestEntity.fromJson(Map<String, dynamic> data) => RequestEntity(
         accountId: data['accountId'],
         name: data['name'],
         address: data['address'],
-        reqType: data['reqType'],
-        fullReqType: data['fullReqType'],
+        requestType: RequestType(
+          shortName: data['reqType'],
+          fullName: data['fullReqType'],
+        ),
         additionalInfo: data['additionalInfo'],
         counterInfo: data['counterInfo'],
         reason: data['reason'],
@@ -54,14 +60,14 @@ class RequestEntity extends Equatable {
         'accountId': accountId,
         'name': name,
         'address': address,
-        'reqType': reqType,
-        'fullReqType': fullReqType,
+        'reqType': requestType?.shortName,
+        'fullReqType': requestType?.fullName,
         'additionalInfo': additionalInfo,
         'counterInfo': counterInfo,
         'reason': reason,
       };
 
-  factory RequestEntity.empty() => RequestEntity(
+  factory RequestEntity.empty() => const RequestEntity(
         name: "",
         address: "",
         counterInfo: "",
@@ -73,21 +79,19 @@ class RequestEntity extends Equatable {
   RequestEntity copy({
     int? accountId,
     String? name,
+    String? reason,
     String? address,
-    String? reqType,
-    String? fullReqType,
     String? counterInfo,
     String? additionalInfo,
-    String? reason,
+    RequestType? requestType,
   }) =>
       RequestEntity(
         accountId: accountId ?? this.accountId,
         name: name ?? this.name,
         address: address ?? this.address,
-        reqType: reqType ?? this.reqType,
+        requestType: requestType ?? this.requestType,
         additionalInfo: additionalInfo ?? this.additionalInfo,
         counterInfo: counterInfo ?? this.counterInfo,
-        fullReqType: fullReqType ?? this.reqType,
         reason: reason ?? this.reason,
       );
 
@@ -96,8 +100,7 @@ class RequestEntity extends Equatable {
         accountId,
         name,
         address,
-        reqType,
-        fullReqType,
+        requestType,
         additionalInfo,
         counterInfo,
         reason,

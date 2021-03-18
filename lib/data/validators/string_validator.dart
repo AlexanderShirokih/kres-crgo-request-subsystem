@@ -2,7 +2,7 @@ import 'package:kres_requests2/domain/validator.dart';
 
 /// [Validator] that validates String field in its length
 class StringValidator extends Validator<String> {
-  /// `true` if field can be empty
+  /// `true` if field can be empty. (Default value is `false`)
   final bool canBeEmpty;
 
   /// Minimal string length
@@ -11,7 +11,7 @@ class StringValidator extends Validator<String> {
   /// Maximal string length
   final int maxLength;
 
-  /// Field name for describing in [ValidationResult]
+  /// Field name for describing in [ValidationError]
   final String fieldName;
 
   const StringValidator({
@@ -22,18 +22,12 @@ class StringValidator extends Validator<String> {
   });
 
   @override
-  Iterable<ValidationResult> validate(String entity) sync* {
+  Iterable<String> validate(String entity) sync* {
     // TODO: move hardcoded strings to i18n file
     if (entity.isEmpty && !canBeEmpty) {
-      yield ValidationResult(
-        errorMessage: 'Поле не должно быть пустым!',
-        fieldName: fieldName,
-      );
+      yield 'Поле не должно быть пустым!';
     } else if (entity.length < minLength || entity.length > maxLength) {
-      yield ValidationResult(
-        errorMessage: 'Требуется от $minLength до $maxLength символов',
-        fieldName: fieldName,
-      );
+      yield 'Требуется от $minLength до $maxLength символов';
     }
   }
 }

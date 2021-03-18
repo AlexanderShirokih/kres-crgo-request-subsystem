@@ -72,7 +72,7 @@ class RequestItemView extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16.0),
-                      Text(request.reqType ?? "--"),
+                      Text(request.requestType?.shortName ?? "--"),
                     ],
                   ),
                   const SizedBox(width: 12.0),
