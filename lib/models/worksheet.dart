@@ -46,8 +46,8 @@ class Worksheet {
   void insertDefaultWorkTypes() {
     workTypes!.addAll(
       requests!
-          .where((e) => e.fullReqType != null)
-          .map((e) => e.fullReqType)
+          .where((e) => e.requestType != null)
+          .map((e) => e.requestType!.fullName)
           .cast<String>(),
     );
   }

@@ -28,7 +28,7 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
 
   @override
   void onError(Object error, StackTrace stackTrace) {
-    add(ImportErrorEvent(error.toString(), stackTrace.toString()));
+    add(ImportErrorEvent(error, stackTrace));
     super.onError(error, stackTrace);
   }
 
@@ -39,7 +39,7 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
     } else if (event is InitialEvent) {
       yield ImporterInitialState();
     } else if (event is ImportErrorEvent) {
-      yield ImportErrorState(event.error, event.stackTrace);
+      yield ImportErrorState(event.error.toString(), event.stackTrace);
     }
   }
 
@@ -86,9 +86,9 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
       if (e is ImporterProcessorMissingException) {
         return ImporterProccessMissingState();
       } else if (e is ErrorWrapper) {
-        return ImportErrorState(e.error, e.stackTrace);
+        return ImportErrorState(e.error.toString(), e.stackTrace);
       } else {
-        return ImportErrorState(e.toString(), s.toString());
+        return ImportErrorState(e.toString(), s);
       }
     });
   }

@@ -3,40 +3,42 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
+import 'package:kres_requests2/data/editor/worksheet_editor_module.dart';
 import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 import 'package:kres_requests2/screens/editor/request_item_view.dart';
 
 import 'request_editor_dialog.dart';
 import 'worksheet_move_dialog.dart';
 
-class WorkSheetEditorView extends StatefulWidget {
+class WorksheetEditorView extends StatefulWidget {
+  final WorksheetEditorModule worksheetEditorModule;
   final Document document;
   final Worksheet worksheet;
   final List<RequestEntity>? highlighted;
   final void Function() onDocumentsChanged;
 
-  const WorkSheetEditorView({
+  const WorksheetEditorView({
+    required this.worksheetEditorModule,
     required this.document,
     required this.worksheet,
     required this.onDocumentsChanged,
     required this.highlighted,
-  })  ;
+  });
 
   @override
-  _WorkSheetEditorViewState createState() =>
-      _WorkSheetEditorViewState(document, worksheet);
+  _WorksheetEditorViewState createState() =>
+      _WorksheetEditorViewState(document, worksheet);
 }
 
-class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
+class _WorksheetEditorViewState extends State<WorksheetEditorView> {
   final _controller = ScrollController();
   Document _document;
   Worksheet _worksheet;
 
-  _WorkSheetEditorViewState(this._document, this._worksheet);
+  _WorksheetEditorViewState(this._document, this._worksheet);
 
   Set<RequestEntity>? _selectionList;
   Map<RequestEntity, int>? _groupList;
@@ -130,11 +132,13 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                           context: context,
                           barrierDismissible: false,
                           builder: (_) => RequestEditorDialog(
-                            editingRequest: requests[index],
+                            editorModule: widget.worksheetEditorModule,
+                            initial: requests[index],
                           ),
                         ).then((edited) {
                           if (edited != null)
                             setState(() {
+                              // TODO: REMOTE DEAD CODE
                               // If previous value was selected then update
                               // selection references
                               final old = requests[index];
@@ -198,7 +202,9 @@ class _WorkSheetEditorViewState extends State<WorkSheetEditorView> {
                 showDialog(
                     context: context,
                     barrierDismissible: false,
-                    builder: (_) => RequestEditorDialog()).then((created) {
+                    builder: (_) => RequestEditorDialog(
+                          editorModule: widget.worksheetEditorModule,
+                        )).then((created) {
                   if (created != null) {
                     setState(() {
                       requests.add(created);

@@ -5,11 +5,11 @@ import 'package:kres_requests2/models/document.dart';
 import 'package:path/path.dart' as path;
 
 class ErrorView extends StatelessWidget {
-  final String? errorDescription;
-  final String? stackTrace;
+  final String errorDescription;
+  final StackTrace? stackTrace;
 
   const ErrorView({
-    this.errorDescription,
+    required this.errorDescription,
     this.stackTrace,
   });
 
@@ -30,10 +30,10 @@ class ErrorView extends StatelessWidget {
                   child: ListView(
                     padding: EdgeInsets.all(12.0),
                     children: [
-                      Text(errorDescription ?? "",
+                      Text(errorDescription,
                           style: Theme.of(context).textTheme.bodyText2),
                       SizedBox(height: 24.0),
-                      Text(stackTrace ?? "",
+                      Text(stackTrace?.toString() ?? "",
                           style: Theme.of(context).textTheme.bodyText2)
                     ],
                   ),

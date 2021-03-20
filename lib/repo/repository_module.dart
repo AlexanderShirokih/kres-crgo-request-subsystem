@@ -34,7 +34,7 @@ class RepositoryModule {
     );
 
     final countersRepo = CountersImporterRepository(
-      importer: CountersImporter(configRepo),
+      importer: CountersImporter(),
     );
 
     final nativeImporterRepo = NativeImporterRepository();

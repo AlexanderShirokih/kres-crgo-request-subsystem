@@ -80,6 +80,7 @@ abstract class PersistedObjectBuilder<E> {
   E build(dynamic key, E entity);
 }
 
+/// An abstraction that can keep changes before they committed to the repository
 abstract class AbstractRepositoryController<E> {
   /// Returns all items with actual updates
   Future<List<E>> getAll();

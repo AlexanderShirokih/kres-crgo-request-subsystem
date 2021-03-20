@@ -23,8 +23,8 @@ class ImportEvent extends ImporterEvent {
 }
 
 class ImportErrorEvent extends ImporterEvent {
-  final String? error;
-  final String? stackTrace;
+  final Object error;
+  final StackTrace? stackTrace;
 
   const ImportErrorEvent(this.error, this.stackTrace);
 

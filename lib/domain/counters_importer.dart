@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:kres_requests2/domain/importer_exception.dart';
+import 'package:kres_requests2/domain/models/request_type.dart';
 import 'package:kres_requests2/models/request_entity.dart';
-import 'package:kres_requests2/repo/config_repository.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
 typedef TableChooser = Future<String?> Function(List<String>);
@@ -15,11 +15,7 @@ class NamedWorksheet {
 }
 
 class CountersImporter {
-  static const _kDefaultRequestName = 'замена';
-
-  final ConfigRepository _configRepository;
-
-  const CountersImporter(this._configRepository);
+  const CountersImporter();
 
   Future<NamedWorksheet> importAsRequestsList(
       String filePath, TableChooser chooser) async {
@@ -52,10 +48,14 @@ class CountersImporter {
         final rawName = row[2].toString();
         final phoneMarker = rawName.indexOf('тел.: ');
         final additional = row[6]?.toString();
+
+        final _kDefaultRequestType = const RequestType(
+          shortName: 'замена',
+          fullName: 'Замена по сроку',
+        );
+
         return RequestEntity(
-          reqType: _kDefaultRequestName,
-          fullReqType:
-              _configRepository.getFullRequestName(_kDefaultRequestName),
+          requestType: _kDefaultRequestType,
           accountId: row[1] as int,
           name: phoneMarker < 0 ? rawName : rawName.substring(0, phoneMarker),
           address: row[3].toString(),

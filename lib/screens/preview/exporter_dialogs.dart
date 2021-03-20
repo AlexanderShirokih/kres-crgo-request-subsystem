@@ -49,7 +49,7 @@ class ExporterDialog extends StatelessWidget {
               builder: (context, state) {
                 if (state is ExporterErrorState) {
                   return ErrorView(
-                    errorDescription: state.error.error,
+                    errorDescription: state.error.error.toString(),
                     stackTrace: state.error.stackTrace,
                   );
                 }

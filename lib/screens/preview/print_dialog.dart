@@ -9,7 +9,7 @@ import 'package:kres_requests2/screens/common.dart';
 class PrintDialog extends StatelessWidget {
   final List<Worksheet> worksheets;
 
-  const PrintDialog(this.worksheets) : assert(worksheets != null);
+  const PrintDialog(this.worksheets);
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +34,9 @@ class PrintDialog extends StatelessWidget {
                   );
                 } else if (state is ExporterIdle) {
                   return LoadingView(state.message!);
-                } else if (state is ExporterErrorState && state.error != null) {
+                } else if (state is ExporterErrorState) {
                   return ErrorView(
-                    errorDescription: state.error.error,
+                    errorDescription: state.error.error.toString(),
                     stackTrace: state.error.stackTrace,
                   );
                 } else

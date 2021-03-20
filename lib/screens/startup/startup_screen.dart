@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/app_module.dart';
+import 'package:kres_requests2/data/editor/request_module.dart';
+import 'package:kres_requests2/data/editor/worksheet_editor_module.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/editor/worksheet_master_screen.dart';
@@ -48,7 +50,8 @@ class StartupScreen extends StatelessWidget {
               StartupScreenButton(
                 label: 'Создать новый документ',
                 iconData: FontAwesomeIcons.plus,
-                onPressed: () => _runWorksheetEditorScreen(context, null),
+                onPressed: () =>
+                    _runWorksheetEditorScreen(context, Document.empty()),
               ),
               StartupScreenButton(
                 label: 'Открыть документ',
@@ -90,13 +93,19 @@ class StartupScreen extends StatelessWidget {
       );
 
   Future _runWorksheetEditorScreen(
-          BuildContext context, Document? targetDocument) =>
+          BuildContext context, Document targetDocument) =>
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => WorksheetMasterScreen(
-            employeeModule: _startupModule.settingsModule.employeeModule,
-            document: targetDocument,
+            worksheetEditorModule: WorksheetEditorModule(
+              // TODO: Upgrade to DocumentRepository
+              targetDocument: targetDocument,
+              requestModule: RequestModule(),
+              requestTypeModule:
+                  _startupModule.settingsModule.requestTypeModule,
+              employeeModule: _startupModule.settingsModule.employeeModule,
+            ),
           ),
         ),
       );

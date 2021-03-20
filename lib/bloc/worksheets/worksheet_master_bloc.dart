@@ -8,19 +8,24 @@ import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/optional_data.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 
 part 'worksheet_master_event.dart';
 part 'worksheet_master_state.dart';
 
+/// BLoC that manages global state of the [Document]
 class WorksheetMasterBloc
     extends Bloc<WorksheetMasterEvent, WorksheetMasterState> {
+  /// Function that returns document save path based on [Document] current
+  /// working directory
   final Future<String?> Function(Document, String) savePathChooser;
 
-  WorksheetMasterBloc(Document? document, {required this.savePathChooser})
+  /// Creates new [WorksheetMasterBloc] instance for [document].
+  WorksheetMasterBloc(Document document, {required this.savePathChooser})
       : super(
           WorksheetMasterIdleState(
-              document ??= Document.empty(),
+              document,
               (document.savePath == null
                   ? './'
                   : path.dirname(document.savePath!.path))),
@@ -103,7 +108,7 @@ class WorksheetMasterBloc
       yield WorksheetMasterSavingState(
         state.currentDocument,
         currentDirectory,
-        error: ErrorWrapper(e.toString(), s.toString()),
+        error: ErrorWrapper(e, s),
       );
     }
   }
@@ -111,28 +116,28 @@ class WorksheetMasterBloc
   Stream<WorksheetMasterState> _createNewWorksheet(
       WorksheetCreationMode mode) async* {
     switch (mode) {
-      case WorksheetCreationMode.Import:
+      case WorksheetCreationMode.import:
         yield WorksheetMasterShowImporterState(
           state.currentDocument,
           state.currentDirectory,
           WorksheetImporterType.requestsImporter,
         );
         return;
-      case WorksheetCreationMode.ImportCounters:
+      case WorksheetCreationMode.importCounters:
         yield WorksheetMasterShowImporterState(
           state.currentDocument,
           state.currentDirectory,
           WorksheetImporterType.countersImporter,
         );
         return;
-      case WorksheetCreationMode.ImportNative:
+      case WorksheetCreationMode.importNative:
         yield WorksheetMasterShowImporterState(
           state.currentDocument,
           state.currentDirectory,
           WorksheetImporterType.nativeImporter,
         );
         return;
-      case WorksheetCreationMode.Empty:
+      case WorksheetCreationMode.empty:
       default:
         state.currentDocument.active =
             state.currentDocument.addEmptyWorksheet();

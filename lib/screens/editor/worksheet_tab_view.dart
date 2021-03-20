@@ -40,27 +40,27 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
             title: 'Пустой лист заявок',
             tooltip: 'Добавить пустой лист для создания заявок',
             icon: FontAwesomeIcons.file,
-            mode: WorksheetCreationMode.Empty,
+            mode: WorksheetCreationMode.empty,
           ),
           _buildItemTile(
             title: 'Импорт из другого документа',
             tooltip: 'Добавить листы из другого документа',
             icon: FontAwesomeIcons.fileImport,
-            mode: WorksheetCreationMode.ImportNative,
+            mode: WorksheetCreationMode.importNative,
           ),
           _buildItemTile(
             title: 'Импорт файла заявок',
             tooltip:
                 'Создать новый лист заявок из подготовленного файла Mega-billing',
             icon: FontAwesomeIcons.fileExcel,
-            mode: WorksheetCreationMode.Import,
+            mode: WorksheetCreationMode.import,
           ),
           _buildItemTile(
             title: 'Импорт списка счётчиков',
             tooltip:
                 'Создать новый лист заявок из подготовленного списка счётчиков',
             icon: FontAwesomeIcons.table,
-            mode: WorksheetCreationMode.ImportCounters,
+            mode: WorksheetCreationMode.importCounters,
           )
         ],
       );

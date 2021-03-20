@@ -58,8 +58,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
 
   @override
   void onError(Object error, StackTrace stackTrace) {
-    add(ExporterErrorEvent(
-        ErrorWrapper(error.toString(), stackTrace.toString())));
+    add(ExporterErrorEvent(ErrorWrapper(error, stackTrace)));
     super.onError(error, stackTrace);
   }
 
@@ -131,7 +130,8 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
         return _requestsRepository.exportToPdf(worksheets, savePath);
       case ExportFormat.Excel:
         return _requestsRepository.exportToXlsx(worksheets, savePath);
-      default: throw("Cannot run exporter without export format");
+      default:
+        throw ("Cannot run exporter without export format");
     }
   }
 }

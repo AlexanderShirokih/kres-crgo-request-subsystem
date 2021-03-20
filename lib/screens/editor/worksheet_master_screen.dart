@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
-import 'package:kres_requests2/data/settings/employee_module.dart';
+import 'package:kres_requests2/data/editor/worksheet_editor_module.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
@@ -18,54 +18,52 @@ import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 import 'package:kres_requests2/screens/preview/worksheets_preview_screen.dart';
 
+/// Screen that manages whole document state
 class WorksheetMasterScreen extends StatelessWidget {
-  final WorksheetMasterBloc _worksheetBloc;
-  final EmployeeModule employeeModule;
+  final WorksheetEditorModule worksheetEditorModule;
 
-  WorksheetMasterScreen({
-    Document? document,
-    required this.employeeModule,
-  }) : _worksheetBloc =
-            WorksheetMasterBloc(document, savePathChooser: showSaveDialog);
-
-  String _getDocumentTitle(Document document) => document.savePath == null
-      ? "Несохранённый документ"
-      : document.savePath?.path ?? 'error';
+  WorksheetMasterScreen({required this.worksheetEditorModule});
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        endDrawer: _buildEndDrawer(),
-        appBar: _buildAppBar(),
-        body: BlocConsumer<WorksheetMasterBloc, WorksheetMasterState>(
-          bloc: _worksheetBloc,
-          listener: (context, state) {
-            if (state is WorksheetMasterPopState) {
-              Navigator.pop(context);
-            } else if (state is WorksheetMasterSavingState) {
-              _handleSavingState(context, state);
-            } else if (state is WorksheetMasterShowImporterState) {
-              _onShowImporterScreen(context, state);
-            }
-          },
-          builder: (context, state) {
-            if (state is WorksheetMasterSearchingState) {
-              return Stack(children: [
-                Positioned.fill(child: _buildBody(context, state)),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 12.0, right: 12.0),
-                    child: SearchBox(
-                      textWatcher: (String searchText) => _worksheetBloc
-                          .add(WorksheetMasterSearchEvent(searchText)),
+  Widget build(BuildContext context) => BlocProvider(
+        create: (_) => WorksheetMasterBloc(
+          worksheetEditorModule.targetDocument,
+          savePathChooser: showSaveDialog,
+        ),
+        child: Scaffold(
+          endDrawer: _buildEndDrawer(),
+          appBar: _buildAppBar(),
+          body: BlocConsumer<WorksheetMasterBloc, WorksheetMasterState>(
+            listener: (context, state) {
+              if (state is WorksheetMasterPopState) {
+                Navigator.pop(context);
+              } else if (state is WorksheetMasterSavingState) {
+                _handleSavingState(context, state);
+              } else if (state is WorksheetMasterShowImporterState) {
+                _onShowImporterScreen(context, state);
+              }
+            },
+            builder: (context, state) {
+              if (state is WorksheetMasterSearchingState) {
+                return Stack(children: [
+                  Positioned.fill(child: _buildBody(context, state)),
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12.0, right: 12.0),
+                      child: SearchBox(
+                        textWatcher: (String searchText) => context
+                            .read<WorksheetMasterBloc>()
+                            .add(WorksheetMasterSearchEvent(searchText)),
+                      ),
                     ),
                   ),
-                ),
-              ]);
-            } else {
-              return _buildBody(context, state);
-            }
-          },
+                ]);
+              } else {
+                return _buildBody(context, state);
+              }
+            },
+          ),
         ),
       );
 
@@ -79,10 +77,12 @@ class WorksheetMasterScreen extends StatelessWidget {
             Expanded(
               child: Container(
                 height: double.maxFinite,
-                child: WorkSheetEditorView(
+                child: WorksheetEditorView(
+                  worksheetEditorModule: worksheetEditorModule,
                   document: state.currentDocument,
                   worksheet: state.currentDocument.active,
-                  onDocumentsChanged: () => _worksheetBloc
+                  onDocumentsChanged: () => context
+                      .read<WorksheetMasterBloc>()
                       .add(WorksheetMasterRefreshDocumentStateEvent()),
                   highlighted: state is WorksheetMasterSearchingState
                       ? state.filteredItems[state.currentDocument.active]
@@ -96,12 +96,11 @@ class WorksheetMasterScreen extends StatelessWidget {
 
   Widget _buildEndDrawer() =>
       BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
-        bloc: _worksheetBloc,
         builder: (context, state) => Container(
           width: 420.0,
           child: Drawer(
             child: WorksheetConfigView(
-              employeeModule.employeeRepository,
+              worksheetEditorModule.employeeModule.employeeRepository,
               state.currentDocument.active,
             ),
           ),
@@ -116,28 +115,32 @@ class WorksheetMasterScreen extends StatelessWidget {
           ),
         ),
         title: BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
-          bloc: _worksheetBloc,
-          builder: (_, state) => Text(
-              'Редактирование - ${_getDocumentTitle(state.currentDocument)}'),
+          builder: (_, state) =>
+              Text('Редактирование - ${state.documentTitle}'),
         ),
         actions: [
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.search),
             tooltip: "Поиск",
-            onPressed: (_) => _worksheetBloc.add(WorksheetMasterSearchEvent()),
+            onPressed: (context) => context
+                .read<WorksheetMasterBloc>()
+                .add(WorksheetMasterSearchEvent()),
           ),
           const SizedBox(width: 24.0),
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.save),
             tooltip: "Сохранить",
-            onPressed: (_) => _worksheetBloc.add(WorksheetMasterSaveEvent()),
+            onPressed: (context) => context
+                .read<WorksheetMasterBloc>()
+                .add(WorksheetMasterSaveEvent()),
           ),
           const SizedBox(width: 24.0),
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.solidSave),
             tooltip: "Сохранить как (копия)",
-            onPressed: (_) =>
-                _worksheetBloc.add(WorksheetMasterSaveEvent(changePath: true)),
+            onPressed: (context) => context
+                .read<WorksheetMasterBloc>()
+                .add(WorksheetMasterSaveEvent(changePath: true)),
           ),
           const SizedBox(width: 24.0),
           Builder(
@@ -149,7 +152,6 @@ class WorksheetMasterScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) =>
                       BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
-                    bloc: _worksheetBloc,
                     builder: (context, state) =>
                         WorksheetsPreviewScreen(state.currentDocument),
                   ),
@@ -195,8 +197,9 @@ class WorksheetMasterScreen extends StatelessWidget {
         itemCount: state.currentDocument.worksheets.length + 1,
         itemBuilder: (context, index) => index ==
                 state.currentDocument.worksheets.length
-            ? AddNewWorkSheetTabView((worksheetCreationMode) =>
-                _worksheetBloc.add(
+            ? AddNewWorkSheetTabView((worksheetCreationMode) => context
+                .read<WorksheetMasterBloc>()
+                .add(
                     WorksheetMasterAddNewWorksheetEvent(worksheetCreationMode)))
             : withClosure(
                 state.currentDocument.worksheets[index],
@@ -206,7 +209,7 @@ class WorksheetMasterScreen extends StatelessWidget {
                       ? state.filteredItems[current]?.length ?? 0
                       : 0,
                   isActive: current == state.currentDocument.active,
-                  onSelect: () => _worksheetBloc.add(
+                  onSelect: () => context.read<WorksheetMasterBloc>().add(
                       WorksheetMasterWorksheetActionEvent(
                           current, WorksheetAction.makeActive)),
                   onRemove: state.currentDocument.worksheets.length == 1
@@ -221,12 +224,12 @@ class WorksheetMasterScreen extends StatelessWidget {
                               ),
                             ).then((result) {
                               if (result)
-                                _worksheetBloc.add(
+                                context.read<WorksheetMasterBloc>().add(
                                     WorksheetMasterWorksheetActionEvent(
                                         current, WorksheetAction.remove));
                             });
                           } else
-                            _worksheetBloc.add(
+                            context.read<WorksheetMasterBloc>().add(
                                 WorksheetMasterWorksheetActionEvent(
                                     current, WorksheetAction.remove));
                         },
@@ -238,7 +241,7 @@ class WorksheetMasterScreen extends StatelessWidget {
 
   void _handleSavingState(
       BuildContext context, WorksheetMasterSavingState state) {
-    final scaffold = Scaffold.of(context);
+    final scaffold = ScaffoldMessenger.of(context);
     void showSnackbar(String message, Duration duration) =>
         scaffold.showSnackBar(
           SnackBar(
@@ -310,8 +313,9 @@ class WorksheetMasterScreen extends StatelessWidget {
         context,
         MaterialPageRoute(builder: (_) => importerScreen),
       ).then(
-        (resultDoc) =>
-            _worksheetBloc.add(WorksheetMasterImportResultsEvent(resultDoc!)),
+        (resultDoc) => context
+            .read<WorksheetMasterBloc>()
+            .add(WorksheetMasterImportResultsEvent(resultDoc!)),
       );
 
   Future<bool> _showExitConfirmationDialog(

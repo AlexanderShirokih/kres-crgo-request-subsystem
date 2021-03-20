@@ -45,8 +45,8 @@ abstract class BaseImporterScreen extends StatelessWidget {
                   return LoadingView("Загрузка файла ${state.path}");
                 } else if (state is ImportErrorState) {
                   return ErrorView(
-                    errorDescription: state.error?.toString(),
-                    stackTrace: state.stackTrace?.toString(),
+                    errorDescription: state.error,
+                    stackTrace: state.stackTrace,
                   );
                 } else if (state is ImportEmptyState) {
                   return _EmptyStateView();

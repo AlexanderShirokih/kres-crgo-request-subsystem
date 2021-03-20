@@ -40,8 +40,8 @@ class WorksheetReadyState extends ImporterState {
 }
 
 class ImportErrorState extends ImporterState {
-  final String? error;
-  final String? stackTrace;
+  final String error;
+  final StackTrace? stackTrace;
 
   const ImportErrorState(this.error, this.stackTrace);
 
