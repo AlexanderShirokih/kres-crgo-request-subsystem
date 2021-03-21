@@ -1,3 +1,4 @@
+import 'package:kres_requests2/data/datasource/app_database.dart';
 import 'package:kres_requests2/data/models/employee.dart';
 import 'package:kres_requests2/data/models/position.dart';
 import 'package:kres_requests2/data/persistence_exception.dart';
@@ -5,7 +6,6 @@ import 'package:kres_requests2/data/repository/encoder.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/position.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 
 import 'dao.dart';
 
@@ -46,7 +46,7 @@ class EmployeeEncoder
 
 /// Data access object for [Employee] objects
 class EmployeeDao extends BaseDao<Employee, EmployeeEntity> {
-  EmployeeDao(Database database, Dao<Position, PositionEntity> positionDao)
+  EmployeeDao(AppDatabase database, Dao<Position, PositionEntity> positionDao)
       : super(
           EmployeeEncoder(positionDao),
           tableName: 'employee',

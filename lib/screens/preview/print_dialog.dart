@@ -20,7 +20,7 @@ class PrintDialog extends StatelessWidget {
         height: 380.0,
         child: BlocProvider.value(
           value: ExporterBloc(
-            repositoryModule: context.repository<RepositoryModule>(),
+            repositoryModule: context.watch<RepositoryModule>(),
             worksheets: worksheets,
           ),
           child: Builder(

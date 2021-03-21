@@ -8,7 +8,6 @@ import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/screens/common.dart';
 
 import 'exporter_dialogs.dart';
 import 'print_dialog.dart';
@@ -16,27 +15,25 @@ import 'print_dialog.dart';
 class WorksheetsPreviewScreen extends StatefulWidget {
   final Document document;
 
-  const WorksheetsPreviewScreen(this.document) : assert(document != null);
+  const WorksheetsPreviewScreen(this.document);
 
   @override
   _WorksheetsPreviewScreenState createState() =>
-      _WorksheetsPreviewScreenState(document);
+      _WorksheetsPreviewScreenState();
 }
 
 class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
-  Document currentDocument;
-
-  List<Worksheet>? selectedWorksheets;
+  late Stream<List<Worksheet>> selectedWorksheets;
 
   @override
   void initState() {
     super.initState();
-    selectedWorksheets = currentDocument.worksheets
-        .where((worksheet) => !worksheet.isEmpty && !worksheet.hasErrors())
-        .toList();
+    selectedWorksheets = widget.document.worksheets.map(
+      (ws) => ws
+          .where((worksheet) => !worksheet.isEmpty && !worksheet.hasErrors())
+          .toList(),
+    );
   }
-
-  _WorksheetsPreviewScreenState(this.currentDocument);
 
   @override
   Widget build(BuildContext context) {
@@ -44,15 +41,18 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
       appBar: AppBar(
         title: Text('Вывод документа'),
       ),
-      body: widget.document.isEmpty
-          ? Center(
-              child: Text(
-                'Документ пуст',
-                style: Theme.of(context).textTheme.headline4!.copyWith(
-                    color: Theme.of(context).textTheme.caption!.color),
-              ),
-            )
-          : Builder(builder: (ctx) => _buildPage(ctx)),
+      body: FutureBuilder<bool>(
+        future: widget.document.isEmpty.first,
+        builder: (context, snap) => !snap.hasData || !snap.requireData
+            ? Center(
+                child: Text(
+                  'Документ пуст',
+                  style: Theme.of(context).textTheme.headline4!.copyWith(
+                      color: Theme.of(context).textTheme.caption!.color),
+                ),
+              )
+            : Builder(builder: (ctx) => _buildPage(ctx)),
+      ),
     );
   }
 
@@ -61,19 +61,26 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
         children: [
           _buildActionsContainer(context),
           Expanded(
-            child: _WorksheetCardGroup(
-              worksheets: currentDocument.worksheets
-                  .where((worksheet) => !worksheet.isEmpty)
-                  .toList(),
-              onStatusChanged: (newWorksheets) => setState(() {
-                selectedWorksheets = newWorksheets;
-              }),
-            ),
+            child: StreamBuilder<List<Worksheet>>(
+                stream: widget.document.worksheets.map(
+                  (ws) => ws.where((worksheet) => !worksheet.isEmpty).toList(),
+                ),
+                builder: (context, snapshot) {
+                  return _WorksheetCardGroup(
+                    worksheets: snapshot.requireData,
+                    onStatusChanged: (newWorksheets) => setState(() {
+                      // TODO: BROKEN
+                      // selectedWorksheets = newWorksheets;
+                    }),
+                  );
+                }),
           ),
         ],
       );
 
-  bool hasPrintableWorksheets() => selectedWorksheets?.isNotEmpty ?? false;
+  bool hasPrintableWorksheets() => false;
+
+  //selectedWorksheets?.isNotEmpty ?? false;
 
   Widget _buildActionsContainer(BuildContext context) => Container(
         width: 340.0,
@@ -153,15 +160,20 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
       showDialog<String>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => ExporterDialog(
-          format,
-          selectedWorksheets!,
-          (ext) => getSuggestedName(currentDocument, ext),
-        ),
+        builder: (_) => StreamBuilder<List<Worksheet>>(
+            stream: selectedWorksheets,
+            builder: (context, snapshot) {
+              return ExporterDialog(
+                format,
+                snapshot.requireData,
+                (ext) =>
+                    '', // TODO: Broken getSuggestedName(currentDocument, ext),
+              );
+            }),
       ).then(
         (resultMessage) {
           if (resultMessage != null)
-            Scaffold.of(context).showSnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(resultMessage),
                 duration: Duration(seconds: 6),
@@ -173,11 +185,15 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
   Future _showPrintDialog(BuildContext context) => showDialog<String>(
         context: context,
         barrierDismissible: false,
-        builder: (_) => PrintDialog(selectedWorksheets!),
+        builder: (_) => StreamBuilder<List<Worksheet>>(
+            stream: selectedWorksheets,
+            builder: (context, snapshot) {
+              return PrintDialog(snapshot.requireData);
+            }),
       ).then(
         (resultMessage) {
           if (resultMessage != null)
-            Scaffold.of(context).showSnackBar(
+            ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(resultMessage),
                 duration: Duration(seconds: 6),
@@ -395,7 +411,7 @@ class WorksheetCard extends StatelessWidget {
         ),
       );
 
-  Widget _printEmployee(BuildContext ctx, Employee emp) {
+  Widget _printEmployee(BuildContext ctx, Employee? emp) {
     return emp == null
         ? Text(
             'Не выбрано',

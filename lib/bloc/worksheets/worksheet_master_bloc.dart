@@ -1,15 +1,13 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_creation_mode.dart';
+import 'package:kres_requests2/data/editor/document_filter.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/optional_data.dart';
-import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:meta/meta.dart';
-import 'package:path/path.dart' as path;
 
 part 'worksheet_master_event.dart';
 part 'worksheet_master_state.dart';
@@ -21,93 +19,49 @@ class WorksheetMasterBloc
   /// working directory
   final Future<String?> Function(Document, String) savePathChooser;
 
+  final Document _document;
+  final DocumentFilter _documentFilter;
+
   /// Creates new [WorksheetMasterBloc] instance for [document].
-  WorksheetMasterBloc(Document document, {required this.savePathChooser})
-      : super(
-          WorksheetMasterIdleState(
-              document,
-              (document.savePath == null
-                  ? './'
-                  : path.dirname(document.savePath!.path))),
-        );
+  WorksheetMasterBloc(this._document, {required this.savePathChooser})
+      : _documentFilter = DocumentFilter(_document),
+        super(WorksheetMasterIdleState(_document));
 
   @override
   Stream<WorksheetMasterState> mapEventToState(
       WorksheetMasterEvent event) async* {
     if (event is WorksheetMasterSaveEvent) {
-      yield* _keepSearchingState(
-          () => _saveDocument(event.changePath, event.popAfterSave));
+      yield* _saveDocument(event.changePath, event.popAfterSave);
     } else if (event is WorksheetMasterAddNewWorksheetEvent) {
       yield* _createNewWorksheet(event.mode);
-    } else if (event is WorksheetMasterImportResultsEvent) {
-      yield* _handleImporterResult(event.importedDocument);
     } else if (event is WorksheetMasterWorksheetActionEvent) {
-      yield* _keepSearchingState(
-          () => _handleWorksheetAction(event.targetWorksheet, event.action));
+      yield* _handleWorksheetAction(event.targetWorksheet, event.action);
     } else if (event is WorksheetMasterSearchEvent) {
       yield* _toggleSearchMode(event);
-    } else if (event is WorksheetMasterRefreshDocumentStateEvent) {
-      yield* _keepSearchingState(
-          () => Stream.value(WorksheetMasterIdleState(
-              state.currentDocument, state.currentDirectory)),
-          rebuildSearch: true);
-    }
-  }
-
-  Stream<WorksheetMasterState> _keepSearchingState(
-      Stream<WorksheetMasterState> Function() scope,
-      {bool rebuildSearch = false}) async* {
-    if (state is WorksheetMasterSearchingState) {
-      final searchState = state as WorksheetMasterSearchingState;
-      final filtered = searchState.filteredItems;
-      yield* scope();
-
-      if (rebuildSearch)
-        add(searchState.sourceEvent);
-      else
-        yield WorksheetMasterSearchingState(
-          state.currentDocument,
-          state.currentDirectory,
-          filteredItems: filtered,
-          sourceEvent: (state as WorksheetMasterSearchingState).sourceEvent,
-        );
-    } else {
-      yield* scope();
-      yield WorksheetMasterIdleState(
-          state.currentDocument, state.currentDirectory);
     }
   }
 
   Stream<WorksheetMasterState> _saveDocument(
       bool changePath, bool popAfterSave) async* {
-    var currentDirectory = state.currentDirectory;
-    if (state.currentDocument.savePath == null || changePath) {
-      final savePath =
-          await savePathChooser(state.currentDocument, state.currentDirectory);
-      if (savePath == null) return;
-      currentDirectory = path.dirname(savePath);
-
-      state.currentDocument.savePath = path.extension(savePath) != '.json'
-          ? File('$savePath.json')
-          : File(savePath);
-    }
-
     try {
-      yield WorksheetMasterSavingState(state.currentDocument, currentDirectory,
-          completed: false);
-      await state.currentDocument.save();
-      yield WorksheetMasterSavingState(state.currentDocument, currentDirectory,
-          completed: true);
+      yield WorksheetMasterSavingState(state.currentDocument, completed: false);
+
+      final wasSaved =
+          await _document.saveDocument(changePath, savePathChooser);
+
+      if (wasSaved) {
+        yield WorksheetMasterSavingState(state.currentDocument,
+            completed: true);
+      }
 
       if (popAfterSave) {
-        yield WorksheetMasterPopState(state.currentDocument, currentDirectory);
+        yield WorksheetMasterPopState(state.currentDocument);
       } else {
-        yield WorksheetMasterIdleState(state.currentDocument, currentDirectory);
+        yield WorksheetMasterIdleState(state.currentDocument);
       }
     } catch (e, s) {
       yield WorksheetMasterSavingState(
         state.currentDocument,
-        currentDirectory,
         error: ErrorWrapper(e, s),
       );
     }
@@ -119,40 +73,24 @@ class WorksheetMasterBloc
       case WorksheetCreationMode.import:
         yield WorksheetMasterShowImporterState(
           state.currentDocument,
-          state.currentDirectory,
           WorksheetImporterType.requestsImporter,
         );
         return;
       case WorksheetCreationMode.importCounters:
         yield WorksheetMasterShowImporterState(
           state.currentDocument,
-          state.currentDirectory,
           WorksheetImporterType.countersImporter,
         );
         return;
       case WorksheetCreationMode.importNative:
         yield WorksheetMasterShowImporterState(
           state.currentDocument,
-          state.currentDirectory,
           WorksheetImporterType.nativeImporter,
         );
         return;
       case WorksheetCreationMode.empty:
-      default:
-        state.currentDocument.active =
-            state.currentDocument.addEmptyWorksheet();
-        yield WorksheetMasterIdleState(
-          state.currentDocument,
-          state.currentDirectory,
-        );
-    }
-  }
-
-  Stream<WorksheetMasterState> _handleImporterResult(
-      Document importedDocument) async* {
-    if (importedDocument != null) {
-      importedDocument.active = importedDocument.worksheets.last;
-      yield WorksheetMasterIdleState(importedDocument, state.currentDirectory);
+        _document.addEmptyWorksheet();
+        yield WorksheetMasterIdleState(_document);
     }
   }
 
@@ -160,55 +98,18 @@ class WorksheetMasterBloc
       Worksheet targetWorksheet, WorksheetAction action) async* {
     switch (action) {
       case WorksheetAction.remove:
-        state.currentDocument.removeWorksheet(targetWorksheet);
+        await _document.removeWorksheet(targetWorksheet);
         break;
       case WorksheetAction.makeActive:
-        state.currentDocument.active = targetWorksheet;
+        _document.makeActive(targetWorksheet);
         break;
     }
 
-    yield WorksheetMasterIdleState(
-        state.currentDocument, state.currentDirectory);
+    yield WorksheetMasterIdleState(_document);
   }
 
   Stream<WorksheetMasterState> _toggleSearchMode(
       WorksheetMasterSearchEvent event) async* {
-    if (state is WorksheetMasterSearchingState && event.searchText == null)
-      yield WorksheetMasterIdleState(
-          state.currentDocument, state.currentDirectory);
-    else {
-      final filtered = _filterRequests(state.currentDocument, event.searchText);
-
-      yield WorksheetMasterSearchingState(
-        state.currentDocument,
-        state.currentDirectory,
-        filteredItems: filtered,
-        sourceEvent: event,
-      );
-    }
-  }
-
-  // TODO: Create a sort of DocumentRepository and move this method to it
-  Map<Worksheet, List<RequestEntity>> _filterRequests(
-      Document document, String? searchText) {
-    if (searchText == null || searchText.isEmpty)
-      return <Worksheet, List<RequestEntity>>{};
-    searchText = searchText.toLowerCase();
-
-    return Map.fromIterable(document.worksheets,
-        key: (worksheet) => worksheet,
-        value: (worksheet) => worksheet.requests.where((RequestEntity request) {
-              final searchingText = searchText ?? '';
-              return (request.accountId?.toString().padLeft(6, '0') ?? '')
-                      .contains(searchingText) ||
-                  request.name.toLowerCase().contains(searchingText) ||
-                  request.address.toLowerCase().contains(searchingText) ||
-                  (request.counterInfo?.toLowerCase().contains(searchingText) ??
-                      false) ||
-                  (request.additionalInfo
-                          ?.toLowerCase()
-                          .contains(searchingText) ??
-                      false);
-            }).toList());
+    _documentFilter.setSearchingTest(event.searchText ?? '');
   }
 }

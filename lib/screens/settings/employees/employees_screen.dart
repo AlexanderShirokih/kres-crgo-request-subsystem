@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/data/settings/employee_module.dart';
-import 'package:kres_requests2/data/settings/position_module.dart';
+import 'package:kres_requests2/data/validators.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/position.dart';
 import 'package:kres_requests2/screens/common/table_view.dart';
@@ -14,21 +14,12 @@ import 'package:kres_requests2/screens/settings/employees/bloc/employee_bloc.dar
 
 /// Manages employees.
 class EmployeesScreen extends StatelessWidget {
-  final EmployeeModule employeeModule;
-  final PositionModule positionModule;
-
-  const EmployeesScreen({
-    Key? key,
-    required this.employeeModule,
-    required this.positionModule,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) => UndoableEditorScreen(
         blocBuilder: (_) => EmployeeBloc(
-          employeeModule.employeeController,
-          employeeModule.employeeValidator,
-          positionModule.positionRepository,
+          Modular.get(),
+          Modular.get(),
+          Modular.get(),
         ),
         addItemButtonName: 'Добавить сотрудника',
         addItemIcon: FaIcon(FontAwesomeIcons.userPlus),
@@ -49,8 +40,8 @@ class EmployeesScreen extends StatelessWidget {
         key: ObjectKey(e),
         cells: [
           EditableNameField(
-            validator:
-                employeeModule.employeeValidator.findStringValidator('name'),
+            validator: Modular.get<MappedValidator<Employee>>()
+                .findStringValidator('name'),
             value: e.name,
             onChanged: (newValue) =>
                 _fireItemChanged(bloc, e, e.copy(name: newValue)),

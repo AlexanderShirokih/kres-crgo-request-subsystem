@@ -2,31 +2,58 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/models/worksheet.dart';
+import 'package:path/path.dart' as path;
+import 'package:rxdart/rxdart.dart';
 
 /// Contains info about whole set of work blanks for special date
-class Document {
+class Document extends Equatable {
+  final BehaviorSubject<File> _savePath = BehaviorSubject();
+  final BehaviorSubject<List<Worksheet>> _worksheets =
+      BehaviorSubject.seeded([]);
+
+  final BehaviorSubject<DateTime> _updateDate =
+      BehaviorSubject.seeded(DateTime.now());
+
+  final BehaviorSubject<int> _activeWorksheet = BehaviorSubject.seeded(0);
+
   /// Current document save path.
   /// `null` values means document save path is not defined
-  File? savePath;
+  Stream<File?> get savePath => _savePath;
 
   /// Document worksheets
-  List<Worksheet> get worksheets => List.unmodifiable(_worksheets);
-
-  List<Worksheet> _worksheets;
+  Stream<List<Worksheet>> get worksheets =>
+      _worksheets.map((ws) => List.unmodifiable(ws));
 
   /// Last save date
-  DateTime updateDate = DateTime.now();
+  Stream<DateTime> get updateDate => _updateDate;
 
-  int _activeWorksheet = 0;
+  /// Returns currently active Worksheet
+  Stream<Worksheet> get active =>
+      Rx.combineLatest2<List<Worksheet>, int, Worksheet>(
+          _worksheets, _activeWorksheet, (ws, int activeIdx) => ws[activeIdx]);
 
-  Worksheet get active => _worksheets[_activeWorksheet];
+  /// Returns `true` if document is empty
+  Stream<bool> get isEmpty => _worksheets.map(
+        (list) => list.every((worksheet) => worksheet.isEmpty),
+      );
+
+  /// Directory where document saved or could be saved
+  Stream<String> get workingDirectory => Rx.concat(
+        [
+          Stream.value('./'),
+          _savePath.map(
+            (file) => path.dirname(file.path),
+          ),
+        ],
+      );
 
   /// Converts [Document] instance to JSON representation
   Map<String, dynamic> toJson() => {
-        'updateDate': updateDate.millisecondsSinceEpoch,
-        'activeWorksheet': _activeWorksheet,
-        'worksheets': _worksheets.map((w) => w.toJson()).toList()
+        'updateDate': _updateDate.requireValue.millisecondsSinceEpoch,
+        'activeWorksheet': _activeWorksheet.requireValue,
+        'worksheets': _worksheets.requireValue.map((w) => w.toJson()).toList()
       };
 
   factory Document.fromJson(Map<String, dynamic> data) => Document._(
@@ -37,91 +64,155 @@ class Document {
         DateTime.fromMillisecondsSinceEpoch(data['updateDate']),
       );
 
-  set active(Worksheet worksheet) {
-    _activeWorksheet = max(_worksheets.indexOf(worksheet), 0);
+  /// Makes target [worksheet] active
+  void makeActive(Worksheet worksheet) {
+    _activeWorksheet.add(max(_worksheets.requireValue.indexOf(worksheet), 0));
   }
 
   Document._(
-    this._worksheets,
-    this._activeWorksheet,
-    this.updateDate,
-  );
+    List<Worksheet> worksheets,
+    Worksheet activeWorksheet,
+    DateTime updateDate,
+  ) {
+    _updateDate.add(updateDate);
+    _worksheets.add(worksheets);
+    makeActive(activeWorksheet);
+  }
 
-  Document({this.savePath, required List<Worksheet> worksheets})
-      : _worksheets = worksheets;
+  /// Creates document from [savePath] and list of [worksheets]
+  Document({File? savePath, required List<Worksheet> worksheets}) {
+    if (savePath != null) {
+      _savePath.add(savePath);
+    }
 
-  Document.empty() : _worksheets = [] {
+    _worksheets.add(worksheets);
+  }
+
+  /// Creates an empty document
+  Document.empty() {
     addEmptyWorksheet();
   }
 
-  void addWorksheets(List<Worksheet> worksheets) => _worksheets.addAll(
-        worksheets.map(
-          (w) => w.copy(name: _getUniqueName(w.name)),
+  /// Ads a list of worksheets to the document
+  void addWorksheets(List<Worksheet> worksheets) {
+    _worksheets.add(
+      _worksheets.requireValue
+        ..addAll(
+          worksheets
+              .map(
+                (w) => w.copy(name: _getUniqueName(w.name)),
+              )
+              .toList(),
         ),
-      );
+    );
+  }
 
+  /// Adds an empty worksheet to the document
   Worksheet addEmptyWorksheet({String? name}) {
     final worksheet = Worksheet(name: _getUniqueName(name));
-    _worksheets.add(worksheet);
+    final currentWorksheets = _worksheets.requireValue;
+    _worksheets.add(currentWorksheets..add(worksheet));
     return worksheet;
   }
 
   String _getUniqueName(String? name) {
-    name ??= "Лист ${_worksheets.length + 1}";
+    final currentWorksheets = _worksheets.requireValue;
+    name ??= "Лист ${currentWorksheets.length + 1}";
     String worksheetName;
     var attempt = 0;
     do {
       worksheetName = "$name${attempt > 0 ? "($attempt)" : ""}";
       attempt++;
-    } while (_worksheets.any((w) => w.name == worksheetName));
+    } while (currentWorksheets.any((w) => w.name == worksheetName));
     return worksheetName;
   }
 
-  void removeWorksheet(Worksheet worksheet) {
-    if (worksheet == active) {
-      final currIndex = _worksheets.indexOf(active);
-      _activeWorksheet = currIndex - 1;
-      if (_activeWorksheet < 0) _activeWorksheet = currIndex + 1;
+  /// Removes [worksheet] from the document
+  Future<void> removeWorksheet(Worksheet worksheet) async {
+    final currentWorksheets = _worksheets.requireValue;
+    final activeWs = await active.first;
+    if (worksheet == activeWs) {
+      final currIndex = currentWorksheets.indexOf(activeWs);
+      var newIndex = currIndex - 1;
+      if (newIndex < 0) newIndex = currIndex + 1;
+      _activeWorksheet.add(newIndex);
     }
-    _worksheets.remove(worksheet);
 
-    if (_activeWorksheet == _worksheets.length)
-      _activeWorksheet = _worksheets.length - 1;
+    currentWorksheets.remove(worksheet);
+    _worksheets.add(currentWorksheets);
+
+    if (_activeWorksheet.requireValue == currentWorksheets.length) {
+      _activeWorksheet.add(currentWorksheets.length - 1);
+    }
   }
 
-  /// Saves [Document] instance to [savePath]
-  Future save() async {
-    if (savePath == null) throw ('savePath == null!');
+  /// Saves document in local storage
+  /// If [changePath] is `true` save path will be updated by picking it from
+  /// [savePathChooser].
+  /// Returns `true` if document was saved to the storage.
+  Future<bool> saveDocument(
+    bool changePath,
+    Future<String?> Function(Document document, String workingDirectory)
+        savePathChooser,
+  ) async {
+    final savePath = _savePath.value;
 
-    updateDate = DateTime.now();
-    await savePath!.writeAsString(json.encode(toJson()));
+    if (savePath == null || changePath) {
+      final chosenSavePath = await savePathChooser(
+        this,
+        await workingDirectory.first,
+      );
+
+      if (chosenSavePath == null) return false;
+
+      _savePath.add(
+        path.extension(chosenSavePath) != '.json'
+            ? File('$chosenSavePath.json')
+            : File(chosenSavePath),
+      );
+    }
+
+    await _save();
+    return true;
   }
 
-  bool get isEmpty => _worksheets.every((worksheet) => worksheet.isEmpty);
+  Future<void> _save() async {
+    if (!_savePath.hasValue) {
+      throw ('savePath == null!');
+    }
+
+    _updateDate.add(DateTime.now());
+
+    await _savePath.requireValue.writeAsString(json.encode(toJson()));
+  }
+
+  /// Replaces all worksheets in the document
+  void setWorksheets(List<Worksheet> worksheets) {
+    if (worksheets.isEmpty) {
+      throw ('Cannot set an empty worksheet list');
+    }
+
+    _worksheets.add(worksheets);
+    makeActive(worksheets.first);
+  }
+
+  /// Closes all internal resources
+  Future<void> close() async {
+    await _updateDate.close();
+    await _savePath.close();
+    await _activeWorksheet.close();
+    // TODO: Close all Worksheet sinks
+    await _worksheets.close();
+  }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Document &&
-          runtimeType == other.runtimeType &&
-          savePath == other.savePath &&
-          _worksheets == other._worksheets &&
-          updateDate == other.updateDate &&
-          _activeWorksheet == other._activeWorksheet;
+  List<Object?> get props => [
+        _updateDate.value,
+        _activeWorksheet.value,
+        _savePath.value,
+        _worksheets.value,
+      ];
 
-  @override
-  int get hashCode =>
-      savePath.hashCode ^
-      _worksheets.hashCode ^
-      updateDate.hashCode ^
-      _activeWorksheet.hashCode;
-
-  Document setWorksheets(List<Worksheet> worksheets) {
-    if (worksheets == null || worksheets.isEmpty)
-      throw ('Cannot set empty worksheet list');
-
-    _worksheets.clear();
-    _worksheets.addAll(worksheets);
-    return this;
-  }
+  /// Updates the document save path
+  void updateSavePath(File file) => _savePath.add(file);
 }

@@ -2,17 +2,19 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-class AppDatabase {
+class AppDatabase extends Disposable {
   static const String _dbName = 'main.db';
 
   static final AppDatabase _instance = AppDatabase._();
 
   Completer<Database>? _dbOpenCompleter;
+  Database? _openedInstance;
 
   AppDatabase._();
 
@@ -60,6 +62,12 @@ class AppDatabase {
           }),
     );
 
+    _openedInstance = db;
     _dbOpenCompleter!.complete(db);
+  }
+
+  @override
+  void dispose() {
+    _openedInstance?.close();
   }
 }

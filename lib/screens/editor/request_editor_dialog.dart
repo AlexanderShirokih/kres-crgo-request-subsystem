@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/editor/request_editor_dialog/request_editor_bloc.dart';
 import 'package:kres_requests2/data/editor/worksheet_editor_module.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
@@ -27,8 +28,7 @@ class RequestEditorDialog extends StatelessWidget {
         initialRequest: initial,
         requestValidator: editorModule.requestModule.requestValidator,
         requestController: editorModule.requestModule.requestController,
-        requestTypeRepository:
-            editorModule.requestTypeModule.requestTypeRepository,
+        requestTypeRepository: Modular.get(),
       ),
       child: BlocConsumer<RequestEditorBloc, RequestEditorState>(
         buildWhen: (_, curr) => curr is RequestEditorShowDataState,

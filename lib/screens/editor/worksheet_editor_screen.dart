@@ -17,14 +17,12 @@ class WorksheetEditorView extends StatefulWidget {
   final WorksheetEditorModule worksheetEditorModule;
   final Document document;
   final Worksheet worksheet;
-  final List<RequestEntity>? highlighted;
-  final void Function() onDocumentsChanged;
+  final Stream<List<RequestEntity>> highlighted;
 
   const WorksheetEditorView({
     required this.worksheetEditorModule,
     required this.document,
     required this.worksheet,
-    required this.onDocumentsChanged,
     required this.highlighted,
   });
 
@@ -76,13 +74,13 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
   }
 
   List<RequestEntity> _buildRequestsList() {
-    if (widget.highlighted == null) return _worksheet.requests!;
-
-    final output = [...widget.highlighted!];
-    for (final request in _worksheet.requests!) {
-      if (!output.contains(request)) output.add(request);
-    }
-    return output;
+    return _worksheet.requests!;
+    // TODO: BROKEN
+    // final output = [...widget.highlighted!];
+    // for (final request in _worksheet.requests!) {
+    //   if (!output.contains(request)) output.add(request);
+    // }
+    // return output;
   }
 
   @override
@@ -151,7 +149,7 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
                               final oldIdx = _worksheet.requests!.indexOf(old);
                               _worksheet.requests![oldIdx] = edited;
                             });
-                          widget.onDocumentsChanged();
+                          // widget.onDocumentsChanged();
                         });
                       },
                       child: RequestItemView(
@@ -163,8 +161,9 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
                         isSelected: _isSelected
                             ? _selectionList!.contains(requests[index])
                             : null,
-                        isHighlighted: widget.highlighted != null &&
-                            widget.highlighted!.contains(requests[index]),
+                        isHighlighted: false,
+                        // widget.highlighted != null &&
+                        //     widget.highlighted!.contains(requests[index]),
                         request: requests[index],
                         key: ValueKey(requests[index].accountId),
                         onChanged: (isSelected) => setState(() {
@@ -355,7 +354,7 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
             }
             _selectionList = null;
           });
-          widget.onDocumentsChanged();
+          // widget.onDocumentsChanged();
         }
       });
 

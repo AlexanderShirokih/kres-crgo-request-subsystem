@@ -33,27 +33,6 @@ class WorksheetMasterAddNewWorksheetEvent extends WorksheetMasterEvent {
   List<Object> get props => [mode];
 }
 
-/// Used to push results of importer wizard to the current document
-class WorksheetMasterImportResultsEvent extends WorksheetMasterEvent {
-  /// New instance of the document with imported data to be merged with the
-  /// current document.
-  final Document importedDocument;
-
-  const WorksheetMasterImportResultsEvent(this.importedDocument) : super._();
-
-  @override
-  List<Object> get props => [importedDocument];
-}
-
-/// TODO: Deprecated event?
-/// Event used to build UI when document was changed
-class WorksheetMasterRefreshDocumentStateEvent extends WorksheetMasterEvent {
-  const WorksheetMasterRefreshDocumentStateEvent() : super._();
-
-  @override
-  List<Object> get props => [];
-}
-
 /// Event used to toggle searching mode with some searching text
 /// If [searchText] is `null` search mode will be disabled
 class WorksheetMasterSearchEvent extends WorksheetMasterEvent {

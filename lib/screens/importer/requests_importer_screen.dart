@@ -19,7 +19,7 @@ class RequestsImporterScreen extends BaseImporterScreen {
       RequestsImporterScreen(
         targetDocument: targetDocument,
         requestsRepository:
-            context.repository<RepositoryModule>().getRequestsRepository(),
+            context.watch<RepositoryModule>().getRequestsRepository(),
         initialDirectory: initialDirectory,
       );
 

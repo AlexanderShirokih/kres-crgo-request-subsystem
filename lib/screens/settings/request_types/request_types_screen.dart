@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/data/settings/request_type_module.dart';
+import 'package:kres_requests2/data/validators/mapped_validator.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
 import 'package:kres_requests2/screens/common/table_view.dart';
 import 'package:kres_requests2/screens/settings/common/bloc/undoable_bloc.dart';
@@ -13,17 +14,9 @@ import 'package:kres_requests2/screens/settings/request_types/bloc/request_type_
 
 /// Manages request types.
 class RequestTypesScreen extends StatelessWidget {
-  final RequestTypeModule requestTypeModule;
-
-  const RequestTypesScreen({Key? key, required this.requestTypeModule})
-      : super(key: key);
-
   @override
   Widget build(BuildContext context) => UndoableEditorScreen(
-        blocBuilder: (_) => RequestTypeBloc(
-          requestTypeModule.requestTypeController,
-          requestTypeModule.requestTypeValidator,
-        ),
+        blocBuilder: (_) => RequestTypeBloc(Modular.get(), Modular.get()),
         addItemButtonName: 'Добавить тип заявки',
         addItemIcon: FaIcon(FontAwesomeIcons.wrench),
         tableHeader: [
@@ -38,22 +31,21 @@ class RequestTypesScreen extends StatelessWidget {
 
   List<TableDataRow> _buildData(UndoableBloc<RequestTypeData, RequestType> bloc,
       RequestTypeData dataHolder) {
+    final validator = Modular.get<MappedValidator<RequestType>>();
     return dataHolder.data.map((e) {
       return TableDataRow(
         key: ObjectKey(e),
         cells: [
           EditableNameField(
             value: e.shortName,
-            validator: requestTypeModule.requestTypeValidator
-                .findStringValidator('shortName'),
+            validator: validator.findStringValidator('shortName'),
             onChanged: (newValue) => bloc.add(
               UpdateItemEvent(e, e.copy(shortName: newValue)),
             ),
           ),
           EditableNameField(
             value: e.fullName,
-            validator: requestTypeModule.requestTypeValidator
-                .findStringValidator('fullName'),
+            validator: validator.findStringValidator('fullName'),
             onChanged: (newValue) => bloc.add(
               UpdateItemEvent(e, e.copy(fullName: newValue)),
             ),

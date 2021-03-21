@@ -70,7 +70,7 @@ class NativeImporterRepository extends WorksheetImporterRepository {
               document, tableChooser as MultiTableChooser);
       }).then((optDocument) {
         if (!optDocument!.hasError())
-          optDocument.data?.savePath = File(filePath);
+          optDocument.data?.updateSavePath(File(filePath));
         return optDocument;
       }).catchError((e, s) => OptionalData.ofError<Document>(e, s));
 
@@ -79,13 +79,14 @@ class NativeImporterRepository extends WorksheetImporterRepository {
       _chooseWorksheets0(document, tableChooser).then(
         (worksheets) => worksheets.isEmpty
             ? null
-            : OptionalData<Document>(data: document.setWorksheets(worksheets)),
+            : OptionalData<Document>(data: document..setWorksheets(worksheets)),
       );
 
   Future<List<Worksheet>> _chooseWorksheets0(
-      Document document, MultiTableChooser tableChooser) {
-    return document.worksheets.length == 1
-        ? Future.value(document.worksheets)
-        : tableChooser(document.worksheets);
+      Document document, MultiTableChooser tableChooser) async {
+    final worksheets = await document.worksheets.first;
+    return worksheets.length == 1
+        ? Future.value(worksheets)
+        : tableChooser(worksheets);
   }
 }

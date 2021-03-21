@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
 import 'package:kres_requests2/data/editor/worksheet_editor_module.dart';
@@ -8,15 +9,14 @@ import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/common.dart';
-import 'package:kres_requests2/screens/confirmation_dialog.dart';
-import 'package:kres_requests2/screens/editor/search_box.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_editor_screen.dart';
-import 'package:kres_requests2/screens/editor/worksheet_tab_view.dart';
 import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 import 'package:kres_requests2/screens/preview/worksheets_preview_screen.dart';
+
+import 'widgets/worksheet_page_controller.dart';
 
 /// Screen that manages whole document state
 class WorksheetMasterScreen extends StatelessWidget {
@@ -44,24 +44,25 @@ class WorksheetMasterScreen extends StatelessWidget {
               }
             },
             builder: (context, state) {
-              if (state is WorksheetMasterSearchingState) {
-                return Stack(children: [
-                  Positioned.fill(child: _buildBody(context, state)),
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 12.0, right: 12.0),
-                      child: SearchBox(
-                        textWatcher: (String searchText) => context
-                            .read<WorksheetMasterBloc>()
-                            .add(WorksheetMasterSearchEvent(searchText)),
-                      ),
-                    ),
-                  ),
-                ]);
-              } else {
-                return _buildBody(context, state);
-              }
+              // TODO: BROKEN
+              // if (state is WorksheetMasterSearchingState) {
+              //   return Stack(children: [
+              //     Positioned.fill(child: _buildBody(context, state)),
+              //     Align(
+              //       alignment: Alignment.topRight,
+              //       child: Padding(
+              //         padding: const EdgeInsets.only(top: 12.0, right: 12.0),
+              //         child: SearchBox(
+              //           textWatcher: (String searchText) => context
+              //               .read<WorksheetMasterBloc>()
+              //               .add(WorksheetMasterSearchEvent(searchText)),
+              //         ),
+              //       ),
+              //     ),
+              //   ]);
+              // } else {
+              return _buildBody(context, state);
+              // }
             },
           ),
         ),
@@ -77,16 +78,23 @@ class WorksheetMasterScreen extends StatelessWidget {
             Expanded(
               child: Container(
                 height: double.maxFinite,
-                child: WorksheetEditorView(
-                  worksheetEditorModule: worksheetEditorModule,
-                  document: state.currentDocument,
-                  worksheet: state.currentDocument.active,
-                  onDocumentsChanged: () => context
-                      .read<WorksheetMasterBloc>()
-                      .add(WorksheetMasterRefreshDocumentStateEvent()),
-                  highlighted: state is WorksheetMasterSearchingState
-                      ? state.filteredItems[state.currentDocument.active]
-                      : null,
+                child: StreamBuilder<Worksheet>(
+                  stream: state.currentDocument.active,
+                  builder: (context, snap) {
+                    if (snap.hasData) {
+                      return WorksheetEditorView(
+                        worksheetEditorModule: worksheetEditorModule,
+                        document: state.currentDocument,
+                        worksheet: snap.requireData,
+                        highlighted: Stream.empty(),
+                        // TODO: Broken
+                        // highlighted: state is WorksheetMasterSearchingState
+                        //     ? state.filteredItems[state.currentDocument.active]
+                        //     : null,
+                      );
+                    }
+                    return Container();
+                  },
                 ),
               ),
             ),
@@ -99,10 +107,17 @@ class WorksheetMasterScreen extends StatelessWidget {
         builder: (context, state) => Container(
           width: 420.0,
           child: Drawer(
-            child: WorksheetConfigView(
-              worksheetEditorModule.employeeModule.employeeRepository,
-              state.currentDocument.active,
-            ),
+            child: StreamBuilder<Worksheet>(
+                stream: state.currentDocument.active,
+                builder: (context, snap) {
+                  return snap.hasData
+                      ? WorksheetConfigView(
+                          // TODO: Is dependency injected
+                          Modular.get(),
+                          snap.requireData,
+                        )
+                      : Container();
+                }),
           ),
         ),
       );
@@ -114,9 +129,12 @@ class WorksheetMasterScreen extends StatelessWidget {
             onPressed: () => Navigator.maybePop(context),
           ),
         ),
-        title: BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
-          builder: (_, state) =>
-              Text('Редактирование - ${state.documentTitle}'),
+        title: Builder(
+          builder: (context) => StreamBuilder<String>(
+            stream: context.watch<WorksheetMasterBloc>().state.documentTitle,
+            builder: (_, snap) => Text(
+                'Редактирование - ${snap.data ?? "Несохранённый документ"}'),
+          ),
         ),
         actions: [
           _createActionButton(
@@ -178,64 +196,9 @@ class WorksheetMasterScreen extends StatelessWidget {
 
   Widget _createPageController(
       BuildContext context, WorksheetMasterState state) {
-    Widget withClosure(Worksheet current, Widget Function(Worksheet) closure) =>
-        closure(current);
-
-    return Container(
-      width: 280.0,
-      decoration: BoxDecoration(
-        border: Border(
-          right: BorderSide(
-            width: 2.0,
-            color: Theme.of(context).secondaryHeaderColor,
-            style: BorderStyle.solid,
-          ),
-        ),
-      ),
-      height: double.maxFinite,
-      child: ListView.builder(
-        itemCount: state.currentDocument.worksheets.length + 1,
-        itemBuilder: (context, index) => index ==
-                state.currentDocument.worksheets.length
-            ? AddNewWorkSheetTabView((worksheetCreationMode) => context
-                .read<WorksheetMasterBloc>()
-                .add(
-                    WorksheetMasterAddNewWorksheetEvent(worksheetCreationMode)))
-            : withClosure(
-                state.currentDocument.worksheets[index],
-                (current) => WorkSheetTabView(
-                  worksheet: current,
-                  filteredItemsCount: state is WorksheetMasterSearchingState
-                      ? state.filteredItems[current]?.length ?? 0
-                      : 0,
-                  isActive: current == state.currentDocument.active,
-                  onSelect: () => context.read<WorksheetMasterBloc>().add(
-                      WorksheetMasterWorksheetActionEvent(
-                          current, WorksheetAction.makeActive)),
-                  onRemove: state.currentDocument.worksheets.length == 1
-                      ? null
-                      : () {
-                          if (!current.isEmpty) {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (_) => ConfirmationDialog(
-                                message: "Удалить страницу ${current.name}?",
-                              ),
-                            ).then((result) {
-                              if (result)
-                                context.read<WorksheetMasterBloc>().add(
-                                    WorksheetMasterWorksheetActionEvent(
-                                        current, WorksheetAction.remove));
-                            });
-                          } else
-                            context.read<WorksheetMasterBloc>().add(
-                                WorksheetMasterWorksheetActionEvent(
-                                    current, WorksheetAction.remove));
-                        },
-                ),
-              ),
-      ),
+    return WorksheetsPageController(
+      worksheets: state.currentDocument.worksheets,
+      activeWorksheet: state.currentDocument.active,
     );
   }
 
@@ -268,13 +231,14 @@ class WorksheetMasterScreen extends StatelessWidget {
   }
 
   void _onShowImporterScreen(
-      BuildContext context, WorksheetMasterShowImporterState state) {
+      BuildContext context, WorksheetMasterShowImporterState state) async {
+    final workingDirectory = await state.currentDocument.workingDirectory.first;
     switch (state.importerType) {
       case WorksheetImporterType.requestsImporter:
         _navigateToImporter(
           context,
           RequestsImporterScreen.fromContext(
-            initialDirectory: state.currentDirectory,
+            initialDirectory: workingDirectory,
             targetDocument: state.currentDocument,
             context: context,
           ),
@@ -285,10 +249,10 @@ class WorksheetMasterScreen extends StatelessWidget {
         _navigateToImporter(
           context,
           CountersImporterScreen(
-            initialDirectory: state.currentDirectory,
+            initialDirectory: workingDirectory,
             targetDocument: state.currentDocument,
             importerRepository: context
-                .repository<RepositoryModule>()
+                .read<RepositoryModule>()
                 .getCountersImporterRepository(),
           ),
         );
@@ -297,11 +261,10 @@ class WorksheetMasterScreen extends StatelessWidget {
         _navigateToImporter(
           context,
           NativeImporterScreen(
-            initialDirectory: state.currentDirectory,
+            initialDirectory: workingDirectory,
             targetDocument: state.currentDocument,
-            importerRepository: context
-                .repository<RepositoryModule>()
-                .getNativeImporterRepository(),
+            importerRepository:
+                context.watch<RepositoryModule>().getNativeImporterRepository(),
           ),
         );
         break;
@@ -313,14 +276,17 @@ class WorksheetMasterScreen extends StatelessWidget {
         context,
         MaterialPageRoute(builder: (_) => importerScreen),
       ).then(
-        (resultDoc) => context
-            .read<WorksheetMasterBloc>()
-            .add(WorksheetMasterImportResultsEvent(resultDoc!)),
+        (resultDoc) {
+          throw UnimplementedError();
+          // context
+          //   .read<WorksheetMasterBloc>()
+          //   .add(WorksheetMasterImportResultsEvent(resultDoc!));
+        },
       );
 
   Future<bool> _showExitConfirmationDialog(
       Document document, BuildContext context) async {
-    if (document.isEmpty) return true;
+    if (await document.isEmpty.first) return true;
     return true;
     // TODO: Stub
     // return await showDialog<bool>(

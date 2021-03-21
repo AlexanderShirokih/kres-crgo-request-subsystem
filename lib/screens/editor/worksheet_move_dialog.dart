@@ -55,8 +55,9 @@ class _WorksheetMoveDialogState extends State<WorksheetMoveDialog> {
     }
   }
 
-  Iterable<Worksheet> _getTargetWorksheet() =>
-      _document.worksheets.where((worksheet) => worksheet != _sourceWorksheet);
+  Stream<Iterable<Worksheet>> _getTargetWorksheet() => _document.worksheets.map(
+        (ws) => ws.where((worksheet) => worksheet != _sourceWorksheet),
+      );
 
   void _moveRequests(Worksheet targetWorksheet) {
     targetWorksheet.requests!.addAll(_movingRequests);
@@ -72,23 +73,31 @@ class _WorksheetMoveDialogState extends State<WorksheetMoveDialog> {
       content: Container(
         width: 400,
         height: 300,
-        child: ListView(
-          children: [
-            ..._getTargetWorksheet().map(
-              (e) => _createListTile(FontAwesomeIcons.file, e.name!, () {
-                _moveRequests(e);
-                Navigator.pop(context, true);
-              }),
-            ),
-            _createListTile(FontAwesomeIcons.plus, "В новый лист", () {
-              final target =
-                  _document.addEmptyWorksheet(name: _sourceWorksheet.name);
-              _document.active = target;
-              _moveRequests(target);
-              Navigator.pop(context, true);
-            })
-          ],
-        ),
+        child: StreamBuilder<Iterable<Worksheet>>(
+            stream: _getTargetWorksheet(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Container(color: Colors.yellow);
+              }
+
+              return ListView(
+                children: [
+                  ...snapshot.requireData.map(
+                    (e) => _createListTile(FontAwesomeIcons.file, e.name!, () {
+                      _moveRequests(e);
+                      Navigator.pop(context, true);
+                    }),
+                  ),
+                  _createListTile(FontAwesomeIcons.plus, "В новый лист", () {
+                    final target = _document.addEmptyWorksheet(
+                        name: _sourceWorksheet.name);
+                    _document.makeActive(target);
+                    _moveRequests(target);
+                    Navigator.pop(context, true);
+                  })
+                ],
+              );
+            }),
       ),
     );
   }

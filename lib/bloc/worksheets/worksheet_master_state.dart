@@ -3,28 +3,25 @@ part of 'worksheet_master_bloc.dart';
 /// Base state of worksheet master BLoC
 @sealed
 abstract class WorksheetMasterState extends Equatable {
-  const WorksheetMasterState._(this.currentDocument, this.currentDirectory);
+  const WorksheetMasterState._(this.currentDocument);
 
   /// Currently opened document
   final Document currentDocument;
 
-  /// Current working directory where document opened
-  final String currentDirectory;
-
   /// Document title. Contains current document save path
-  String get documentTitle => currentDocument.savePath == null
-      ? "Несохранённый документ"
-      : currentDocument.savePath?.path ?? 'error';
+  Stream<String> get documentTitle => currentDocument.savePath.map((savePath) {
+        if (savePath == null) return "Несохранённый документ [sP=null]";
+        return savePath.path;
+      });
 
   @override
-  List<Object?> get props => [currentDocument, currentDirectory];
+  List<Object?> get props => [currentDocument];
 }
 
 /// A state that signals that the current document should be closed
 class WorksheetMasterPopState extends WorksheetMasterState {
-  const WorksheetMasterPopState(
-      Document currentDocument, String currentDirectory)
-      : super._(currentDocument, currentDirectory);
+  const WorksheetMasterPopState(Document currentDocument)
+      : super._(currentDocument);
 }
 
 /// Default worksheet master state that shows document in a normal mode
@@ -33,8 +30,7 @@ class WorksheetMasterIdleState extends WorksheetMasterState {
 
   final int _updateId = ++_updateCounter;
 
-  WorksheetMasterIdleState(Document currentDocument, String currentDirectory)
-      : super._(currentDocument, currentDirectory);
+  WorksheetMasterIdleState(Document currentDocument) : super._(currentDocument);
 
   @override
   List<Object?> get props => [...super.props, _updateId];
@@ -49,11 +45,10 @@ class WorksheetMasterSavingState extends WorksheetMasterState {
   final ErrorWrapper? error;
 
   const WorksheetMasterSavingState(
-    Document currentDocument,
-    String currentDirectory, {
+    Document currentDocument, {
     this.completed = false,
     this.error,
-  }) : super._(currentDocument, currentDirectory);
+  }) : super._(currentDocument);
 
   @override
   List<Object?> get props => [...super.props, completed, error];
@@ -78,29 +73,9 @@ class WorksheetMasterShowImporterState extends WorksheetMasterState {
 
   const WorksheetMasterShowImporterState(
     Document currentDocument,
-    String currentDirectory,
     this.importerType,
-  ) : super._(currentDocument, currentDirectory);
+  ) : super._(currentDocument);
 
   @override
   List<Object?> get props => [...super.props, importerType];
-}
-
-/// State used when searching/filtering mode is active
-class WorksheetMasterSearchingState extends WorksheetMasterState {
-  /// Current searching request
-  final WorksheetMasterSearchEvent sourceEvent;
-
-  /// List of requests that passes the search filter groped by worksheet
-  final Map<Worksheet, List<RequestEntity>> filteredItems;
-
-  const WorksheetMasterSearchingState(
-    Document currentDocument,
-    String currentDirectory, {
-    required this.sourceEvent,
-    required this.filteredItems,
-  }) : super._(currentDocument, currentDirectory);
-
-  @override
-  List<Object?> get props => super.props + [filteredItems, sourceEvent];
 }

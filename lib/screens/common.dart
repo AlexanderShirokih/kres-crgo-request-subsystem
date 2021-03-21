@@ -70,7 +70,7 @@ class LoadingView extends StatelessWidget {
 Future<String?> showSaveDialog(
     Document currentDoc, String currentDirectory) async {
   final res = await getSavePath(
-    suggestedName: getSuggestedName(currentDoc, '.json'),
+    suggestedName: await getSuggestedName(currentDoc, '.json').first,
     initialDirectory: currentDirectory,
     confirmButtonText: 'Сохранить',
     acceptedTypeGroups: [
@@ -83,11 +83,9 @@ Future<String?> showSaveDialog(
   return res;
 }
 
-final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
-
-String getSuggestedName(Document currentDocument, String ext) {
-  String fmtDate(DateTime d) => _dateFormat.format(d);
-  return currentDocument.savePath == null
-      ? "Заявки ${fmtDate(currentDocument.updateDate)}$ext"
-      : "${path.basenameWithoutExtension(currentDocument.savePath!.path)}$ext";
+Stream<String> getSuggestedName(Document currentDocument, String ext) {
+  String fmtDate(DateTime d) => DateFormat('dd.MM.yyyy').format(d);
+  return currentDocument.savePath.asyncMap((file) async => file == null
+      ? "Заявки ${fmtDate(await currentDocument.updateDate.first)}$ext"
+      : "${path.basenameWithoutExtension(file.path)}$ext");
 }

@@ -1,7 +1,7 @@
+import 'package:kres_requests2/data/datasource/app_database.dart';
 import 'package:kres_requests2/data/repository/encoder.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:meta/meta.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 
 /// Data access object for [Employee] objects
 abstract class Dao<E, PE extends PersistedObject<int>> {
@@ -26,7 +26,7 @@ class BaseDao<E, PE extends PersistedObject<int>> implements Dao<E, PE> {
   final PersistedObjectSerializer<E, PE> _objectSerializer;
 
   @protected
-  final Database database;
+  final AppDatabase database;
 
   @protected
   final String tableName;
@@ -39,8 +39,8 @@ class BaseDao<E, PE extends PersistedObject<int>> implements Dao<E, PE> {
 
   @override
   Future<PE?> findById(int id) async {
-    final result =
-        await database.query(tableName, where: 'id = ?', whereArgs: [id]);
+    final db = await database.database;
+    final result = await db.query(tableName, where: 'id = ?', whereArgs: [id]);
     try {
       return _unwrap(result).first;
     } on StateError {
@@ -51,24 +51,28 @@ class BaseDao<E, PE extends PersistedObject<int>> implements Dao<E, PE> {
   @override
   Future<PE> insert(E entity) async {
     final serializedData = _objectSerializer.serialize(entity);
-    serializedData['id'] = await database.insert(tableName, serializedData);
+    final db = await database.database;
+    serializedData['id'] = await db.insert(tableName, serializedData);
     return (await _objectSerializer.deserialize(serializedData)) as PE;
   }
 
   @override
   Future<void> delete(PE entity) async {
-    await database.delete(tableName, where: 'id = ?', whereArgs: [entity.id]);
+    final db = await database.database;
+    await db.delete(tableName, where: 'id = ?', whereArgs: [entity.id]);
   }
 
   @override
   Future<List<PE>> findAll() async {
-    final data = await database.query(tableName);
+    final db = await database.database;
+    final data = await db.query(tableName);
     return _unwrap(data).toList();
   }
 
   @override
   Future<void> update(PE entity) async {
-    await database.update(
+    final db = await database.database;
+    await db.update(
       tableName,
       _objectSerializer.serialize(entity as E)..remove('id'),
       where: 'id=?',

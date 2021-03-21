@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_creation_mode.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 
+/// Widget that provides way to create new worksheet of certain type
 class AddNewWorkSheetTabView extends StatefulWidget {
   final void Function(WorksheetCreationMode) onAddPressed;
 

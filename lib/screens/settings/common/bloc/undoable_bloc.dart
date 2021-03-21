@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
 import 'package:kres_requests2/domain/validator.dart';
@@ -12,7 +13,7 @@ import 'package:meta/meta.dart';
 /// BLoC that handles actions on a list of data that can have editing history
 /// and can be reverted or applied to [RepositoryController]
 abstract class UndoableBloc<DH extends UndoableDataHolder<E>, E extends Object>
-    extends Bloc<UndoableDataEvent, UndoableState<DH>> {
+    extends Bloc<UndoableDataEvent, UndoableState<DH>> implements Disposable {
   final StreamedRepositoryController<E> _controller;
   final Validator<E> _validator;
   late StreamSubscription _subscription;
@@ -70,5 +71,10 @@ abstract class UndoableBloc<DH extends UndoableDataHolder<E>, E extends Object>
   Future<void> close() async {
     await _subscription.cancel();
     await super.close();
+  }
+
+  @override
+  void dispose() {
+    close();
   }
 }
