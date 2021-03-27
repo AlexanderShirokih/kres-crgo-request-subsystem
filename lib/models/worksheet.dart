@@ -24,14 +24,14 @@ class Worksheet {
   /// Выбранные виды работ
   Set<String>? workTypes = {};
 
-  Worksheet({
+  Worksheet.withRequest({
     required this.name,
     List<RequestEntity>? requests,
   }) {
     this.requests = requests == null ? [] : requests;
   }
 
-  Worksheet._({
+  Worksheet({
     this.name,
     this.mainEmployee,
     this.chiefEmployee,
@@ -71,32 +71,7 @@ class Worksheet {
   //   'workTypes': workTypes.toList(),
   // };
 
-  /// TODO: Create new code
-  factory Worksheet.fromJson(Map<String, dynamic> data) =>
-      throw UnimplementedError();
-
-  // Worksheet._(
-  //   name: data['name'] as String,
-  //   mainEmployee: data['mainEmployee'] == null
-  //       ? null
-  //       : Employee.fromMap(data['mainEmployee']),
-  //   chiefEmployee: data['chiefEmployee'] == null
-  //       ? null
-  //       : Employee.fromMap(data['chiefEmployee']),
-  //   membersEmployee: (data['membersEmployee'] as List<dynamic>)
-  //       .map((e) => Employee.fromMap(e))
-  //       .take(6)
-  //       .toList(),
-  //   requests: (data['requests'] as List<dynamic>)
-  //       .map((r) => RequestEntity.fromJson(r))
-  //       .toList(),
-  //   date: data['date'] == null
-  //       ? null
-  //       : DateTime.fromMillisecondsSinceEpoch(data['date']),
-  //   workTypes: (data['workTypes'] as List<dynamic>).cast<String>().toSet(),
-  // );
-
-  Worksheet copy({String? name}) => Worksheet._(
+  Worksheet copy({String? name}) => Worksheet(
         name: name ?? this.name,
         workTypes: this.workTypes,
         requests: this.requests,

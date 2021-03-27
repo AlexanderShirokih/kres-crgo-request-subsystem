@@ -38,12 +38,17 @@ class RequestsRepository extends WorksheetImporterRepository {
 
   /// Imports worksheet previously exported to XLS by Mega-billing app
   @override
-  Future<OptionalData<Document>> importDocument(String filePath, dynamic _) =>
-      isAvailable().then((isExists) {
-        if (!isExists) throw ImporterProcessorMissingException();
-      }).then((value) => _requestProcessor
-          .importRequests(filePath)
-          .catchError((e, s) => OptionalData.ofError<Document>(e, s)));
+  Future<Document?> importDocument(String filePath) async {
+    final isExists = await isAvailable();
+    if (!isExists) throw ImporterProcessorMissingException();
+
+    final importResult = await _requestProcessor.importRequests(filePath);
+    if (importResult.hasError()) {
+      throw importResult.error!;
+    }
+
+    return importResult.data;
+  }
 
   /// Gets all available printers that can handle document printing
   Future<OptionalData<List<String>>> listPrinters() => _requestProcessor

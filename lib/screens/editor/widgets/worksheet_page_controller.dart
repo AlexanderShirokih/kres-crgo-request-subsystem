@@ -6,7 +6,7 @@ import 'package:kres_requests2/screens/confirmation_dialog.dart';
 
 import 'worksheet_tab_view.dart';
 
-/// Show a tabs of worksheets currently exists in the document
+/// Show a tabs for worksheets currently exists in the document
 class WorksheetsPageController extends StatelessWidget {
   /// List of the document worksheets
   final Stream<List<Worksheet>> worksheets;
@@ -76,7 +76,7 @@ class WorksheetsPageController extends StatelessWidget {
     required Worksheet active,
     required bool canRemove,
   }) {
-    return WorkSheetTabView(
+    return WorksheetTabView(
       worksheet: current,
       filteredItemsCount:
           // TODO: Broken code

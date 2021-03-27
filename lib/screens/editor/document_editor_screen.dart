@@ -4,10 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
-import 'package:kres_requests2/data/editor/worksheet_editor_module.dart';
+import 'package:kres_requests2/domain/counters_importer.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:kres_requests2/repo/repository_module.dart';
+import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_editor_screen.dart';
@@ -19,15 +19,15 @@ import 'package:kres_requests2/screens/preview/worksheets_preview_screen.dart';
 import 'widgets/worksheet_page_controller.dart';
 
 /// Screen that manages whole document state
-class WorksheetMasterScreen extends StatelessWidget {
-  final WorksheetEditorModule worksheetEditorModule;
+class DocumentEditorScreen extends StatelessWidget {
+  final Document document;
 
-  WorksheetMasterScreen({required this.worksheetEditorModule});
+  DocumentEditorScreen({required this.document});
 
   @override
   Widget build(BuildContext context) => BlocProvider(
         create: (_) => WorksheetMasterBloc(
-          worksheetEditorModule.targetDocument,
+          document,
           savePathChooser: showSaveDialog,
         ),
         child: Scaffold(
@@ -83,7 +83,6 @@ class WorksheetMasterScreen extends StatelessWidget {
                   builder: (context, snap) {
                     if (snap.hasData) {
                       return WorksheetEditorView(
-                        worksheetEditorModule: worksheetEditorModule,
                         document: state.currentDocument,
                         worksheet: snap.requireData,
                         highlighted: Stream.empty(),
@@ -251,9 +250,13 @@ class WorksheetMasterScreen extends StatelessWidget {
           CountersImporterScreen(
             initialDirectory: workingDirectory,
             targetDocument: state.currentDocument,
-            importerRepository: context
-                .read<RepositoryModule>()
-                .getCountersImporterRepository(),
+            importerRepository: CountersImporterRepository(
+              importer: CountersImporter(),
+              tableChooser: (tables) => showDialog<String>(
+                context: context,
+                builder: (_) => TableSelectionDialog(tables),
+              ),
+            ),
           ),
         );
         break;
@@ -263,8 +266,13 @@ class WorksheetMasterScreen extends StatelessWidget {
           NativeImporterScreen(
             initialDirectory: workingDirectory,
             targetDocument: state.currentDocument,
-            importerRepository:
-                context.watch<RepositoryModule>().getNativeImporterRepository(),
+            importerRepository: NativeImporterRepository((tables) async {
+              final worksheets = await showDialog<List<Worksheet>>(
+                context: context,
+                builder: (_) => SelectWorksheetsDialog(tables),
+              );
+              return worksheets!;
+            }),
           ),
         );
         break;

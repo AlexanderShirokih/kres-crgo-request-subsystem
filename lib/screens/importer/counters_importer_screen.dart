@@ -11,14 +11,6 @@ import 'base_importer_screen.dart';
 class CountersImporterScreen extends BaseImporterScreen {
   final String? initialDirectory;
 
-  @override
-  dynamic getImporterParams(BuildContext context) {
-    return (List<String> tables) async => showDialog<String>(
-          context: context,
-          builder: (_) => _TableSelectionDialog(tables),
-        );
-  }
-
   CountersImporterScreen({
     required Document targetDocument,
     required CountersImporterRepository importerRepository,
@@ -79,10 +71,10 @@ class _CountersImporterIdleView extends StatelessWidget {
       );
 }
 
-class _TableSelectionDialog extends StatelessWidget {
+class TableSelectionDialog extends StatelessWidget {
   final List<String> choices;
 
-  const _TableSelectionDialog(this.choices) : assert(choices != null);
+  const TableSelectionDialog(this.choices) : assert(choices != null);
 
   @override
   Widget build(BuildContext context) {

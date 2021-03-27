@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/data/editor/worksheet_editor_module.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
@@ -14,13 +14,11 @@ import 'request_editor_dialog.dart';
 import 'worksheet_move_dialog.dart';
 
 class WorksheetEditorView extends StatefulWidget {
-  final WorksheetEditorModule worksheetEditorModule;
   final Document document;
   final Worksheet worksheet;
   final Stream<List<RequestEntity>> highlighted;
 
   const WorksheetEditorView({
-    required this.worksheetEditorModule,
     required this.document,
     required this.worksheet,
     required this.highlighted,
@@ -130,7 +128,8 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
                           context: context,
                           barrierDismissible: false,
                           builder: (_) => RequestEditorDialog(
-                            editorModule: widget.worksheetEditorModule,
+                            controller: Modular.get(),
+                            validator: Modular.get(),
                             initial: requests[index],
                           ),
                         ).then((edited) {
@@ -202,7 +201,8 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
                     context: context,
                     barrierDismissible: false,
                     builder: (_) => RequestEditorDialog(
-                          editorModule: widget.worksheetEditorModule,
+                          controller: Modular.get(),
+                          validator: Modular.get(),
                         )).then((created) {
                   if (created != null) {
                     setState(() {

@@ -5,11 +5,22 @@ import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/screens/common.dart';
 
+/// Common screen for all importer types
 abstract class BaseImporterScreen extends StatelessWidget {
+  /// Page title
   final String title;
+
+  /// Repository for importing objects
   final WorksheetImporterRepository importerRepository;
+
+  /// Target document to be inflated with importer results.
+  /// If not present then new document will be created
   final Document? targetDocument;
+
+  /// Builder for titling screen
   final WidgetBuilder mainWidgetBuilder;
+
+  /// `true` to force open file chooser
   final bool forceFileSelection;
 
   const BaseImporterScreen({
@@ -20,45 +31,44 @@ abstract class BaseImporterScreen extends StatelessWidget {
     required this.forceFileSelection,
   });
 
+  /// Creates proper file chooser
   Future<String?> showOpenDialog(BuildContext context);
-
-  dynamic getImporterParams(BuildContext context);
 
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: Text(title),
         ),
-        body: BlocProvider.value(
-          value: ImporterBloc(
+        body: BlocProvider(
+          create: (_) => ImporterBloc(
+            targetDocument: targetDocument,
+            pickFileOnStart: forceFileSelection,
             importerRepository: importerRepository,
             fileChooser: () => showOpenDialog(context),
-            targetDocument: targetDocument,
-            forceFileChooser: forceFileSelection,
-            importerParams: getImporterParams(context),
           ),
           child: Builder(
             builder: (ctx) => BlocConsumer<ImporterBloc, ImporterState>(
               bloc: ctx.read<ImporterBloc>(),
               builder: (_, state) {
-                if (state is ImportLoadingState) {
+                if (state is ImporterLoadingState) {
                   return LoadingView("Загрузка файла ${state.path}");
                 } else if (state is ImportErrorState) {
                   return ErrorView(
                     errorDescription: state.error,
                     stackTrace: state.stackTrace,
                   );
-                } else if (state is ImportEmptyState) {
+                } else if (state is ImporterDoneState &&
+                    state.importResult == ImportResult.documentEmpty) {
                   return _EmptyStateView();
                 } else {
                   return mainWidgetBuilder(context);
                 }
               },
               listener: (context, state) {
-                if (state is WorksheetReadyState) {
+                if (state is ImporterDoneState) {
                   Navigator.pop(context, state.document);
-                } else if (state is ImporterProccessMissingState) {
-                  Scaffold.of(context).showSnackBar(
+                } else if (state is ImporterModuleMissingState) {
+                  ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       duration: Duration(seconds: 6),
                       content:
@@ -81,14 +91,11 @@ class _EmptyStateView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Полученный список оказался пуст',
+            'Полученный документ оказался пуст',
             style: Theme.of(context).textTheme.headline4,
           ),
           const SizedBox(height: 28.0),
-          RaisedButton(
-            padding: EdgeInsets.all(24.0),
-            color: Theme.of(context).primaryColor,
-            textColor: Theme.of(context).primaryTextTheme.bodyText2!.color,
+          ElevatedButton(
             child: Text('НАЗАД'),
             onPressed: () => Navigator.pop(context),
           ),

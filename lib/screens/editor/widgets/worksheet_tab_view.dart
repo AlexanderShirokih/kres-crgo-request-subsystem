@@ -93,14 +93,14 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
   }
 }
 
-class WorkSheetTabView extends StatefulWidget {
+class WorksheetTabView extends StatefulWidget {
   final Worksheet worksheet;
   final bool isActive;
   final int filteredItemsCount;
   final void Function() onSelect;
   final void Function()? onRemove;
 
-  const WorkSheetTabView({
+  const WorksheetTabView({
     required this.filteredItemsCount,
     required this.worksheet,
     required this.isActive,
@@ -109,17 +109,17 @@ class WorkSheetTabView extends StatefulWidget {
   });
 
   @override
-  _WorkSheetTabViewState createState() => _WorkSheetTabViewState();
+  _WorksheetTabViewState createState() => _WorksheetTabViewState();
 }
 
-class _WorkSheetTabViewState extends State<WorkSheetTabView> {
+class _WorksheetTabViewState extends State<WorksheetTabView> {
   late TextEditingController _controller;
   bool _isEditable = false;
 
   @override
   void initState() {
-    _controller = TextEditingController(text: widget.worksheet.name);
     super.initState();
+    _controller = TextEditingController(text: widget.worksheet.name);
   }
 
   @override
@@ -134,6 +134,7 @@ class _WorkSheetTabViewState extends State<WorkSheetTabView> {
         child: Card(
           elevation: 5.0,
           child: GestureDetector(
+            onTap: widget.onSelect,
             onDoubleTap: () => setState(() {
               _isEditable = true;
             }),
@@ -143,7 +144,6 @@ class _WorkSheetTabViewState extends State<WorkSheetTabView> {
                 horizontal: 6.0,
                 vertical: 6.0,
               ),
-              onTap: widget.onSelect,
               leading: widget.filteredItemsCount > 0
                   ? Chip(
                       backgroundColor: Colors.yellow,
@@ -152,21 +152,33 @@ class _WorkSheetTabViewState extends State<WorkSheetTabView> {
                   : null,
               title: _isEditable
                   ? TextField(
+                      maxLines: 1,
                       controller: _controller,
-                      onSubmitted: (text) => setState(() {
-                        widget.worksheet.name = text;
-                        _isEditable = false;
-                      }),
+                      onSubmitted: (_) => onEditingDone(),
                     )
                   : Text(widget.worksheet.name!),
-              trailing: widget.onRemove != null
-                  ? IconButton(
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_isEditable)
+                    IconButton(
+                      icon: FaIcon(FontAwesomeIcons.check),
+                      onPressed: onEditingDone,
+                    ),
+                  if (widget.onRemove != null)
+                    IconButton(
                       icon: FaIcon(FontAwesomeIcons.times),
                       onPressed: widget.onRemove,
                     )
-                  : null,
+                ],
+              ),
             ),
           ),
         ),
       );
+
+  void onEditingDone() => setState(() {
+        widget.worksheet.name = _controller.text;
+        _isEditable = false;
+      });
 }

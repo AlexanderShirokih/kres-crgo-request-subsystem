@@ -48,9 +48,6 @@ class RequestsImporterScreen extends BaseImporterScreen {
       ],
     ).then((file) => file?.path);
   }
-
-  @override
-  dynamic getImporterParams(BuildContext context) => null;
 }
 
 class _RequestsImporterIdleView extends StatelessWidget {

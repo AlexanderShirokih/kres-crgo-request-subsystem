@@ -8,16 +8,14 @@ import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 
 class NativeImporterScreen extends BaseImporterScreen {
+  final NativeImporterRepository importerRepository;
   final String? initialDirectory;
   final Document? targetDocument;
-  final NativeImporterRepository importerRepository;
-  final bool importAll;
 
   NativeImporterScreen({
     required this.importerRepository,
     this.targetDocument,
     this.initialDirectory,
-    this.importAll = false,
   }) : super(
           title: 'Импорт файла',
           importerRepository: importerRepository,
@@ -42,16 +40,6 @@ class NativeImporterScreen extends BaseImporterScreen {
     if (res == null) return null;
 
     return res.path;
-  }
-
-  @override
-  dynamic getImporterParams(BuildContext context) {
-    return (List<Worksheet> tables) async => importAll
-        ? Future<List<Worksheet>>.value(tables)
-        : showDialog<List<Worksheet>>(
-            context: context,
-            builder: (_) => SelectWorksheetsDialog(tables),
-          );
   }
 }
 

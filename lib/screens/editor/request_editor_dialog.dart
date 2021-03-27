@@ -3,22 +3,23 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/editor/request_editor_dialog/request_editor_bloc.dart';
-import 'package:kres_requests2/data/editor/worksheet_editor_module.dart';
-import 'package:kres_requests2/domain/models/request_type.dart';
+import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 
 /// Dialog for editing [RequestEntity].
 class RequestEditorDialog extends StatelessWidget {
-  final WorksheetEditorModule editorModule;
-
   /// Current [RequestEntity] to be edited. If `null` then new request entity
   /// will be created
   final RequestEntity? initial;
 
+  final Validator<RequestEntity> validator;
+  final AbstractRepositoryController<RequestEntity> controller;
+
   const RequestEditorDialog({
     Key? key,
     this.initial,
-    required this.editorModule,
+    required this.validator,
+    required this.controller,
   }) : super(key: key);
 
   @override
@@ -26,8 +27,8 @@ class RequestEditorDialog extends StatelessWidget {
     return BlocProvider<RequestEditorBloc>(
       create: (_) => RequestEditorBloc(
         initialRequest: initial,
-        requestValidator: editorModule.requestModule.requestValidator,
-        requestController: editorModule.requestModule.requestController,
+        requestValidator: validator,
+        requestController: controller,
         requestTypeRepository: Modular.get(),
       ),
       child: BlocConsumer<RequestEditorBloc, RequestEditorState>(

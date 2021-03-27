@@ -56,33 +56,22 @@ class Document extends Equatable {
         'worksheets': _worksheets.requireValue.map((w) => w.toJson()).toList()
       };
 
-  factory Document.fromJson(Map<String, dynamic> data) => Document._(
-        (data['worksheets'] as List<dynamic>)
-            .map((w) => Worksheet.fromJson(w))
-            .toList(),
-        data['activeWorksheet'] ?? 0,
-        DateTime.fromMillisecondsSinceEpoch(data['updateDate']),
-      );
-
   /// Makes target [worksheet] active
   void makeActive(Worksheet worksheet) {
     _activeWorksheet.add(max(_worksheets.requireValue.indexOf(worksheet), 0));
   }
 
-  Document._(
-    List<Worksheet> worksheets,
-    Worksheet activeWorksheet,
-    DateTime updateDate,
-  ) {
-    _updateDate.add(updateDate);
-    _worksheets.add(worksheets);
-    makeActive(activeWorksheet);
-  }
-
   /// Creates document from [savePath] and list of [worksheets]
-  Document({File? savePath, required List<Worksheet> worksheets}) {
+  Document({
+    File? savePath,
+    required List<Worksheet> worksheets,
+    DateTime? updateDate,
+  }) {
     if (savePath != null) {
       _savePath.add(savePath);
+    }
+    if (updateDate != null) {
+      _updateDate.add(updateDate);
     }
 
     _worksheets.add(worksheets);
@@ -205,6 +194,11 @@ class Document extends Equatable {
     await _worksheets.close();
   }
 
+  /// Updates save path of the document
+  void setSavePath(File savePath) {
+    _savePath.add(savePath);
+  }
+
   @override
   List<Object?> get props => [
         _updateDate.value,
@@ -212,7 +206,4 @@ class Document extends Equatable {
         _savePath.value,
         _worksheets.value,
       ];
-
-  /// Updates the document save path
-  void updateSavePath(File file) => _savePath.add(file);
 }

@@ -4,6 +4,7 @@ import 'package:kres_requests2/data/models.dart';
 import 'package:kres_requests2/data/repository/storage_repository.dart';
 import 'package:kres_requests2/data/validators.dart';
 import 'package:kres_requests2/domain/domain.dart';
+import 'package:kres_requests2/screens/editor/document_module.dart';
 import 'package:kres_requests2/screens/settings/settings_module.dart';
 import 'package:kres_requests2/screens/startup/startup_screen.dart';
 
@@ -48,5 +49,6 @@ class StartupModule extends Module {
   final List<ModularRoute> routes = [
     ChildRoute('/', child: (_, __) => StartupScreen()),
     ModuleRoute('/settings', module: SettingsModule()),
+    ModuleRoute('/document', module: DocumentModule()),
   ];
 }
