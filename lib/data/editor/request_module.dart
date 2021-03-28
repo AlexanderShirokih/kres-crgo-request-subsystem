@@ -44,7 +44,7 @@ class _PersistedRequestEntity extends RequestEntity implements PersistedObject {
           name: request.name,
           address: request.address,
           additionalInfo: request.additionalInfo,
-          counterInfo: request.counterInfo,
+          counter: request.counter,
           accountId: request.accountId,
           reason: request.reason,
           requestType: request.requestType,

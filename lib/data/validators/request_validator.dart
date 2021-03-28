@@ -28,7 +28,7 @@ class RequestValidator extends MappedValidator<RequestEntity> {
             canBeEmpty: true,
             minLength: 2,
             maxLength: 36,
-          ): (e) => e.counterInfo,
+          ): (e) => e.counter,
           const StringValidator(
             fieldName: 'additionalInfo',
             canBeEmpty: true,

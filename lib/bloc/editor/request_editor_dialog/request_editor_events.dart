@@ -29,7 +29,7 @@ class UpdateRequestFieldsEvent extends RequestEditorEvent {
   final String address;
 
   /// Counter info
-  final String counterInfo;
+  final CounterInfo? counter;
 
   /// Account ID
   final String accountId;
@@ -39,7 +39,7 @@ class UpdateRequestFieldsEvent extends RequestEditorEvent {
     required this.name,
     required this.additionalInfo,
     required this.address,
-    required this.counterInfo,
+    required this.counter,
     required this.accountId,
   }) : super._();
 
@@ -49,7 +49,7 @@ class UpdateRequestFieldsEvent extends RequestEditorEvent {
         name,
         additionalInfo,
         address,
-        counterInfo,
+        counter,
         accountId,
       ];
 }

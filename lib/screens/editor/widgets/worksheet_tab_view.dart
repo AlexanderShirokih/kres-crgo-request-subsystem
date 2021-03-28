@@ -30,7 +30,7 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
   Widget _buildAddTile() => _buildItemTile(
         title: 'Добавить',
         tooltip: _isExpanded ? null : 'Добавить новый лист',
-        icon: FontAwesomeIcons.plus,
+        icon: Icon(Icons.add),
       );
 
   Widget _buildExpandedLayout() => Column(
@@ -40,27 +40,27 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
           _buildItemTile(
             title: 'Пустой лист заявок',
             tooltip: 'Добавить пустой лист для создания заявок',
-            icon: FontAwesomeIcons.file,
+            icon: FaIcon(FontAwesomeIcons.file),
             mode: WorksheetCreationMode.empty,
           ),
           _buildItemTile(
             title: 'Импорт из другого документа',
             tooltip: 'Добавить листы из другого документа',
-            icon: FontAwesomeIcons.fileImport,
+            icon: FaIcon(FontAwesomeIcons.fileImport),
             mode: WorksheetCreationMode.importNative,
           ),
           _buildItemTile(
             title: 'Импорт файла заявок',
             tooltip:
                 'Создать новый лист заявок из подготовленного файла Mega-billing',
-            icon: FontAwesomeIcons.fileExcel,
+            icon: FaIcon(FontAwesomeIcons.fileExcel),
             mode: WorksheetCreationMode.import,
           ),
           _buildItemTile(
             title: 'Импорт списка счётчиков',
             tooltip:
                 'Создать новый лист заявок из подготовленного списка счётчиков',
-            icon: FontAwesomeIcons.table,
+            icon: FaIcon(FontAwesomeIcons.table),
             mode: WorksheetCreationMode.importCounters,
           )
         ],
@@ -69,11 +69,11 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
   Widget _buildItemTile({
     required String title,
     String? tooltip,
-    required IconData icon,
+    required Widget icon,
     WorksheetCreationMode? mode,
   }) {
     Widget _buildListTile() => ListTile(
-          trailing: FaIcon(icon),
+          trailing: icon,
           title: Text(title),
           onTap: () => setState(() {
             _isExpanded = !_isExpanded;
@@ -93,6 +93,7 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
   }
 }
 
+/// Represents page selector card
 class WorksheetTabView extends StatefulWidget {
   final Worksheet worksheet;
   final bool isActive;
@@ -154,7 +155,7 @@ class _WorksheetTabViewState extends State<WorksheetTabView> {
                   ? TextField(
                       maxLines: 1,
                       controller: _controller,
-                      onSubmitted: (_) => onEditingDone(),
+                      onSubmitted: (_) => _onEditingDone(),
                     )
                   : Text(widget.worksheet.name!),
               trailing: Row(
@@ -162,12 +163,17 @@ class _WorksheetTabViewState extends State<WorksheetTabView> {
                 children: [
                   if (_isEditable)
                     IconButton(
-                      icon: FaIcon(FontAwesomeIcons.check),
-                      onPressed: onEditingDone,
+                      icon: Icon(Icons.done),
+                      onPressed: _onEditingDone,
                     ),
-                  if (widget.onRemove != null)
+                  if (_isEditable)
                     IconButton(
-                      icon: FaIcon(FontAwesomeIcons.times),
+                      icon: Icon(Icons.close),
+                      onPressed: _onCancelEditing,
+                    ),
+                  if (widget.onRemove != null && !_isEditable)
+                    IconButton(
+                      icon: Icon(Icons.delete_outline),
                       onPressed: widget.onRemove,
                     )
                 ],
@@ -177,8 +183,13 @@ class _WorksheetTabViewState extends State<WorksheetTabView> {
         ),
       );
 
-  void onEditingDone() => setState(() {
+  void _onEditingDone() => setState(() {
         widget.worksheet.name = _controller.text;
+        _isEditable = false;
+      });
+
+  void _onCancelEditing() => setState(() {
+        _controller.text = widget.worksheet.name ?? '???';
         _isEditable = false;
       });
 }

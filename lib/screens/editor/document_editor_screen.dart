@@ -74,9 +74,13 @@ class DocumentEditorScreen extends StatelessWidget {
             _showExitConfirmationDialog(state.currentDocument, context),
         child: Row(
           children: [
-            _createPageController(context, state),
+            WorksheetsPageController(
+              worksheets: state.currentDocument.worksheets,
+              activeWorksheet: state.currentDocument.active,
+            ),
             Expanded(
               child: Container(
+                color: Color(0xFFE5E5E5),
                 height: double.maxFinite,
                 child: StreamBuilder<Worksheet>(
                   stream: state.currentDocument.active,
@@ -193,14 +197,6 @@ class DocumentEditorScreen extends StatelessWidget {
         ),
       );
 
-  Widget _createPageController(
-      BuildContext context, WorksheetMasterState state) {
-    return WorksheetsPageController(
-      worksheets: state.currentDocument.worksheets,
-      activeWorksheet: state.currentDocument.active,
-    );
-  }
-
   void _handleSavingState(
       BuildContext context, WorksheetMasterSavingState state) {
     final scaffold = ScaffoldMessenger.of(context);
@@ -243,7 +239,6 @@ class DocumentEditorScreen extends StatelessWidget {
           ),
         );
         break;
-      //
       case WorksheetImporterType.countersImporter:
         _navigateToImporter(
           context,
@@ -266,7 +261,8 @@ class DocumentEditorScreen extends StatelessWidget {
           NativeImporterScreen(
             initialDirectory: workingDirectory,
             targetDocument: state.currentDocument,
-            importerRepository: NativeImporterRepository(Modular.get(), (tables) async {
+            importerRepository:
+                NativeImporterRepository(Modular.get(), (tables) async {
               final worksheets = await showDialog<List<Worksheet>>(
                 context: context,
                 builder: (_) => SelectWorksheetsDialog(tables),

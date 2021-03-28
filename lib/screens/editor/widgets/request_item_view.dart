@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/models/connection_point.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 
 /// Describes single item of request entity
@@ -45,89 +46,10 @@ class RequestItemView extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(
-                vertical: 12.0,
-                horizontal: 8.0,
+                vertical: 8.0,
+                horizontal: 6.0,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (isSelected != null)
-                    Checkbox(value: isSelected, onChanged: onChanged),
-                  Container(
-                    width: 24.0,
-                    child: Text(position.toString()),
-                  ),
-                  const SizedBox(width: 8.0),
-                  Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        request.accountId?.toString().padLeft(6, '0') ?? "--",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20.0,
-                        ),
-                      ),
-                      const SizedBox(height: 16.0),
-                      Text(request.requestType?.shortName ?? "--"),
-                    ],
-                  ),
-                  const SizedBox(width: 12.0),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: 380.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          request.name,
-                          style: TextStyle(
-                            fontSize: 22.0,
-                          ),
-                        ),
-                        const SizedBox(height: 6.0),
-                        Text(
-                          request.address,
-                          style: TextStyle(
-                            fontSize: 18.0,
-                          ),
-                        ),
-                        ..._printRequestReason(request, context),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 24.0),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: 380.0,
-                      maxWidth: 420.0,
-                    ),
-                    child: Container(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            request.counterInfo!,
-                            style: TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 10.0),
-                          Text(
-                            request.additionalInfo!,
-                            style: TextStyle(fontSize: 16.0),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                ],
-              ),
+              child: _createRequestContent(context),
             ),
             Positioned(
               left: 4.0,
@@ -144,20 +66,155 @@ class RequestItemView extends StatelessWidget {
     );
   }
 
-  Iterable<Widget> _printRequestReason(
-    RequestEntity request,
-    BuildContext context,
-  ) {
-    if (request.reason != null && request.reason!.isNotEmpty) {
-      return [
-        const SizedBox(height: 16.0),
-        Text(
-          request.reason!,
-          style: Theme.of(context).textTheme.caption!.copyWith(fontSize: 16.0),
-        ),
-      ];
+  Widget _createRequestContent(BuildContext context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (isSelected != null)
+                Checkbox(value: isSelected, onChanged: onChanged),
+              // First column
+              Text(position.toString()),
+              const SizedBox(width: 16.0),
+              SizedBox(
+                width: 72.0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request.accountId?.toString().padLeft(6, '0') ?? "--",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w800, fontSize: 20.0),
+                    ),
+                    const SizedBox(height: 8.0),
+                    Text(request.requestType?.shortName ?? "--"),
+                  ],
+                ),
+              ),
+              // Second column
+              const SizedBox(width: 12.0),
+              SizedBox(
+                width: 360.0,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(request.name, style: TextStyle(fontSize: 20.0)),
+                    const SizedBox(height: 6.0),
+                    Text(
+                      request.address,
+                      style: TextStyle(
+                        fontSize: 18.0,
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    Text(
+                      request.reason ?? '',
+                      style: Theme.of(context)
+                          .textTheme
+                          .caption!
+                          .copyWith(fontSize: 16.0),
+                    ),
+                  ],
+                ),
+              ),
+              // Third column
+              const SizedBox(width: 12.0),
+              SizedBox(
+                width: 320.0,
+                child: Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 220.0,
+                            child: Text(
+                              request.counter?.mainInfo ?? 'ПУ отсутств.',
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4.0),
+                          Text(
+                            request.counter?.checkInfo ?? '',
+                            style: TextStyle(
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10.0),
+                      _printConnectionPoint(request.connectionPoint),
+                      const SizedBox(height: 10.0),
+                      _printPhone(request.phoneNumber),
+
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
+          Divider(),
+          Padding(
+            padding: const EdgeInsets.only(left: 24.0),
+            child: Text(
+              request.additionalInfo!,
+              style: TextStyle(fontSize: 16.0),
+            ),
+          ),
+        ],
+      );
+
+  Widget _printPhone(String? phone) {
+    if (phone == null) {
+      return const SizedBox();
     }
-    return <Widget>[];
+
+    return Row(
+      children: [
+        Icon(Icons.phone, size: 20.0),
+        const SizedBox(width: 4.0),
+        Text(phone, style: TextStyle(fontWeight: FontWeight.w700)),
+      ],
+    );
+  }
+
+  Widget _printConnectionPoint(ConnectionPoint? connectionPoint) {
+    Iterable<Widget> printConnectionPoint0() sync* {
+      if (connectionPoint == null) {
+        yield Text('--');
+        return;
+      }
+
+      if (connectionPoint.tp != null) {
+        yield Text('ТП: ${connectionPoint.tp ?? '--'}');
+        yield const SizedBox(width: 8);
+      }
+      if (connectionPoint.line != null) {
+        yield Text('Ф: ${connectionPoint.line ?? '--'}');
+        yield const SizedBox(width: 8);
+      }
+      if (connectionPoint.pillar != null) {
+        yield Text('оп: ${connectionPoint.pillar ?? '--'}');
+        yield const SizedBox(width: 8);
+      }
+    }
+
+    return Row(
+      children: [
+        FaIcon(FontAwesomeIcons.plug, size: 16.0),
+        const SizedBox(width: 10.0),
+        ...printConnectionPoint0(),
+      ],
+    );
   }
 }
 

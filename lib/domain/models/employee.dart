@@ -2,26 +2,6 @@ import 'package:equatable/equatable.dart';
 
 import 'position.dart';
 
-/// Used to convert access group to its roman value
-extension RomanGroupExtension on int {
-  String get romanGroup {
-    switch (this) {
-      case 1:
-        return 'I';
-      case 2:
-        return 'II';
-      case 3:
-        return 'III';
-      case 4:
-        return 'IV';
-      case 5:
-        return 'V';
-      default:
-        return toString();
-    }
-  }
-}
-
 /// Describes info about employee
 class Employee extends Equatable {
   /// Employee name

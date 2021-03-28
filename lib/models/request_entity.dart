@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
+import 'package:kres_requests2/models/connection_point.dart';
+import 'package:kres_requests2/models/counter_info.dart';
 
 /// Describes information about work request
 class RequestEntity extends Equatable {
@@ -15,11 +17,17 @@ class RequestEntity extends Equatable {
   /// A request type
   final RequestType? requestType;
 
-  /// Additional info, such as additionalInfo, phone number, connection point
+  /// Phone number
+  final String? phoneNumber;
+
+  /// Additional info to request (comments)
   final String? additionalInfo;
 
+  /// Connection point
+  final ConnectionPoint? connectionPoint;
+
   /// Electrical counter info
-  final String? counterInfo;
+  final CounterInfo? counter;
 
   /// Request reason
   final String? reason;
@@ -27,14 +35,16 @@ class RequestEntity extends Equatable {
   const RequestEntity({
     required this.name,
     required this.address,
-    required this.counterInfo,
+    required this.counter,
     required this.additionalInfo,
+    this.phoneNumber,
     this.accountId,
+    this.connectionPoint,
     this.requestType,
     this.reason,
   });
 
-  /// `true` all fields are empty
+  /// `true` if all fields are empty
   bool get isNew => this == RequestEntity.empty();
 
   /// Converts account ID to string
@@ -42,6 +52,7 @@ class RequestEntity extends Equatable {
       accountId?.toString().padLeft(6, '0') ?? "--";
 
   /// Creates [RequestEntity] instance from JSON
+  /// TODO: Legacy!
   factory RequestEntity.fromJson(Map<String, dynamic> data) => RequestEntity(
         accountId: data['accountId'],
         name: data['name'],
@@ -51,11 +62,12 @@ class RequestEntity extends Equatable {
           fullName: data['fullReqType'],
         ),
         additionalInfo: data['additionalInfo'],
-        counterInfo: data['counterInfo'],
+        counter: data['counterInfo'],
         reason: data['reason'],
       );
 
   /// Converts [RequestEntity] to JSON representation
+  /// TODO: Legacy!
   Map<String, dynamic> toJson() => {
         'accountId': accountId,
         'name': name,
@@ -63,15 +75,16 @@ class RequestEntity extends Equatable {
         'reqType': requestType?.shortName,
         'fullReqType': requestType?.fullName,
         'additionalInfo': additionalInfo,
-        'counterInfo': counterInfo,
+        'counterInfo': counter?.fullInfo,
         'reason': reason,
       };
 
   factory RequestEntity.empty() => const RequestEntity(
         name: "",
         address: "",
-        counterInfo: "",
+        counter: null,
         additionalInfo: "",
+        connectionPoint: null,
         accountId: null,
       );
 
@@ -81,7 +94,9 @@ class RequestEntity extends Equatable {
     String? name,
     String? reason,
     String? address,
-    String? counterInfo,
+    CounterInfo? counter,
+    ConnectionPoint? connectionPoint,
+    String? phoneNumber,
     String? additionalInfo,
     RequestType? requestType,
   }) =>
@@ -89,9 +104,11 @@ class RequestEntity extends Equatable {
         accountId: accountId ?? this.accountId,
         name: name ?? this.name,
         address: address ?? this.address,
+        phoneNumber: phoneNumber ?? this.phoneNumber,
         requestType: requestType ?? this.requestType,
         additionalInfo: additionalInfo ?? this.additionalInfo,
-        counterInfo: counterInfo ?? this.counterInfo,
+        connectionPoint: connectionPoint ?? this.connectionPoint,
+        counter: counter ?? this.counter,
         reason: reason ?? this.reason,
       );
 
@@ -102,7 +119,9 @@ class RequestEntity extends Equatable {
         address,
         requestType,
         additionalInfo,
-        counterInfo,
+        connectionPoint,
+        phoneNumber,
+        counter,
         reason,
       ];
 }

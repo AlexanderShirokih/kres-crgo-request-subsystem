@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:kres_requests2/domain/importer_exception.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
+import 'package:kres_requests2/models/counter_info.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
@@ -54,21 +55,22 @@ class CountersImporter {
           fullName: 'Замена по сроку',
         );
 
+        final counterInfo = CounterInfo(
+          type: row[5],
+          number: row[4],
+        );
+
         return RequestEntity(
           requestType: _kDefaultRequestType,
           accountId: row[1] as int,
+          phoneNumber: phoneMarker < 0 ? null : rawName.substring(phoneMarker),
           name: phoneMarker < 0 ? rawName : rawName.substring(0, phoneMarker),
           address: row[3].toString(),
-          counterInfo: '${row[5]} №${row[4]}',
-          additionalInfo: phoneMarker < 0
-              ? additional ?? ''
-              : [
-                  if (additional != null) additional,
-                  rawName.substring(phoneMarker)
-                ].join(' | '),
+          counter: counterInfo,
+          additionalInfo: additional,
         );
       } catch (e) {
-        throw ImporterException('Ошибка формата в строке: $row', e);
+        throw ImporterException('Error in the line: $row', e);
       }
     }).toList();
   }

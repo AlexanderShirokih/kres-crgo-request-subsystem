@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/editor/request_editor_dialog/request_editor_bloc.dart';
 import 'package:kres_requests2/domain/domain.dart';
+import 'package:kres_requests2/models/counter_info.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 
 /// Dialog for editing [RequestEntity].
@@ -72,6 +73,7 @@ class __RequestEditorViewState extends State<_RequestEditorView> {
   late TextEditingController _additionalController;
 
   late RequestType? _currentRequestType;
+  late CounterInfo? _currentCounter;
   late bool _isValid;
 
   __RequestEditorViewState();
@@ -84,11 +86,11 @@ class __RequestEditorViewState extends State<_RequestEditorView> {
 
     _isValid = !request.isNew;
     _currentRequestType = request.requestType;
+    _currentCounter = request.counter;
     _lsController = TextEditingController(
         text: request.accountId?.toString().padLeft(6, '0') ?? "");
     _addressController = TextEditingController(text: request.address);
     _nameController = TextEditingController(text: request.name);
-    _counterController = TextEditingController(text: request.counterInfo);
     _additionalController = TextEditingController(text: request.additionalInfo);
   }
 
@@ -98,7 +100,6 @@ class __RequestEditorViewState extends State<_RequestEditorView> {
     _lsController.dispose();
     _addressController.dispose();
     _nameController.dispose();
-    _counterController.dispose();
     _additionalController.dispose();
   }
 
@@ -138,7 +139,7 @@ class __RequestEditorViewState extends State<_RequestEditorView> {
             name: _nameController.text,
             additionalInfo: _additionalController.text,
             address: _addressController.text,
-            counterInfo: _counterController.text,
+            counter: _currentCounter,
             accountId: _lsController.text,
             requestType: _currentRequestType,
           ));

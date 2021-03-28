@@ -8,14 +8,20 @@ import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
-import 'package:kres_requests2/screens/editor/request_item_view.dart';
+import 'package:kres_requests2/screens/editor/widgets/request_item_view.dart';
 
 import 'request_editor_dialog.dart';
 import 'worksheet_move_dialog.dart';
 
+/// Show the list of requests for target [worksheet] of the [document]
 class WorksheetEditorView extends StatefulWidget {
+  /// Currently opened document
   final Document document;
+
+  /// Target worksheet
   final Worksheet worksheet;
+
+  /// A list of currently highlighted worksheets
   final Stream<List<RequestEntity>> highlighted;
 
   const WorksheetEditorView({
@@ -25,16 +31,11 @@ class WorksheetEditorView extends StatefulWidget {
   });
 
   @override
-  _WorksheetEditorViewState createState() =>
-      _WorksheetEditorViewState(document, worksheet);
+  _WorksheetEditorViewState createState() => _WorksheetEditorViewState();
 }
 
 class _WorksheetEditorViewState extends State<WorksheetEditorView> {
   final _controller = ScrollController();
-  Document _document;
-  Worksheet _worksheet;
-
-  _WorksheetEditorViewState(this._document, this._worksheet);
 
   Set<RequestEntity>? _selectionList;
   Map<RequestEntity, int>? _groupList;
@@ -72,7 +73,7 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
   }
 
   List<RequestEntity> _buildRequestsList() {
-    return _worksheet.requests!;
+    return widget.worksheet.requests ?? [];
     // TODO: BROKEN
     // final output = [...widget.highlighted!];
     // for (final request in _worksheet.requests!) {
@@ -83,112 +84,114 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
 
   @override
   Widget build(BuildContext context) {
-    _worksheet = widget.worksheet;
-    if (_worksheet.isEmpty) _selectionList = null;
+    final worksheet = widget.worksheet;
+    if (worksheet.isEmpty) _selectionList = null;
 
     final requests = _buildRequestsList();
 
     return Stack(
       children: [
-        _worksheet.isEmpty
+        worksheet.isEmpty
             ? _showPlaceholder()
-            : ConstrainedBox(
-                constraints: BoxConstraints(minWidth: 600.0),
-                child: ReorderableListView(
-                  scrollController: _controller,
-                  padding: _isSelected
-                      ? EdgeInsets.only(top: 64)
-                      : EdgeInsets.all(10.0),
-                  onReorder: (int oldIndex, int newIndex) => setState(() {
-                    if (newIndex > oldIndex) {
-                      newIndex -= 1;
-                    }
+            : Center(
+              child: SizedBox(
+                width: 840.0,
+                  child: ReorderableListView(
+                    scrollController: _controller,
+                    padding: _isSelected
+                        ? EdgeInsets.only(top: 64)
+                        : EdgeInsets.all(10.0),
+                    onReorder: (int oldIndex, int newIndex) => setState(() {
+                      if (newIndex > oldIndex) {
+                        newIndex -= 1;
+                      }
 
-                    // We shouldn't modify [requests] list directly because it's
-                    // just a copy of [_worksheet.requests]
+                      // We shouldn't modify [requests] list directly because it's
+                      // just a copy of [_worksheet.requests]
 
-                    // Transform shadow list indices to original indices
-                    final toRemove = requests[oldIndex];
-                    final toInsertAfter = requests[newIndex];
+                      // Transform shadow list indices to original indices
+                      final toRemove = requests[oldIndex];
+                      final toInsertAfter = requests[newIndex];
 
-                    final idx = _worksheet.requests!.indexOf(toInsertAfter);
-                    _worksheet.requests!.remove(toRemove);
-                    _worksheet.requests!.insert(idx, toRemove);
-                  }),
-                  children: List.generate(
-                    requests.length,
-                    (index) => GestureDetector(
-                      key: Key(requests[index].toString() +
-                          Random().nextInt(100000).toString()),
-                      onLongPress: () => setState(() {
-                        _selectionList = {requests[index]};
-                      }),
-                      onDoubleTap: () {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (_) => RequestEditorDialog(
-                            controller: Modular.get(),
-                            validator: Modular.get(),
-                            initial: requests[index],
-                          ),
-                        ).then((edited) {
-                          if (edited != null)
-                            setState(() {
-                              // TODO: REMOTE DEAD CODE
-                              // If previous value was selected then update
-                              // selection references
-                              final old = requests[index];
-                              if (_selectionList != null &&
-                                  _selectionList!.contains(old)) {
-                                _selectionList!
-                                  ..remove(old)
-                                  ..add(edited);
-                              }
-                              final oldIdx = _worksheet.requests!.indexOf(old);
-                              _worksheet.requests![oldIdx] = edited;
-                            });
-                          // widget.onDocumentsChanged();
-                        });
-                      },
-                      child: RequestItemView(
-                        defaultGroupIndex: _lastGroupIndex,
-                        position: index + 1,
-                        groupIndex: _groupList != null
-                            ? _groupList![requests[index]] ?? 0
-                            : 0,
-                        isSelected: _isSelected
-                            ? _selectionList!.contains(requests[index])
-                            : null,
-                        isHighlighted: false,
-                        // widget.highlighted != null &&
-                        //     widget.highlighted!.contains(requests[index]),
-                        request: requests[index],
-                        key: ValueKey(requests[index].accountId),
-                        onChanged: (isSelected) => setState(() {
-                          final value = requests[index];
-                          if (isSelected!) {
-                            _selectionList!.add(value);
-                          } else {
-                            _selectionList!.remove(value);
-                          }
-                          if (_selectionList!.isEmpty) _selectionList = null;
+                      final idx = worksheet.requests!.indexOf(toInsertAfter);
+                      worksheet.requests!.remove(toRemove);
+                      worksheet.requests!.insert(idx, toRemove);
+                    }),
+                    children: List.generate(
+                      requests.length,
+                      (index) => GestureDetector(
+                        key: Key(requests[index].toString() +
+                            Random().nextInt(100000).toString()),
+                        onLongPress: () => setState(() {
+                          _selectionList = {requests[index]};
                         }),
-                        groupChangeCallback: (newGroup) => setState(() {
-                          _lastGroupIndex = newGroup;
-                          if (_groupList == null) {
-                            _groupList = {requests[index]: newGroup};
-                          } else if (newGroup == 0) {
-                            _groupList!.remove(requests[index]);
-                          } else {
-                            _groupList![requests[index]] = newGroup;
-                          }
-                        }),
+                        onDoubleTap: () {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (_) => RequestEditorDialog(
+                              controller: Modular.get(),
+                              validator: Modular.get(),
+                              initial: requests[index],
+                            ),
+                          ).then((edited) {
+                            if (edited != null)
+                              setState(() {
+                                // TODO: REMOTE DEAD CODE
+                                // If previous value was selected then update
+                                // selection references
+                                final old = requests[index];
+                                if (_selectionList != null &&
+                                    _selectionList!.contains(old)) {
+                                  _selectionList!
+                                    ..remove(old)
+                                    ..add(edited);
+                                }
+                                final oldIdx = worksheet.requests!.indexOf(old);
+                                worksheet.requests![oldIdx] = edited;
+                              });
+                            // widget.onDocumentsChanged();
+                          });
+                        },
+                        child: RequestItemView(
+                          defaultGroupIndex: _lastGroupIndex,
+                          position: index + 1,
+                          groupIndex: _groupList != null
+                              ? _groupList![requests[index]] ?? 0
+                              : 0,
+                          isSelected: _isSelected
+                              ? _selectionList!.contains(requests[index])
+                              : null,
+                          isHighlighted: false,
+                          // widget.highlighted != null &&
+                          //     widget.highlighted!.contains(requests[index]),
+                          request: requests[index],
+                          key: ObjectKey(requests[index].accountId),
+                          onChanged: (isSelected) => setState(() {
+                            final value = requests[index];
+                            if (isSelected!) {
+                              _selectionList!.add(value);
+                            } else {
+                              _selectionList!.remove(value);
+                            }
+                            if (_selectionList!.isEmpty) _selectionList = null;
+                          }),
+                          groupChangeCallback: (newGroup) => setState(() {
+                            _lastGroupIndex = newGroup;
+                            if (_groupList == null) {
+                              _groupList = {requests[index]: newGroup};
+                            } else if (newGroup == 0) {
+                              _groupList!.remove(requests[index]);
+                            } else {
+                              _groupList![requests[index]] = newGroup;
+                            }
+                          }),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+            ),
         Align(
           alignment: Alignment.bottomRight,
           child: Padding(
@@ -277,7 +280,7 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
           ),
           tooltip: "Выбрать все",
           onPressed: () => setState(() {
-            _selectionList = _worksheet.requests!.toSet();
+            _selectionList = widget.worksheet.requests!.toSet();
           }),
         ),
         if (singleGroup != null) ...[
@@ -323,7 +326,7 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
                     if (confirmed != null && confirmed) {
                       setState(() {
                         for (final selected in _selectionList!)
-                          _worksheet.requests!.remove(selected);
+                          widget.worksheet.requests!.remove(selected);
                         _selectionList = null;
                       });
                     }
@@ -340,8 +343,8 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
   void _showWorksheetMoveDialog(MoveMethod moveMethod) => showDialog(
         context: context,
         builder: (_) => WorksheetMoveDialog(
-          document: _document,
-          sourceWorksheet: _worksheet,
+          document: widget.document,
+          sourceWorksheet: widget.worksheet,
           movingRequests: _selectionList!,
           moveMethod: moveMethod,
         ),

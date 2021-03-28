@@ -37,7 +37,9 @@ class DocumentFilter {
               return (request.printableAccountId.contains(searchText) ||
                   request.name.toLowerCase().contains(searchText) ||
                   request.address.toLowerCase().contains(searchText) ||
-                  (request.counterInfo?.toLowerCase().contains(searchText) ??
+                  (request.counter?.mainInfo
+                          .toLowerCase()
+                          .contains(searchText) ??
                       false) ||
                   (request.additionalInfo?.toLowerCase().contains(searchText) ??
                       false));

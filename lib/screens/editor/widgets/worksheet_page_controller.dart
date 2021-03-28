@@ -6,7 +6,7 @@ import 'package:kres_requests2/screens/confirmation_dialog.dart';
 
 import 'worksheet_tab_view.dart';
 
-/// Show a tabs for worksheets currently exists in the document
+/// Show a tabs for worksheets that currently exists in the document
 class WorksheetsPageController extends StatelessWidget {
   /// List of the document worksheets
   final Stream<List<Worksheet>> worksheets;
@@ -22,51 +22,45 @@ class WorksheetsPageController extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 280.0,
-        decoration: BoxDecoration(
-          border: Border(
-            right: BorderSide(
-              width: 2.0,
-              color: Theme.of(context).secondaryHeaderColor,
-              style: BorderStyle.solid,
-            ),
-          ),
-        ),
+        width: 285.0,
         height: double.maxFinite,
-        child: StreamBuilder<List<Worksheet>>(
-          stream: worksheets,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Container();
-            }
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: StreamBuilder<List<Worksheet>>(
+            stream: worksheets,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Container();
+              }
 
-            final worksheets = snapshot.requireData;
-            return StreamBuilder<Worksheet>(
-              stream: activeWorksheet,
-              builder: (context, snap) {
-                return snap.hasData
-                    ? ListView.builder(
-                        itemCount: worksheets.length + 1,
-                        itemBuilder: (context, index) {
-                          return index == worksheets.length
-                              ? AddNewWorkSheetTabView(
-                                  (worksheetCreationMode) =>
-                                      context.read<WorksheetMasterBloc>().add(
-                                            WorksheetMasterAddNewWorksheetEvent(
-                                                worksheetCreationMode),
-                                          ),
-                                )
-                              : _buildTabView(
-                                  context,
-                                  current: worksheets[index],
-                                  canRemove: worksheets.length == 1,
-                                  active: snap.requireData,
-                                );
-                        })
-                    : Container();
-              },
-            );
-          },
+              final worksheets = snapshot.requireData;
+              return StreamBuilder<Worksheet>(
+                stream: activeWorksheet,
+                builder: (context, snap) {
+                  return snap.hasData
+                      ? ListView.builder(
+                          itemCount: worksheets.length + 1,
+                          itemBuilder: (context, index) {
+                            return index == worksheets.length
+                                ? AddNewWorkSheetTabView(
+                                    (worksheetCreationMode) =>
+                                        context.read<WorksheetMasterBloc>().add(
+                                              WorksheetMasterAddNewWorksheetEvent(
+                                                  worksheetCreationMode),
+                                            ),
+                                  )
+                                : _buildTabView(
+                                    context,
+                                    current: worksheets[index],
+                                    canRemove: worksheets.length == 1,
+                                    active: snap.requireData,
+                                  );
+                          })
+                      : Container();
+                },
+              );
+            },
+          ),
         ),
       );
 
@@ -103,10 +97,11 @@ class WorksheetsPageController extends StatelessWidget {
                         WorksheetMasterWorksheetActionEvent(
                             current, WorksheetAction.remove));
                 });
-              } else
+              } else {
                 context.read<WorksheetMasterBloc>().add(
                     WorksheetMasterWorksheetActionEvent(
                         current, WorksheetAction.remove));
+              }
             },
     );
   }
