@@ -12,14 +12,12 @@ class InitialEvent extends ImporterEvent {
 }
 
 class ImportEvent extends ImporterEvent {
-  final bool attachPath;
+  final File? filePath;
 
-  const ImportEvent({
-    this.attachPath = true,
-  });
+  const ImportEvent({this.filePath});
 
   @override
-  List<Object> get props => [attachPath];
+  List<Object?> get props => [filePath];
 }
 
 class ImportErrorEvent extends ImporterEvent {

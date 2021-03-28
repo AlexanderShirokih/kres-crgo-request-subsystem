@@ -20,7 +20,6 @@ class CountersImporterScreen extends BaseImporterScreen {
           targetDocument: targetDocument,
           mainWidgetBuilder: (_) => _CountersImporterIdleView(),
           importerRepository: importerRepository,
-          forceFileSelection: false,
         );
 
   @override

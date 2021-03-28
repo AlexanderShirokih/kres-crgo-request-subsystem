@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
@@ -20,15 +22,16 @@ abstract class BaseImporterScreen extends StatelessWidget {
   /// Builder for titling screen
   final WidgetBuilder mainWidgetBuilder;
 
-  /// `true` to force open file chooser
-  final bool forceFileSelection;
+  /// Path for opening. If present document will be opened from this path.
+  /// Otherwise file chooser will be opened.
+  final File? openPath;
 
   const BaseImporterScreen({
     required this.title,
     required this.importerRepository,
     required this.targetDocument,
     required this.mainWidgetBuilder,
-    required this.forceFileSelection,
+    this.openPath,
   });
 
   /// Creates proper file chooser
@@ -42,7 +45,7 @@ abstract class BaseImporterScreen extends StatelessWidget {
         body: BlocProvider(
           create: (_) => ImporterBloc(
             targetDocument: targetDocument,
-            pickFileOnStart: forceFileSelection,
+            filePath: openPath,
             importerRepository: importerRepository,
             fileChooser: () => showOpenDialog(context),
           ),

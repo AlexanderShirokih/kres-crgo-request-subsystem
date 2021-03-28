@@ -32,7 +32,6 @@ class RequestsImporterScreen extends BaseImporterScreen {
           targetDocument: targetDocument,
           mainWidgetBuilder: (_) => _RequestsImporterIdleView(),
           importerRepository: requestsRepository,
-          forceFileSelection: false,
         );
 
   @override

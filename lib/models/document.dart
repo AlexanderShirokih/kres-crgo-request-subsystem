@@ -49,6 +49,15 @@ class Document extends Equatable {
         ],
       );
 
+  /// Returns current save path
+  Future<File?> get currentSavePath async {
+    try {
+      return await savePath.first;
+    } on StateError {
+      return null;
+    }
+  }
+
   /// Converts [Document] instance to JSON representation
   Map<String, dynamic> toJson() => {
         'updateDate': _updateDate.requireValue.millisecondsSinceEpoch,

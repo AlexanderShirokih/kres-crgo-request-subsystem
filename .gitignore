@@ -39,4 +39,6 @@ app.*.symbols
 
 # Obfuscation related
 app.*.map.json
-employees.json
+
+# Test data
+autofill.sql

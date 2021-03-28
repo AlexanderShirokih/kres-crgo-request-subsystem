@@ -1,9 +1,11 @@
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/data/daos.dart';
 import 'package:kres_requests2/data/models.dart';
+import 'package:kres_requests2/data/models/recent_document_info.dart';
 import 'package:kres_requests2/data/repository/storage_repository.dart';
 import 'package:kres_requests2/data/validators.dart';
 import 'package:kres_requests2/domain/domain.dart';
+import 'package:kres_requests2/domain/repository/recent_documents_repository.dart';
 import 'package:kres_requests2/screens/editor/document_module.dart';
 import 'package:kres_requests2/screens/settings/settings_module.dart';
 import 'package:kres_requests2/screens/startup/startup_screen.dart';
@@ -43,6 +45,14 @@ class StartupModule extends Module {
         ),
         Bind.factory<MappedValidator<RequestType>>(
             (i) => RequestTypeValidator()),
+        Bind.lazySingleton<RecentDocumentsDao>((i) => RecentDocumentsDao(i())),
+        // Recent documents related binds
+        Bind.factory<Repository<RecentDocumentInfo>>(
+            (i) => RecentDocumentsRepository(i())),
+        Bind.lazySingleton<StreamedRepositoryController<RecentDocumentInfo>>(
+          (i) => StreamedRepositoryController(
+              RepositoryController(RecentDocumentBuilder(), i())),
+        ),
       ];
 
   @override

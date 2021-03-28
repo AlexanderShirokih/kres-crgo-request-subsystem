@@ -10,7 +10,7 @@ class StreamedRepositoryController<E>
   StreamedRepositoryController(this._underlyingController);
 
   /// Returns stream that tracks changes in controller
-  Stream<List<E>> get stream => _streamController.stream;
+  Stream<List<E>> get stream => _streamController.stream.distinct();
 
   void fetchData() {
     _underlyingController
@@ -26,9 +26,12 @@ class StreamedRepositoryController<E>
   }
 
   @override
-  Future<void> commit() async {
-    await _underlyingController.commit();
-    fetchData();
+  Future<bool> commit() async {
+    final hasChanges = await _underlyingController.commit();
+    if (hasChanges) {
+      fetchData();
+    }
+    return hasChanges;
   }
 
   @override

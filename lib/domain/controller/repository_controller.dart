@@ -101,7 +101,8 @@ abstract class AbstractRepositoryController<E> {
   void undo();
 
   /// Applies all modifications to repository
-  Future<void> commit();
+  /// Returns `true` if some modifications were made
+  Future<bool> commit();
 }
 
 class RepositoryController<E> implements AbstractRepositoryController<E> {
@@ -165,14 +166,15 @@ class RepositoryController<E> implements AbstractRepositoryController<E> {
     }
   }
 
-  /// Applies all modifications to repository
   @override
-  Future<void> commit() async {
+  Future<bool> commit() async {
     if (hasUncommittedChanges) {
       await _commitOperations();
       _operations.clear();
       _data = null;
+      return true;
     }
+    return false;
   }
 
   void _addOperation(_EditorAction<E> operation) => _operations.add(operation);

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
@@ -19,7 +21,8 @@ class DocumentModule extends Module {
     ChildRoute(
       '/open',
       child: (_, args) => NativeImporterScreen(
-        importerRepository: NativeImporterRepository(),
+        importerRepository: NativeImporterRepository(Modular.get()),
+        openPath: args.data as File?,
       ),
     ),
     ChildRoute(

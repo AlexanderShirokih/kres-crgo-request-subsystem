@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/models/recent_document_info.dart';
 import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/screens/startup/bloc/recent_docs_bloc.dart';
 import 'package:kres_requests2/screens/startup/startup_screen_button.dart';
 
 /// Shows startup wizard
@@ -21,47 +24,156 @@ class StartupScreen extends StatelessWidget {
           ],
         ),
         body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              StartupScreenButton(
-                label: 'Создать новый документ',
-                iconData: FontAwesomeIcons.plus,
-                onPressed: () =>
-                    _runWorksheetEditorScreen(context, Document.empty()),
-              ),
-              StartupScreenButton(
-                label: 'Открыть документ',
-                iconData: FontAwesomeIcons.folderOpen,
-                onPressed: () {
-                  Modular.to
-                      .pushNamed<Document>('/document/open')
-                      .then((resultDocument) {
-                    if (resultDocument != null) {
-                      return _runWorksheetEditorScreen(context, resultDocument);
-                    }
-                  });
-                },
-              ),
-              StartupScreenButton(
-                label: 'Импорт заявок',
-                iconData: FontAwesomeIcons.fileImport,
-                onPressed: () {
-                  Modular.to
-                      .pushNamed<Document>('/document/import/requests',
-                          arguments: Document.empty())
-                      .then((resultDocument) {
-                    if (resultDocument != null)
-                      return _runWorksheetEditorScreen(context, resultDocument);
-                  });
-                },
-              ),
-            ],
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 700.0,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _createGroupTitle(context, 'Действия'),
+                _createMainActionsButtons(context),
+                _createGroupTitle(context, 'Последние'),
+                _createRecentlyOpenedItems(),
+              ],
+            ),
           ),
         ),
       );
 
-  Future _runWorksheetEditorScreen(
-          BuildContext context, Document targetDocument) =>
+  Widget _createGroupTitle(BuildContext context, String groupTitle) => Padding(
+        padding: const EdgeInsets.fromLTRB(0.0, 24.0, 0.0, 12.0),
+        child: Text(
+          groupTitle,
+          style: Theme.of(context).textTheme.headline4,
+        ),
+      );
+
+  Widget _createMainActionsButtons(BuildContext context) {
+    return SizedBox(
+      height: 250.0,
+      child: GridView.count(
+        crossAxisCount: 3,
+        children: [
+          StartupScreenButtonContainer(
+            onPressed: () => _runWorksheetEditorScreen(Document.empty()),
+            child: TextStartupTile(
+              title: 'Новый документ',
+              description: 'Создать новый пустой документ заявок',
+              iconData: FontAwesomeIcons.plus,
+            ),
+          ),
+          StartupScreenButtonContainer(
+            onPressed: () {
+              Modular.to
+                  .pushNamed<Document>('/document/open')
+                  .then((resultDocument) {
+                if (resultDocument != null) {
+                  return _runWorksheetEditorScreen(resultDocument);
+                }
+              });
+            },
+            child: TextStartupTile(
+              title: 'Открыть документ',
+              description: 'Открыть ранее созданный документ заявок',
+              iconData: FontAwesomeIcons.solidFolderOpen,
+            ),
+          ),
+          StartupScreenButtonContainer(
+            onPressed: () {
+              Modular.to
+                  .pushNamed<Document>('/document/import/requests',
+                      arguments: Document.empty())
+                  .then((resultDocument) {
+                if (resultDocument != null)
+                  return _runWorksheetEditorScreen(resultDocument);
+              });
+            },
+            child: TextStartupTile(
+              title: 'Импорт заявок',
+              description:
+                  'Создать новый документ из подготовленного файла системы mega-billing',
+              iconData: FontAwesomeIcons.fileImport,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future _runWorksheetEditorScreen(Document targetDocument) =>
       Modular.to.pushNamed('/document/edit', arguments: targetDocument);
+
+  Widget _createRecentlyOpenedItems() {
+    return BlocProvider(
+      create: (_) => RecentDocumentsBloc(Modular.get()),
+      child: BlocBuilder<RecentDocumentsBloc, RecentDocsState>(
+        builder: (context, state) {
+          return state is ShowRecentDocumentsState
+              ? _showRecentlyOpenedItems(
+                  context,
+                  state.recentDocuments,
+                  state.hasMore,
+                )
+              : _showNoRecentDocumentsPlaceholder(context);
+        },
+      ),
+    );
+  }
+
+  Widget _showRecentlyOpenedItems(
+    BuildContext context,
+    List<RecentDocumentInfo> recentDocs,
+    bool hasMore,
+  ) {
+    return Expanded(
+      child: Scrollbar(
+        child: GridView.count(
+          crossAxisCount: 3,
+          children: [
+            ...recentDocs
+                .map(
+                  (e) => StartupScreenButtonContainer(
+                    onPressed: () {
+                      Modular.to
+                          .pushNamed<Document>('/document/open',
+                              arguments: e.path)
+                          .then((resultDocument) {
+                        if (resultDocument != null) {
+                          return _runWorksheetEditorScreen(resultDocument);
+                        }
+                      });
+                    },
+                    child: RecentDocumentTile(
+                      name: e.name,
+                      updateDate: e.updateDate,
+                    ),
+                  ),
+                )
+                .toList(),
+            if (hasMore)
+              StartupScreenButtonContainer(
+                onPressed: () => context
+                    .read<RecentDocumentsBloc>()
+                    .add(FetchRecentDocumentsEvent()),
+                child: ShowMoreTile(),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _showNoRecentDocumentsPlaceholder(BuildContext context) => Expanded(
+        child: Center(
+          child: Text(
+            'Здесь появятся последние открытые документы',
+            style: Theme.of(context)
+                .textTheme
+                .headline5!
+                .copyWith(color: Theme.of(context).hintColor),
+          ),
+        ),
+      );
 }

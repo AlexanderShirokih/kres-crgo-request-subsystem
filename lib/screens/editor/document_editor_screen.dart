@@ -266,7 +266,7 @@ class DocumentEditorScreen extends StatelessWidget {
           NativeImporterScreen(
             initialDirectory: workingDirectory,
             targetDocument: state.currentDocument,
-            importerRepository: NativeImporterRepository((tables) async {
+            importerRepository: NativeImporterRepository(Modular.get(), (tables) async {
               final worksheets = await showDialog<List<Worksheet>>(
                 context: context,
                 builder: (_) => SelectWorksheetsDialog(tables),

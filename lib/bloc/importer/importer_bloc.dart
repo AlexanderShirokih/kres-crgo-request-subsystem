@@ -29,9 +29,9 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
     this.targetDocument,
     required this.importerRepository,
     required this.fileChooser,
-    required bool pickFileOnStart,
+    required File? filePath,
   }) : super(ImporterInitialState()) {
-    if (pickFileOnStart) add(ImportEvent());
+    add(ImportEvent(filePath: filePath));
   }
 
   @override
@@ -51,10 +51,17 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
     }
   }
 
-  Stream<ImporterState> _doWorksheetImport(ImportEvent import) async* {
-    final file = await fileChooser();
+  Future<String?> _chooseSourcePath(ImportEvent import) async {
+    if (import.filePath != null && await import.filePath!.exists()) {
+      return import.filePath!.absolute.path;
+    }
+    return await fileChooser();
+  }
 
-    if (file == null) {
+  Stream<ImporterState> _doWorksheetImport(ImportEvent import) async* {
+    final filePath = await _chooseSourcePath(import);
+
+    if (filePath == null) {
       yield ImporterDoneState(importResult: ImportResult.importCancelled);
       return;
     }
@@ -62,17 +69,18 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
     Future<Document> _copyToTarget(Document source) async {
       final target = targetDocument!;
 
-      if (import.attachPath) {
-        target.setSavePath(File(p.withoutExtension(file) + ".json"));
+      final currentSavePath = await target.currentSavePath;
+      if (currentSavePath == null) {
+        target.setSavePath(File(p.withoutExtension(filePath) + ".json"));
       }
 
       return target..addWorksheets(await source.worksheets.first);
     }
 
-    yield ImporterLoadingState(file);
+    yield ImporterLoadingState(filePath);
+
     try {
-      final document =
-          await importerRepository.importDocument(file);
+      final document = await importerRepository.importDocument(filePath);
 
       if (document == null) {
         yield ImporterDoneState(importResult: ImportResult.importCancelled);

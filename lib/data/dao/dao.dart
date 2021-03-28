@@ -5,6 +5,9 @@ import 'package:meta/meta.dart';
 
 /// Data access object for [Employee] objects
 abstract class Dao<E, PE extends PersistedObject<int>> {
+  /// Finds the last item by ordering by [id]
+  Future<PE?> findLast();
+
   /// Finds entity by [id].
   /// Returns `null` if there is no position entity with given [id].
   Future<PE?> findById(int id);
@@ -20,6 +23,9 @@ abstract class Dao<E, PE extends PersistedObject<int>> {
 
   /// Deletes [entity] record from the storage
   Future<void> delete(PE entity);
+
+  /// Returns count of table entries
+  Future<int> count();
 }
 
 class BaseDao<E, PE extends PersistedObject<int>> implements Dao<E, PE> {
@@ -38,14 +44,34 @@ class BaseDao<E, PE extends PersistedObject<int>> implements Dao<E, PE> {
   });
 
   @override
+  Future<PE?> findLast() async {
+    final db = await database.database;
+    final result =
+        await db.rawQuery('SELECT * FROM $tableName ORDER BY id DESC LIMIT 1');
+    try {
+      return await _unwrap(result).first;
+    } on StateError {
+      return null;
+    }
+  }
+
+  @override
   Future<PE?> findById(int id) async {
     final db = await database.database;
     final result = await db.query(tableName, where: 'id = ?', whereArgs: [id]);
     try {
-      return _unwrap(result).first;
+      return await _unwrap(result).first;
     } on StateError {
       return null;
     }
+  }
+
+  @override
+  Future<int> count() async {
+    final db = await database.database;
+    final result = await db.rawQuery('SELECT COUNT(*) FROM $tableName');
+    final row = result.first;
+    return row.values.first as int;
   }
 
   @override
@@ -66,7 +92,7 @@ class BaseDao<E, PE extends PersistedObject<int>> implements Dao<E, PE> {
   Future<List<PE>> findAll() async {
     final db = await database.database;
     final data = await db.query(tableName);
-    return _unwrap(data).toList();
+    return await _unwrap(data).toList();
   }
 
   @override

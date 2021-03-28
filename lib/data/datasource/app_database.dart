@@ -43,9 +43,6 @@ class AppDatabase extends Disposable {
     // Open the database
     var databaseFactory = databaseFactoryFfi;
 
-    // TODO: DELETOR
-    await databaseFactory.deleteDatabase(dbPath);
-
     var db = await databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
@@ -57,8 +54,13 @@ class AppDatabase extends Disposable {
             final schema = await rootBundle.loadString('assets/sql/schema.sql');
             await database.execute(schema);
 
-            final data = await rootBundle.loadString('assets/sql/autofill.sql');
-            await database.execute(data);
+            try {
+              final data =
+                  await rootBundle.loadString('assets/sql/autofill.sql');
+              await database.execute(data);
+            } catch (e) {
+              print("Failed to load autofill data: $e");
+            }
           }),
     );
 

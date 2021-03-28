@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -7,6 +9,7 @@ import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 
+/// The page responsible for opening native file formats
 class NativeImporterScreen extends BaseImporterScreen {
   final NativeImporterRepository importerRepository;
   final String? initialDirectory;
@@ -16,12 +19,13 @@ class NativeImporterScreen extends BaseImporterScreen {
     required this.importerRepository,
     this.targetDocument,
     this.initialDirectory,
+    File? openPath,
   }) : super(
           title: 'Импорт файла',
           importerRepository: importerRepository,
           targetDocument: targetDocument,
-          mainWidgetBuilder: (_) => LoadingView('Ожидание выбора файла...'),
-          forceFileSelection: true,
+          mainWidgetBuilder: (_) => LoadingView('Ожидание открытия файла...'),
+          openPath: openPath,
         );
 
   @override
@@ -37,9 +41,7 @@ class NativeImporterScreen extends BaseImporterScreen {
       ],
     );
 
-    if (res == null) return null;
-
-    return res.path;
+    return res?.path;
   }
 }
 

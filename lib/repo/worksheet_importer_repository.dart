@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:kres_requests2/data/editor/document_factory.dart';
 import 'package:kres_requests2/domain/counters_importer.dart';
+import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 
@@ -51,8 +52,12 @@ typedef MultiTableChooser = Future<List<Worksheet>> Function(List<Worksheet>);
 /// Create documents from native file format
 class NativeImporterRepository extends WorksheetImporterRepository {
   final MultiTableChooser? _tableChooser;
+  final StreamedRepositoryController<RecentDocumentInfo> _repositoryController;
 
-  const NativeImporterRepository([this._tableChooser]);
+  const NativeImporterRepository(
+    this._repositoryController, [
+    this._tableChooser,
+  ]);
 
   @override
   Future<Document?> importDocument(String filePath) async {
@@ -67,6 +72,10 @@ class NativeImporterRepository extends WorksheetImporterRepository {
     final optDocument = _tableChooser == null
         ? document
         : await _chooseWorksheets(document, _tableChooser!);
+
+    // Register file in the recent documents list
+    _repositoryController.add(RecentDocumentInfo(path: documentFile));
+    await _repositoryController.commit();
 
     return optDocument;
   }

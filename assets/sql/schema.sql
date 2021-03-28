@@ -18,3 +18,8 @@ CREATE TABLE request_type (
    short_name VARCHAR NOT NULL UNIQUE,
    full_name  VARCHAR NOT NULL
 );
+
+CREATE TABLE recent_documents (
+   id  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+   path VARCHAR NOT NULL
+);
