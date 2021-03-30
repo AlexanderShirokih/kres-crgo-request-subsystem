@@ -173,7 +173,7 @@ class _WorksheetTabViewState extends State<WorksheetTabView> {
                     ),
                   if (widget.onRemove != null && !_isEditable)
                     IconButton(
-                      icon: Icon(Icons.delete_outline),
+                      icon: Icon(Icons.delete),
                       onPressed: widget.onRemove,
                     )
                 ],

@@ -52,8 +52,8 @@ class RequestItemView extends StatelessWidget {
               child: _createRequestContent(context),
             ),
             Positioned(
-              left: 4.0,
-              bottom: 4.0,
+              right: 4.0,
+              top: 4.0,
               child: _MarkWidget(
                 groupIndex: groupIndex,
                 defaultGroupIndex: defaultGroupIndex,
@@ -155,7 +155,6 @@ class RequestItemView extends StatelessWidget {
                       _printConnectionPoint(request.connectionPoint),
                       const SizedBox(height: 10.0),
                       _printPhone(request.phoneNumber),
-
                     ],
                   ),
                 ),
@@ -211,7 +210,7 @@ class RequestItemView extends StatelessWidget {
     return Row(
       children: [
         FaIcon(FontAwesomeIcons.plug, size: 16.0),
-        const SizedBox(width: 10.0),
+        const SizedBox(width: 12.0),
         ...printConnectionPoint0(),
       ],
     );
@@ -220,7 +219,7 @@ class RequestItemView extends StatelessWidget {
 
 typedef GroupChangeCallback = void Function(int newGroup);
 
-class _MarkWidget extends StatefulWidget {
+class _MarkWidget extends StatelessWidget {
   final GroupChangeCallback changeCallback;
   final int groupIndex;
   final int defaultGroupIndex;
@@ -233,7 +232,37 @@ class _MarkWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  __MarkWidgetState createState() => __MarkWidgetState();
+  Widget build(BuildContext context) =>
+      GestureDetector(
+          onSecondaryTap: () => changeCallback(defaultGroupIndex),
+          child: InkWell(
+            child: IconButton(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 6.0,
+                vertical: 8.0,
+              ),
+              onPressed: () => showDialog<int>(
+                context: context,
+                builder: (_) => _ChooseColorDialog(groupIndex),
+              ).then((selectedGroup) {
+                if (selectedGroup != null) {
+                  changeCallback(selectedGroup);
+                }
+              }),
+              icon: groupIndex == 0
+                  ? FaIcon(
+                      FontAwesomeIcons.bookmark,
+                      size: 16.0,
+                      color: Colors.black,
+                    )
+                  : FaIcon(
+                      FontAwesomeIcons.solidBookmark,
+                      size: 16.0,
+                      color: _getMarkColor(groupIndex),
+                    ),
+            ),
+          ),
+        );
 }
 
 const _markColors = [
@@ -247,56 +276,6 @@ const _markColors = [
 ];
 
 Color _getMarkColor(int groupId) => _markColors[groupId];
-
-class __MarkWidgetState extends State<_MarkWidget> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) => MouseRegion(
-        onHover: (_) => setState(() {
-          _isHovered = true;
-        }),
-        onExit: (_) => setState(() {
-          _isHovered = false;
-        }),
-        child: _isHovered || widget.groupIndex != 0
-            ? GestureDetector(
-                onSecondaryTap: () =>
-                    widget.changeCallback(widget.defaultGroupIndex),
-                child: InkWell(
-                  child: IconButton(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6.0,
-                      vertical: 8.0,
-                    ),
-                    onPressed: () => showDialog<int>(
-                      context: context,
-                      builder: (_) => _ChooseColorDialog(widget.groupIndex),
-                    ).then((selectedGroup) {
-                      if (selectedGroup != null) {
-                        widget.changeCallback(selectedGroup);
-                      }
-                    }),
-                    icon: widget.groupIndex == 0
-                        ? FaIcon(
-                            FontAwesomeIcons.bookmark,
-                            size: 16.0,
-                            color: Colors.black,
-                          )
-                        : FaIcon(
-                            FontAwesomeIcons.solidBookmark,
-                            size: 16.0,
-                            color: _getMarkColor(widget.groupIndex),
-                          ),
-                  ),
-                ),
-              )
-            : const SizedBox(
-                width: 28.0,
-                height: 34.0,
-              ),
-      );
-}
 
 final _fullGroupNames = [
   'Белый',
