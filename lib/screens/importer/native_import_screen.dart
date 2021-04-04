@@ -73,8 +73,8 @@ class _SelectWorksheetsDialogState extends State<SelectWorksheetsDialog> {
             widget.tables.length,
             (i) => CheckboxListTile(
               value: _selected[i],
-              title: Text(widget.tables[i].name!),
-              subtitle: Text('Заявок: ${widget.tables[i].requests!.length}'),
+              title: Text(widget.tables[i].name),
+              subtitle: Text('Заявок: ${widget.tables[i].requests.length}'),
               onChanged: (val) => setState(() {
                 _selected[i] = val!;
               }),

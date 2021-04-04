@@ -18,7 +18,7 @@ class RequestItemView extends StatelessWidget {
 
   final int defaultGroupIndex;
 
-  final void Function(bool?) onChanged;
+  final void Function(bool) onChanged;
 
   final GroupChangeCallback groupChangeCallback;
 
@@ -75,7 +75,13 @@ class RequestItemView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (isSelected != null)
-                Checkbox(value: isSelected, onChanged: onChanged),
+                Checkbox(
+                    value: isSelected,
+                    onChanged: (newValue) {
+                      if (newValue != null) {
+                        onChanged(newValue);
+                      }
+                    }),
               // First column
               Text(position.toString()),
               const SizedBox(width: 16.0),
@@ -232,37 +238,36 @@ class _MarkWidget extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) =>
-      GestureDetector(
-          onSecondaryTap: () => changeCallback(defaultGroupIndex),
-          child: InkWell(
-            child: IconButton(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 6.0,
-                vertical: 8.0,
-              ),
-              onPressed: () => showDialog<int>(
-                context: context,
-                builder: (_) => _ChooseColorDialog(groupIndex),
-              ).then((selectedGroup) {
-                if (selectedGroup != null) {
-                  changeCallback(selectedGroup);
-                }
-              }),
-              icon: groupIndex == 0
-                  ? FaIcon(
-                      FontAwesomeIcons.bookmark,
-                      size: 16.0,
-                      color: Colors.black,
-                    )
-                  : FaIcon(
-                      FontAwesomeIcons.solidBookmark,
-                      size: 16.0,
-                      color: _getMarkColor(groupIndex),
-                    ),
+  Widget build(BuildContext context) => GestureDetector(
+        onSecondaryTap: () => changeCallback(defaultGroupIndex),
+        child: InkWell(
+          child: IconButton(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 6.0,
+              vertical: 8.0,
             ),
+            onPressed: () => showDialog<int>(
+              context: context,
+              builder: (_) => _ChooseColorDialog(groupIndex),
+            ).then((selectedGroup) {
+              if (selectedGroup != null) {
+                changeCallback(selectedGroup);
+              }
+            }),
+            icon: groupIndex == 0
+                ? FaIcon(
+                    FontAwesomeIcons.bookmark,
+                    size: 16.0,
+                    color: Colors.black,
+                  )
+                : FaIcon(
+                    FontAwesomeIcons.solidBookmark,
+                    size: 16.0,
+                    color: _getMarkColor(groupIndex),
+                  ),
           ),
-        );
+        ),
+      );
 }
 
 const _markColors = [

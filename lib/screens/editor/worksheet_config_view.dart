@@ -58,7 +58,8 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
                       current: w.chiefEmployee!,
                       employees: snap.requireData.chiefEmployees,
                       onChanged: (Employee? value) => setState(() {
-                        w.chiefEmployee = value;
+                        // TODO: Fix me
+                        // w.chiefEmployee = value;
                       }),
                     ),
                     const SizedBox(height: 28.0),
@@ -88,7 +89,8 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
       current: w.mainEmployee!,
       employees: chiefEmployees,
       onChanged: (Employee? value) => setState(() {
-        w.mainEmployee = value;
+        // FIXME rewrite code
+        // w.mainEmployee = value;
       }),
     );
   }
@@ -106,7 +108,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
         IconButton(
           icon: FaIcon(FontAwesomeIcons.plus),
           tooltip: "Добавить члена бригады",
-          onPressed: w.membersEmployee!.length < 6
+          onPressed: w.membersEmployee.length < 6
               ? () => setState(() {
                     throw UnimplementedError();
                     // w.membersEmployee!.add();
@@ -119,7 +121,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
     yield const SizedBox(height: 4.0);
     yield* _spreadTeamMembers(
       allEmployees,
-      w.membersEmployee!,
+      w.membersEmployee,
     );
   }
 
@@ -149,7 +151,10 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
         IconButton(
           icon: FaIcon(FontAwesomeIcons.plus),
           tooltip: "Добавить",
-          onPressed: () => setState(() => w.addEmptyWorkType()),
+          onPressed: () {
+            // FIXME rewrite code
+            // setState(() => w.addEmptyWorkType());
+          },
         ),
         const SizedBox(width: 8.0),
       ],
@@ -222,10 +227,8 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
                   .map(
                     (e) => DropdownMenuItem(
                       value: e,
-                      child: e == null
-                          ? Text('')
-                          : Text(
-                              "${e.name}, ${e.position}, ${e.accessGroup} гр."),
+                      child: Text(
+                              "${e.name}, ${e.position.name}, ${e.accessGroup} гр."),
                     ),
                   )
                   .toList(),
@@ -265,7 +268,7 @@ class __DatePickerState extends State<_DatePicker> {
                   _isPicking = false;
                 }),
                 child: FormField<DateTime>(
-                  initialValue: widget.worksheet.date,
+                  initialValue: widget.worksheet.targetDate,
                   builder: (state) => state.hasError
                       ? Text(
                           state.errorText ?? 'error!',
@@ -284,12 +287,13 @@ class __DatePickerState extends State<_DatePicker> {
           )
         : CalendarDatePicker(
             initialCalendarMode: DatePickerMode.day,
-            initialDate: widget.worksheet.date ?? DateTime.now(),
-            firstDate: (widget.worksheet.date ?? DateTime.now())
+            initialDate: widget.worksheet.targetDate ?? DateTime.now(),
+            firstDate: (widget.worksheet.targetDate ?? DateTime.now())
                 .subtract(Duration(days: 15)),
             lastDate: DateTime.now().add(Duration(days: 15)),
             onDateChanged: (newDate) => setState(() {
-              widget.worksheet.date = newDate;
+              // FIXME rewrite code
+              // widget.worksheet.targetDate = newDate;
               _isPicking = true;
             }),
           );
@@ -311,7 +315,7 @@ class __WorkTypesListState extends State<_WorkTypesList> {
     final worksheet = widget.worksheet;
 
     return Column(
-      children: worksheet.workTypes!
+      children: worksheet.workTypes
           .map(
             (e) => ListTile(
               leading: IconButton(
@@ -319,7 +323,7 @@ class __WorkTypesListState extends State<_WorkTypesList> {
                   FontAwesomeIcons.timesCircle,
                   size: 16.0,
                 ),
-                onPressed: () => setState(() => worksheet.workTypes!.remove(e)),
+                onPressed: () => setState(() => worksheet.workTypes.remove(e)),
               ),
               title: e.isNotEmpty
                   ? Text(e)
@@ -327,8 +331,8 @@ class __WorkTypesListState extends State<_WorkTypesList> {
                       onSubmitted: (value) {
                         if (value.isNotEmpty) {
                           setState(() {
-                            worksheet.workTypes!.remove("");
-                            worksheet.workTypes!.add(value);
+                            worksheet.workTypes.remove("");
+                            worksheet.workTypes.add(value);
                           });
                         }
                       },

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_creation_mode.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 
 /// Widget that provides way to create new worksheet of certain type
 class AddNewWorkSheetTabView extends StatefulWidget {
@@ -95,19 +95,20 @@ class _AddNewWorkSheetTabViewState extends State<AddNewWorkSheetTabView> {
 
 /// Represents page selector card
 class WorksheetTabView extends StatefulWidget {
-  final Worksheet worksheet;
+  final WorksheetEditor worksheetEditor;
   final bool isActive;
   final int filteredItemsCount;
   final void Function() onSelect;
   final void Function()? onRemove;
 
   const WorksheetTabView({
+    Key? key,
     required this.filteredItemsCount,
-    required this.worksheet,
+    required this.worksheetEditor,
     required this.isActive,
     required this.onSelect,
     required this.onRemove,
-  });
+  }) : super(key: key);
 
   @override
   _WorksheetTabViewState createState() => _WorksheetTabViewState();
@@ -120,7 +121,8 @@ class _WorksheetTabViewState extends State<WorksheetTabView> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.worksheet.name);
+    _controller =
+        TextEditingController(text: widget.worksheetEditor.current.name);
   }
 
   @override
@@ -157,7 +159,7 @@ class _WorksheetTabViewState extends State<WorksheetTabView> {
                       controller: _controller,
                       onSubmitted: (_) => _onEditingDone(),
                     )
-                  : Text(widget.worksheet.name!),
+                  : Text(widget.worksheetEditor.current.name),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -184,12 +186,12 @@ class _WorksheetTabViewState extends State<WorksheetTabView> {
       );
 
   void _onEditingDone() => setState(() {
-        widget.worksheet.name = _controller.text;
+        widget.worksheetEditor.setName(_controller.text);
         _isEditable = false;
       });
 
   void _onCancelEditing() => setState(() {
-        _controller.text = widget.worksheet.name ?? '???';
+        _controller.text = widget.worksheetEditor.current.name;
         _isEditable = false;
       });
 }

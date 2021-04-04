@@ -1,34 +1,36 @@
-import 'dart:math';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/request_entity.dart';
-import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
+import 'package:kres_requests2/screens/editor/bloc/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/screens/editor/widgets/request_item_view.dart';
 
 import 'request_editor_dialog.dart';
-import 'worksheet_move_dialog.dart';
+import 'requests_move_dialog/requests_move_dialog.dart';
 
-/// Show the list of requests for target [worksheet] of the [document]
+// TODO: Move Marker to the left side?
+
+/// Show the list of requests for target [worksheetEditor] of the [document]
 class WorksheetEditorView extends StatefulWidget {
   /// Currently opened document
   final Document document;
 
   /// Target worksheet
-  final Worksheet worksheet;
+  final WorksheetEditor worksheetEditor;
 
-  /// A list of currently highlighted worksheets
+  /// A list of currently highlighted requests
   final Stream<List<RequestEntity>> highlighted;
 
   const WorksheetEditorView({
+    Key? key,
     required this.document,
-    required this.worksheet,
+    required this.worksheetEditor,
     required this.highlighted,
-  });
+  }) : super(key: key);
 
   @override
   _WorksheetEditorViewState createState() => _WorksheetEditorViewState();
@@ -37,163 +39,68 @@ class WorksheetEditorView extends StatefulWidget {
 class _WorksheetEditorViewState extends State<WorksheetEditorView> {
   final _controller = ScrollController();
 
-  Set<RequestEntity>? _selectionList;
-  Map<RequestEntity, int>? _groupList;
-
-  int _lastGroupIndex = 0;
-
-  bool get _isSelected => _selectionList != null;
-
-  int get _selectedCount => _selectionList!.fold(0, (prev, val) => prev + 1);
-
-  int? get _singleGroup {
-    if (_groupList == null || !_isSelected) return null;
-
-    final filtered = _selectionList!
-        .map((e) => _groupList![e])
-        .where((e) => e != null)
-        .toSet();
-
-    return filtered.length == 1 ? filtered.single : null;
-  }
-
-  Set<RequestEntity> getAllByGroup(int group) {
-    if (_groupList == null || !_isSelected) return {};
-
-    return _groupList!.entries
-        .where((e) => e.value == group)
-        .map((e) => e.key)
-        .toSet();
-  }
-
   @override
   void dispose() {
     super.dispose();
     _controller.dispose();
   }
 
-  List<RequestEntity> _buildRequestsList() {
-    return widget.worksheet.requests ?? [];
-    // TODO: BROKEN
-    // final output = [...widget.highlighted!];
-    // for (final request in _worksheet.requests!) {
-    //   if (!output.contains(request)) output.add(request);
-    // }
-    // return output;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final worksheet = widget.worksheet;
-    if (worksheet.isEmpty) _selectionList = null;
+    return BlocProvider(
+      create: (_) => WorksheetEditorBloc(worksheet: widget.worksheetEditor),
+      child: BlocBuilder<WorksheetEditorBloc, WorksheetEditorState>(
+        builder: (context, state) {
+          if (state is WorksheetInitialState) {
+            return Center(
+              child: Text(
+                'Загрузка...',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+            );
+          }
 
-    final requests = _buildRequestsList();
+          if (state is WorksheetDataState) {
+            return _buildWorksheetList(context, state);
+          }
+
+          throw 'Unexpected state: $state';
+        },
+      ),
+    );
+  }
+
+  Widget _showPlaceholder() => Center(
+        child: Text(
+          'Список пуст',
+          style: Theme.of(context)
+              .textTheme
+              .headline3!
+              .copyWith(color: Theme.of(context).textTheme.caption!.color),
+        ),
+      );
+
+  // Builds the worksheet list
+  Widget _buildWorksheetList(BuildContext context, WorksheetDataState state) {
+    final isSelected = state is WorksheetSelectionState;
 
     return Stack(
       children: [
-        worksheet.isEmpty
-            ? _showPlaceholder()
-            : Center(
-                child: SizedBox(
-                  width: 852.0,
-                  child: Scrollbar(
-                    child: ReorderableListView(
-                      scrollController: _controller,
-                      padding: _isSelected
-                          ? EdgeInsets.only(top: 64)
-                          : EdgeInsets.all(10.0),
-                      onReorder: (int oldIndex, int newIndex) => setState(() {
-                        if (newIndex > oldIndex) {
-                          newIndex -= 1;
-                        }
-
-                        // We shouldn't modify [requests] list directly because it's
-                        // just a copy of [_worksheet.requests]
-
-                        // Transform shadow list indices to original indices
-                        final toRemove = requests[oldIndex];
-                        final toInsertAfter = requests[newIndex];
-
-                        final idx = worksheet.requests!.indexOf(toInsertAfter);
-                        worksheet.requests!.remove(toRemove);
-                        worksheet.requests!.insert(idx, toRemove);
-                      }),
-                      children: List.generate(
-                        requests.length,
-                        (index) => GestureDetector(
-                          key: Key(requests[index].toString() +
-                              Random().nextInt(100000).toString()),
-                          onLongPress: () => setState(() {
-                            _selectionList = {requests[index]};
-                          }),
-                          onDoubleTap: () {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (_) => RequestEditorDialog(
-                                controller: Modular.get(),
-                                validator: Modular.get(),
-                                initial: requests[index],
-                              ),
-                            ).then((edited) {
-                              if (edited != null)
-                                setState(() {
-                                  // TODO: REMOTE DEAD CODE
-                                  // If previous value was selected then update
-                                  // selection references
-                                  final old = requests[index];
-                                  if (_selectionList != null &&
-                                      _selectionList!.contains(old)) {
-                                    _selectionList!
-                                      ..remove(old)
-                                      ..add(edited);
-                                  }
-                                  final oldIdx = worksheet.requests!.indexOf(old);
-                                  worksheet.requests![oldIdx] = edited;
-                                });
-                              // widget.onDocumentsChanged();
-                            });
-                          },
-                          child: RequestItemView(
-                            defaultGroupIndex: _lastGroupIndex,
-                            position: index + 1,
-                            groupIndex: _groupList != null
-                                ? _groupList![requests[index]] ?? 0
-                                : 0,
-                            isSelected: _isSelected
-                                ? _selectionList!.contains(requests[index])
-                                : null,
-                            isHighlighted: false,
-                            // widget.highlighted != null &&
-                            //     widget.highlighted!.contains(requests[index]),
-                            request: requests[index],
-                            key: ObjectKey(requests[index].accountId),
-                            onChanged: (isSelected) => setState(() {
-                              final value = requests[index];
-                              if (isSelected!) {
-                                _selectionList!.add(value);
-                              } else {
-                                _selectionList!.remove(value);
-                              }
-                              if (_selectionList!.isEmpty) _selectionList = null;
-                            }),
-                            groupChangeCallback: (newGroup) => setState(() {
-                              _lastGroupIndex = newGroup;
-                              if (_groupList == null) {
-                                _groupList = {requests[index]: newGroup};
-                              } else if (newGroup == 0) {
-                                _groupList!.remove(requests[index]);
-                              } else {
-                                _groupList![requests[index]] = newGroup;
-                              }
-                            }),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+        if (state.isEmpty)
+          _showPlaceholder()
+        else
+          Center(
+            child: SizedBox(
+              width: 895.0,
+              child: Scrollbar(
+                child: _buildContent(
+                  context,
+                  state,
+                  isSelected,
                 ),
               ),
+            ),
+          ),
         Align(
           alignment: Alignment.bottomRight,
           child: Padding(
@@ -210,16 +117,16 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
                           validator: Modular.get(),
                         )).then((created) {
                   if (created != null) {
-                    setState(() {
-                      requests.add(created);
-                    });
+                    context
+                        .read<WorksheetEditorBloc>()
+                        .add(SaveRequestEvent(created));
                   }
                 });
               },
             ),
           ),
         ),
-        if (_isSelected)
+        if (isSelected)
           Align(
             alignment: Alignment.topCenter,
             child: Container(
@@ -235,147 +142,202 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
                   )
                 ],
               ),
-              width: double.maxFinite,
               height: 64.0,
+              width: double.maxFinite,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: _createSelectionContextMenu(),
+              child: _createSelectionContextMenu(
+                state: state as WorksheetSelectionState,
+                context: context,
+              ),
             ),
           ),
       ],
     );
   }
 
-  Widget _showPlaceholder() => Center(
-        child: Text(
-          'Список пуст',
-          style: Theme.of(context)
-              .textTheme
-              .headline3!
-              .copyWith(color: Theme.of(context).textTheme.caption!.color),
-        ),
-      );
+  Widget _buildContent(
+    BuildContext context,
+    WorksheetDataState state,
+    bool isInSelectionMode,
+  ) {
+    final requests = state.requests;
+    return ReorderableListView.builder(
+      itemCount: requests.length,
+      itemBuilder: (context, index) {
+        final request = requests[index];
+        bool? isSelected;
+        if (state is WorksheetSelectionState) {
+          isSelected = state.getIsSelected(request);
+        }
 
-  Widget _createSelectionContextMenu() {
-    final singleGroup = _singleGroup;
-    return Row(
-      children: [
-        IconButton(
-          icon: FaIcon(
-            FontAwesomeIcons.arrowLeft,
-            color: Theme.of(context).primaryIconTheme.color,
+        return GestureDetector(
+          key: ObjectKey(request),
+          onLongPress: () => context
+              .read<WorksheetEditorBloc>()
+              .add(RequestSelectionEvent(SelectionAction.begin, request)),
+          onDoubleTap: () {
+            showDialog<RequestEntity?>(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => RequestEditorDialog(
+                controller: Modular.get(),
+                validator: Modular.get(),
+                initial: request,
+              ),
+            ).then((edited) {
+              if (edited != null) {
+                context
+                    .read<WorksheetEditorBloc>()
+                    .add(SaveRequestEvent(edited));
+              }
+            });
+          },
+          child: RequestItemView(
+            request: request,
+            position: index + 1,
+            groupIndex: state.getGroup(request),
+            defaultGroupIndex: state.lastGroupIndex,
+            isHighlighted: state.getIsHighlighted(request),
+            isSelected: isSelected,
+            onChanged: (isSelected) => context.read<WorksheetEditorBloc>().add(
+                  RequestSelectionEvent(
+                    isSelected ? SelectionAction.add : SelectionAction.remove,
+                    request,
+                  ),
+                ),
+            groupChangeCallback: (newGroup) => context
+                .read<WorksheetEditorBloc>()
+                .add(ChangeGroupEvent(request, newGroup)),
           ),
-          tooltip: "Отменить выделение",
-          onPressed: () => setState(() {
-            _selectionList = null;
-          }),
-        ),
-        const SizedBox(width: 24.0),
-        Text(
-          "Выбрано: $_selectedCount",
-          style: Theme.of(context).primaryTextTheme.headline6,
-        ),
-        const SizedBox(width: 24.0),
-        IconButton(
-          icon: FaIcon(
-            FontAwesomeIcons.checkSquare,
-            color: Theme.of(context).primaryIconTheme.color,
+        );
+      },
+      scrollController: _controller,
+      padding:
+          isInSelectionMode ? EdgeInsets.only(top: 64) : EdgeInsets.all(10.0),
+      onReorder: (int oldIndex, int newIndex) {
+        if (newIndex > oldIndex) {
+          newIndex -= 1;
+        }
+
+        context.read<WorksheetEditorBloc>().add(
+              SwapRequestsEvent(
+                from: requests[oldIndex],
+                to: requests[newIndex],
+              ),
+            );
+      },
+    );
+  }
+
+  Widget _createSelectionContextMenu({
+    required BuildContext context,
+    required WorksheetSelectionState state,
+  }) {
+    final singleGroup = state.singleGroupIndex;
+    return IconTheme(
+      data: Theme.of(context).primaryIconTheme,
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.highlight_off),
+            tooltip: "Отменить выделение",
+            onPressed: () => context
+                .read<WorksheetEditorBloc>()
+                .add(RequestSelectionEvent(SelectionAction.cancel)),
           ),
-          tooltip: "Выбрать все",
-          onPressed: () => setState(() {
-            _selectionList = widget.worksheet.requests!.toSet();
-          }),
-        ),
-        if (singleGroup != null) ...[
+          const SizedBox(width: 24.0),
+          Text(
+            "Выбрано: ${state.selectedCount}",
+            style: Theme.of(context).primaryTextTheme.headline6,
+          ),
           const SizedBox(width: 24.0),
           IconButton(
-            icon: FaIcon(
-              FontAwesomeIcons.highlighter,
-              color: Theme.of(context).primaryIconTheme.color,
+            icon: FaIcon(FontAwesomeIcons.checkSquare),
+            tooltip: "Выбрать все",
+            onPressed: () => context
+                .read<WorksheetEditorBloc>()
+                .add(RequestSelectionEvent(SelectionAction.selectAll)),
+          ),
+          if (singleGroup != 0) ...[
+            const SizedBox(width: 24.0),
+            IconButton(
+              icon: FaIcon(
+                FontAwesomeIcons.highlighter,
+                color: Theme.of(context).primaryIconTheme.color,
+              ),
+              tooltip:
+                  "Выбрать все этой группы (${_translateGroupName(singleGroup)})",
+              onPressed: () => context.read<WorksheetEditorBloc>().add(
+                  RequestSelectionEvent(SelectionAction.selectSingleGroup)),
             ),
-            tooltip:
-                "Выбрать все этой группы (${_translateGroupName(singleGroup)})",
-            onPressed: () => setState(() {
-              _selectionList = getAllByGroup(singleGroup);
-            }),
+          ],
+          Expanded(
+            child: IconTheme(
+              data: Theme.of(context).primaryIconTheme,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.drive_file_move),
+                    tooltip: "Переместить",
+                    onPressed: () =>
+                        _showMoveDialog(context, MoveMethod.move, state),
+                  ),
+                  const SizedBox(width: 24.0),
+                  IconButton(
+                    icon: Icon(Icons.file_copy),
+                    tooltip: "Копировать",
+                    onPressed: () =>
+                        _showMoveDialog(context, MoveMethod.copy, state),
+                  ),
+                  const SizedBox(width: 46.0),
+                  IconButton(
+                    icon: Icon(Icons.delete_forever),
+                    tooltip: "Удалить (Насовсем)",
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => ConfirmationDialog(
+                          message: 'Удалить выбранные заявки?',
+                        ),
+                      ).then((confirmed) {
+                        if (confirmed != null && confirmed) {
+                          context.read<WorksheetEditorBloc>().add(
+                              RequestSelectionEvent(
+                                  SelectionAction.dropSelected));
+                        }
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              _selectionActionButton(
-                iconData: FontAwesomeIcons.folderOpen,
-                tooltip: "Переместить",
-                onPressed: () => _showWorksheetMoveDialog(MoveMethod.Move),
-              ),
-              const SizedBox(width: 24.0),
-              _selectionActionButton(
-                iconData: FontAwesomeIcons.copy,
-                tooltip: "Копировать",
-                onPressed: () => _showWorksheetMoveDialog(MoveMethod.Copy),
-              ),
-              const SizedBox(width: 46.0),
-              _selectionActionButton(
-                iconData: FontAwesomeIcons.times,
-                tooltip: "Удалить (Насовсем)",
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) => ConfirmationDialog(
-                      message: 'Удалить выбранные заявки?',
-                    ),
-                  ).then((confirmed) {
-                    if (confirmed != null && confirmed) {
-                      setState(() {
-                        for (final selected in _selectionList!)
-                          widget.worksheet.requests!.remove(selected);
-                        _selectionList = null;
-                      });
-                    }
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  void _showWorksheetMoveDialog(MoveMethod moveMethod) => showDialog(
+  void _showMoveDialog(
+    BuildContext context,
+    MoveMethod moveMethod,
+    WorksheetSelectionState state,
+  ) =>
+      showDialog(
         context: context,
-        builder: (_) => WorksheetMoveDialog(
+        builder: (_) => RequestsMoveDialog(
           document: widget.document,
-          sourceWorksheet: widget.worksheet,
-          movingRequests: _selectionList!,
+          sourceWorksheet: widget.worksheetEditor.current,
+          movingRequests: state.selectionList.toList(growable: false),
           moveMethod: moveMethod,
         ),
-      ).then((hasChanges) {
-        if (hasChanges != null) {
-          setState(() {
-            if (_groupList != null) {
-              for (final selected in _selectionList!)
-                _groupList!.remove(selected);
-            }
-            _selectionList = null;
-          });
-          // widget.onDocumentsChanged();
+      ).then((wasChanged) {
+        if (wasChanged ?? false) {
+          context
+              .read<WorksheetEditorBloc>()
+              .add(RequestSelectionEvent(SelectionAction.cancel));
         }
       });
-
-  Widget _selectionActionButton({
-    required IconData iconData,
-    required String tooltip,
-    required void Function() onPressed,
-  }) =>
-      IconButton(
-        icon: FaIcon(
-          iconData,
-          color: Theme.of(context).primaryIconTheme.color,
-        ),
-        tooltip: tooltip,
-        onPressed: onPressed,
-      );
 
   final _groupNames = [
     'белый',

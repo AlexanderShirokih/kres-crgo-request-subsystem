@@ -314,7 +314,7 @@ class WorksheetCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        worksheet.name!,
+                        worksheet.name,
                         style: Theme.of(context).textTheme.headline5,
                       ),
                       Expanded(
@@ -336,7 +336,7 @@ class WorksheetCard extends StatelessWidget {
                   _showDate(context),
                   const SizedBox(height: 8.0),
                   _showSubtitle(context, 'Заявок:',
-                      Text('${worksheet.requests!.length}')),
+                      Text('${worksheet.requests.length}')),
                   const SizedBox(height: 8.0),
                   _printWorksheetStatus(context),
                 ],
@@ -369,7 +369,7 @@ class WorksheetCard extends StatelessWidget {
             _printMultipleChildField(
               ctx,
               'Члены бригады:',
-              worksheet.membersEmployee!,
+              worksheet.membersEmployee,
             ),
           ],
         ),
@@ -430,9 +430,9 @@ class WorksheetCard extends StatelessWidget {
   Widget _showDate(BuildContext context) => _showSubtitle(
         context,
         'Дата выдачи:',
-        worksheet.date == null
+        worksheet.targetDate == null
             ? Text('Не выбрано', style: _createErrorTextStyle(context))
-            : Text('${_dateFormat.format(worksheet.date!)}'),
+            : Text('${_dateFormat.format(worksheet.targetDate!)}'),
       );
 
   Widget _showSubtitle(BuildContext context, String label, Widget child) => Row(
@@ -450,7 +450,7 @@ class WorksheetCard extends StatelessWidget {
         ],
       );
 
-  Widget _joinWorkTypes(BuildContext ctx) => worksheet.workTypes!.isEmpty
+  Widget _joinWorkTypes(BuildContext ctx) => worksheet.workTypes.isEmpty
       ? Text(
           'Не выбран ни один вид работ',
           style: _createErrorTextStyle(ctx),
@@ -458,7 +458,7 @@ class WorksheetCard extends StatelessWidget {
         )
       : Flexible(
           child: Text(
-            worksheet.workTypes!.join(', '),
+            worksheet.workTypes.join(', '),
           ),
         );
 

@@ -95,15 +95,17 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
       _requestsProcessExecutor.runProcess(['-parse', filePath]).then(
           (ProcessResult result) => _decodeProcessResult<Document>(
                 result,
-                (d) => Document(worksheets: [
-                  Worksheet(
-                    name: _getWorksheetName(filePath),
-                    requests: (d as List<dynamic>)
-                        // TODO: Use another way to create request instances
-                        .map((e) => RequestEntity.fromJson(e))
-                        .toList(),
-                  )
-                ]),
+                (d) => Document()
+                  ..setWorksheets([
+                    Worksheet(
+                      worksheetId: 1,
+                      name: _getWorksheetName(filePath),
+                      requests: (d as List<dynamic>)
+                          // TODO: Use another way to create request instances
+                          .map((e) => RequestEntity.fromJson(e))
+                          .toList(),
+                    )
+                  ]),
                 "Parsing error!",
               ));
 

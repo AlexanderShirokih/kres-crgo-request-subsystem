@@ -44,7 +44,7 @@ class DocumentEditorScreen extends StatelessWidget {
               }
             },
             builder: (context, state) {
-              // TODO: BROKEN
+              // FIXME: BROKEN
               // if (state is WorksheetMasterSearchingState) {
               //   return Stack(children: [
               //     Positioned.fill(child: _buildBody(context, state)),
@@ -68,42 +68,49 @@ class DocumentEditorScreen extends StatelessWidget {
         ),
       );
 
-  Widget _buildBody(BuildContext context, WorksheetMasterState state) =>
-      WillPopScope(
-        onWillPop: () =>
-            _showExitConfirmationDialog(state.currentDocument, context),
-        child: Row(
-          children: [
-            WorksheetsPageController(
-              worksheets: state.currentDocument.worksheets,
-              activeWorksheet: state.currentDocument.active,
-            ),
-            Expanded(
-              child: Container(
+  Widget _buildBody(BuildContext context, WorksheetMasterState state) {
+    final document = state.currentDocument;
+    return WillPopScope(
+      onWillPop: () => _showExitConfirmationDialog(document, context),
+      child: Row(
+        children: [
+          Container(
+            width: 285.0,
+            height: double.maxFinite,
+            child: WorksheetsPageController(document: document),
+          ),
+          Expanded(
+            child: Container(
                 color: Color(0xFFE5E5E5),
                 height: double.maxFinite,
-                child: StreamBuilder<Worksheet>(
-                  stream: state.currentDocument.active,
-                  builder: (context, snap) {
-                    if (snap.hasData) {
-                      return WorksheetEditorView(
-                        document: state.currentDocument,
-                        worksheet: snap.requireData,
-                        highlighted: Stream.empty(),
-                        // TODO: Broken
-                        // highlighted: state is WorksheetMasterSearchingState
-                        //     ? state.filteredItems[state.currentDocument.active]
-                        //     : null,
-                      );
-                    }
-                    return Container();
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
+                child: _buildEditor(document)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditor(Document document) {
+    return StreamBuilder<Worksheet>(
+        stream: document.active,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Text('Пока здесь нет данных');
+          }
+
+          final currentWorksheet = snapshot.requireData;
+          return WorksheetEditorView(
+            key: ObjectKey(currentWorksheet),
+            worksheetEditor: document.edit(currentWorksheet),
+            document: document,
+            highlighted: Stream.empty(),
+            // TODO: Broken
+            // highlighted: state is WorksheetMasterSearchingState
+            //     ? state.filteredItems[state.currentDocument.active]
+            //     : null,
+          );
+        });
+  }
 
   Widget _buildEndDrawer() =>
       BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(

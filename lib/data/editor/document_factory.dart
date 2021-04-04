@@ -34,13 +34,15 @@ class JsonDocumentFactory implements DocumentFactory {
 
     return Document(
       savePath: savePath,
-      worksheets: worksheets,
       updateDate: DateTime.fromMillisecondsSinceEpoch(_data['updateDate']),
-    )..makeActive(worksheets[activeWorksheetIdx]);
+    )
+      ..setWorksheets(worksheets)
+      ..makeActive(worksheets[activeWorksheetIdx]);
   }
 
   Worksheet _createWorksheet(Map<String, dynamic> ws) {
     return Worksheet(
+      worksheetId: 0,
       name: ws['name'] as String,
       mainEmployee: ws['mainEmployee'] == null
           ? null
@@ -55,7 +57,7 @@ class JsonDocumentFactory implements DocumentFactory {
       requests: (ws['requests'] as List<dynamic>)
           .map((r) => _createRequestEntity(r))
           .toList(),
-      date: ws['date'] == null
+      targetDate: ws['date'] == null
           ? null
           : DateTime.fromMillisecondsSinceEpoch(ws['date']),
       workTypes: (ws['workTypes'] as List<dynamic>).cast<String>().toSet(),

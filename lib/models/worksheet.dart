@@ -1,58 +1,56 @@
+import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 
 /// Contains info about single working document
-class Worksheet {
+class Worksheet extends Equatable {
+  /// Internal worksheet ID. Should be unique for document.
+  final int worksheetId;
+
   /// Worksheet name
-  String? name;
+  final String name;
 
-  /// Производитель работ
-  Employee? mainEmployee;
+  /// The main employee. `null` if unset
+  final Employee? mainEmployee;
 
-  /// Выдающий распоряжение
-  Employee? chiefEmployee;
+  /// The chief employee. `null` if unset
+  final Employee? chiefEmployee;
 
-  /// Члены бригады
-  List<Employee>? membersEmployee = [];
+  /// A list of the members employee.
+  final List<Employee> membersEmployee;
 
-  /// Список заявок
-  List<RequestEntity>? requests;
+  /// All requests related with the worksheet
+  final List<RequestEntity> requests;
 
-  /// Дата выдачи
-  DateTime? date;
+  /// The worksheet targeting date
+  final DateTime? targetDate;
 
-  /// Выбранные виды работ
-  Set<String>? workTypes = {};
+  /// Chosen worksheets work types
+  final Set<String> workTypes;
 
-  Worksheet.withRequest({
+  const Worksheet({
+    Set<String>? workTypes,
+    required this.worksheetId,
     required this.name,
-    List<RequestEntity>? requests,
-  }) {
-    this.requests = requests == null ? [] : requests;
-  }
-
-  Worksheet({
-    this.name,
+    required this.requests,
+    this.targetDate,
     this.mainEmployee,
     this.chiefEmployee,
-    this.membersEmployee,
-    this.workTypes,
-    this.requests,
-    this.date,
-  });
+    this.membersEmployee = const [],
+  }) : this.workTypes = workTypes == null ? const {} : workTypes;
 
-  bool get isEmpty => requests?.isEmpty ?? true;
+  /// Returns `true` if worksheet list is empty
+  bool get isEmpty => requests.isEmpty;
 
+  /// Creates new worksheet with pushed default work types (Based on requests)
   void insertDefaultWorkTypes() {
-    workTypes!.addAll(
-      requests!
+    workTypes.addAll(
+      requests
           .where((e) => e.requestType != null)
           .map((e) => e.requestType!.fullName)
           .cast<String>(),
     );
   }
-
-  void addEmptyWorkType() => workTypes!.add("");
 
   /// Converts [Worksheet] to JSON representation
   /// TODO: Create new code
@@ -71,18 +69,34 @@ class Worksheet {
   //   'workTypes': workTypes.toList(),
   // };
 
-  Worksheet copy({String? name}) => Worksheet(
+  /// Creates a copy with customizing any parameters
+  Worksheet copy({
+    int? worksheetId,
+    String? name,
+    Set<String>? workTypes,
+    List<RequestEntity>? requests,
+    DateTime? targetDate,
+    Employee? mainEmployee,
+    Employee? chiefEmployee,
+    List<Employee>? membersEmployee,
+  }) =>
+      Worksheet(
+        worksheetId: worksheetId ?? this.worksheetId,
         name: name ?? this.name,
-        workTypes: this.workTypes,
-        requests: this.requests,
-        mainEmployee: this.mainEmployee,
-        chiefEmployee: this.chiefEmployee,
-        membersEmployee: this.membersEmployee,
-        date: this.date,
+        workTypes: workTypes ?? this.workTypes,
+        requests: requests ?? this.requests,
+        mainEmployee: mainEmployee ?? this.mainEmployee,
+        chiefEmployee: chiefEmployee ?? this.chiefEmployee,
+        membersEmployee: membersEmployee ?? this.membersEmployee,
+        targetDate: targetDate ?? this.targetDate,
       );
 
-  List<Employee> getUsedEmployee() =>
-      [mainEmployee!, chiefEmployee!, ...membersEmployee!];
+  /// Returns a list of employees used in all positions
+  List<Employee> getUsedEmployee() => [
+        if (mainEmployee != null) mainEmployee!,
+        if (chiefEmployee != null) chiefEmployee!,
+        ...membersEmployee,
+      ];
 
   /// Returns `true` if [employee] used more than once at any positions
   bool isUsedElseWhere(Employee employee) =>
@@ -95,16 +109,25 @@ class Worksheet {
 
     if (mainEmployee == null) yield "Не выбран производитель работ";
 
-    if (membersEmployee!.any((emp) => emp == null))
-      yield "Поле члена бригады пусто";
+    if (requests.isEmpty) yield "Нет заявок для печати";
 
-    if (requests!.isEmpty) yield "Нет заявок для печати";
-
-    if (requests!.length > 18)
+    if (requests.length > 18)
       yield "Слишком много заявок для печати на одном листе";
 
-    if (date == null) yield "Не выбрана дата";
+    if (targetDate == null) yield "Не выбрана дата";
   }
 
   bool hasErrors() => validate().iterator.moveNext();
+
+  @override
+  List<Object?> get props => [
+        name,
+        worksheetId,
+        requests,
+        workTypes,
+        targetDate,
+        mainEmployee,
+        chiefEmployee,
+        membersEmployee,
+      ];
 }

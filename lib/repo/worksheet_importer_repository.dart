@@ -35,15 +35,13 @@ class CountersImporterRepository extends WorksheetImporterRepository {
 
     final worksheets = [
       Worksheet(
+        worksheetId: 1,
         name: namedRequests.name,
         requests: namedRequests.requests,
       )
     ];
 
-    return Document(
-      worksheets: worksheets,
-      updateDate: DateTime.now(),
-    );
+    return Document(updateDate: DateTime.now())..setWorksheets(worksheets);
   }
 }
 

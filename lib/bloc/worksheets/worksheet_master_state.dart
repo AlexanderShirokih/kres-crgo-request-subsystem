@@ -33,7 +33,7 @@ class WorksheetMasterIdleState extends WorksheetMasterState {
   WorksheetMasterIdleState(Document currentDocument) : super._(currentDocument);
 
   @override
-  List<Object?> get props => [...super.props, _updateId];
+  List<Object?> get props => [_updateId, ...super.props];
 }
 
 /// A state used when document is saving

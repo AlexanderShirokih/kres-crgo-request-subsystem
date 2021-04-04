@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:equatable/equatable.dart';
+import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:path/path.dart' as path;
 import 'package:rxdart/rxdart.dart';
@@ -10,7 +11,8 @@ import 'package:rxdart/rxdart.dart';
 /// Contains info about whole set of work blanks for special date
 class Document extends Equatable {
   final BehaviorSubject<File> _savePath = BehaviorSubject();
-  final BehaviorSubject<List<Worksheet>> _worksheets =
+
+  final BehaviorSubject<List<WorksheetEditor>> _worksheets =
       BehaviorSubject.seeded([]);
 
   final BehaviorSubject<DateTime> _updateDate =
@@ -23,8 +25,19 @@ class Document extends Equatable {
   Stream<File?> get savePath => _savePath;
 
   /// Document worksheets
-  Stream<List<Worksheet>> get worksheets =>
-      _worksheets.map((ws) => List.unmodifiable(ws));
+  Stream<List<Worksheet>> get worksheets => _worksheets.stream.flatMap(
+        (event) => Rx.combineLatestList(
+          event.map((e) => e.actualState),
+        ),
+      );
+
+  /// Returns a list of current worksheets snapshot
+  List<Worksheet> get currentWorksheets =>
+      _worksheets.requireValue.map((e) => e.current).toList();
+
+  /// Returns currently active worksheet
+  Worksheet get currentActive =>
+      _worksheets.requireValue[_activeWorksheet.requireValue].current;
 
   /// Last save date
   Stream<DateTime> get updateDate => _updateDate;
@@ -32,10 +45,13 @@ class Document extends Equatable {
   /// Returns currently active Worksheet
   Stream<Worksheet> get active =>
       Rx.combineLatest2<List<Worksheet>, int, Worksheet>(
-          _worksheets, _activeWorksheet, (ws, int activeIdx) => ws[activeIdx]);
+        worksheets,
+        _activeWorksheet,
+        (ws, int activeIdx) => ws[activeIdx],
+      );
 
   /// Returns `true` if document is empty
-  Stream<bool> get isEmpty => _worksheets.map(
+  Stream<bool> get isEmpty => worksheets.map(
         (list) => list.every((worksheet) => worksheet.isEmpty),
       );
 
@@ -62,18 +78,22 @@ class Document extends Equatable {
   Map<String, dynamic> toJson() => {
         'updateDate': _updateDate.requireValue.millisecondsSinceEpoch,
         'activeWorksheet': _activeWorksheet.requireValue,
-        'worksheets': _worksheets.requireValue.map((w) => w.toJson()).toList()
+        'worksheets':
+            _worksheets.requireValue.map((w) => w.current.toJson()).toList()
       };
 
   /// Makes target [worksheet] active
   void makeActive(Worksheet worksheet) {
-    _activeWorksheet.add(max(_worksheets.requireValue.indexOf(worksheet), 0));
+    final index = _worksheets.requireValue.indexWhere(
+      (e) => e.current.worksheetId == worksheet.worksheetId,
+    );
+
+    _activeWorksheet.add(max(index, 0));
   }
 
   /// Creates document from [savePath] and list of [worksheets]
   Document({
     File? savePath,
-    required List<Worksheet> worksheets,
     DateTime? updateDate,
   }) {
     if (savePath != null) {
@@ -82,8 +102,6 @@ class Document extends Equatable {
     if (updateDate != null) {
       _updateDate.add(updateDate);
     }
-
-    _worksheets.add(worksheets);
   }
 
   /// Creates an empty document
@@ -91,54 +109,107 @@ class Document extends Equatable {
     addEmptyWorksheet();
   }
 
-  /// Ads a list of worksheets to the document
+  /// Returns editor for [worksheet]
+  /// Throws [StateError] if the editor cannot be found
+  WorksheetEditor edit(Worksheet worksheet) {
+    final currentWorksheets = _worksheets.requireValue;
+    return currentWorksheets.singleWhere(
+      (e) => e.current.worksheetId == worksheet.worksheetId,
+    );
+  }
+
+  WorksheetEditor _createEditor(Worksheet w) {
+    return WorksheetEditor(
+      w.copy(
+        name: _getUniqueName(w.name),
+        worksheetId: _getUniqueId(),
+      ),
+    );
+  }
+
+  /// Ads a list of worksheets to the document. New worksheet ID's will be
+  /// created on target document
   void addWorksheets(List<Worksheet> worksheets) {
     _worksheets.add(
       _worksheets.requireValue
         ..addAll(
-          worksheets
-              .map(
-                (w) => w.copy(name: _getUniqueName(w.name)),
-              )
-              .toList(),
+          worksheets.map(_createEditor).toList(),
         ),
     );
   }
 
-  /// Adds an empty worksheet to the document
-  Worksheet addEmptyWorksheet({String? name}) {
-    final worksheet = Worksheet(name: _getUniqueName(name));
+  /// Adds an empty worksheet to the document.
+  /// Returns [WorksheetEditor] to update the state of worksheet
+  WorksheetEditor addEmptyWorksheet({String? name}) {
+    final worksheet = _createEditor(
+      Worksheet(
+        name: name ?? '',
+        worksheetId: 0,
+        requests: const [],
+      ),
+    );
+
     final currentWorksheets = _worksheets.requireValue;
     _worksheets.add(currentWorksheets..add(worksheet));
     return worksheet;
   }
 
+  // Last worksheet id. Guaranteed to be unique for whole document. But actually
+  // it unique for beside all documents in single VM instance.
+  static int _lastId = 0;
+
+  int _getUniqueId() => ++_lastId;
+
   String _getUniqueName(String? name) {
     final currentWorksheets = _worksheets.requireValue;
-    name ??= "Лист ${currentWorksheets.length + 1}";
+
+    if (name?.isEmpty ?? true) {
+      name = "Лист ${currentWorksheets.length + 1}";
+    }
+
     String worksheetName;
     var attempt = 0;
     do {
       worksheetName = "$name${attempt > 0 ? "($attempt)" : ""}";
       attempt++;
-    } while (currentWorksheets.any((w) => w.name == worksheetName));
+    } while (currentWorksheets.any((w) => w.current.name == worksheetName));
     return worksheetName;
   }
 
   /// Removes [worksheet] from the document
   Future<void> removeWorksheet(Worksheet worksheet) async {
+    // Get the current worksheets
     final currentWorksheets = _worksheets.requireValue;
-    final activeWs = await active.first;
-    if (worksheet == activeWs) {
-      final currIndex = currentWorksheets.indexOf(activeWs);
+
+    // Find the active worksheet
+    final activeWs = (await active.first);
+
+    // Find the editor and it's index
+    final editor = edit(worksheet);
+    final currIndex = currentWorksheets.indexOf(editor);
+
+    if (currIndex < 0) {
+      throw "Given worksheet doesn't exists in this document";
+    }
+
+    // If deletable worksheet is active then move active marker to the next
+    if (worksheet.worksheetId == activeWs.worksheetId) {
       var newIndex = currIndex - 1;
       if (newIndex < 0) newIndex = currIndex + 1;
       _activeWorksheet.add(newIndex);
     }
 
-    currentWorksheets.remove(worksheet);
+    // Remove worksheet with the same worksheet (should be only one)
+    final curr = currentWorksheets[currIndex];
+    currentWorksheets.removeAt(currIndex);
+
+    // Close internal streams
+    await curr.close();
+
+    // Fetch updates
     _worksheets.add(currentWorksheets);
 
+    // Shift active worksheet index if needed (end of list case)
     if (_activeWorksheet.requireValue == currentWorksheets.length) {
       _activeWorksheet.add(currentWorksheets.length - 1);
     }
@@ -190,7 +261,12 @@ class Document extends Equatable {
       throw ('Cannot set an empty worksheet list');
     }
 
-    _worksheets.add(worksheets);
+    // Close the current worksheets
+    for (final ws in _worksheets.requireValue) {
+      ws.close();
+    }
+
+    _worksheets.add(worksheets.map(_createEditor).toList());
     makeActive(worksheets.first);
   }
 
@@ -199,7 +275,13 @@ class Document extends Equatable {
     await _updateDate.close();
     await _savePath.close();
     await _activeWorksheet.close();
-    // TODO: Close all Worksheet sinks
+
+    await for (final wsEditor in _worksheets.stream) {
+      for (final ws in wsEditor) {
+        await ws.close();
+      }
+    }
+
     await _worksheets.close();
   }
 
