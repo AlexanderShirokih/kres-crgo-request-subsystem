@@ -13,6 +13,9 @@ class RequestEditorShowDataState extends RequestEditorState {
   /// List of all available request types
   final List<RequestType> availableRequestTypes;
 
+  /// List of year quarters. `null` value means quarter is unset
+  final List<int?> availableCheckQuarters = const [null, 1, 2, 3, 4];
+
   /// Default constructor to create the state from [RequestEntity] instance
   const RequestEditorShowDataState({
     required this.availableRequestTypes,

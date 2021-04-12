@@ -28,18 +28,30 @@ class UpdateRequestFieldsEvent extends RequestEditorEvent {
   /// Request address
   final String address;
 
-  /// Counter info
-  final CounterInfo? counter;
-
   /// Account ID
   final String accountId;
+
+  /// Counter type
+  final String? counterType;
+
+  /// Counter number
+  final String? counterNumber;
+
+  /// Check year
+  final String? checkYear;
+
+  /// Check quarter
+  final int? checkQuarter;
 
   const UpdateRequestFieldsEvent({
     required this.requestType,
     required this.name,
     required this.additionalInfo,
     required this.address,
-    required this.counter,
+    required this.counterType,
+    required this.counterNumber,
+    required this.checkYear,
+    required this.checkQuarter,
     required this.accountId,
   }) : super._();
 
@@ -49,7 +61,10 @@ class UpdateRequestFieldsEvent extends RequestEditorEvent {
         name,
         additionalInfo,
         address,
-        counter,
+        counterType,
+        counterNumber,
+        checkYear,
+        checkQuarter,
         accountId,
       ];
 }

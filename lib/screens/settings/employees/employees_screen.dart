@@ -42,7 +42,7 @@ class EmployeesScreen extends StatelessWidget {
         cells: [
           EditableNameField(
             validator: Modular.get<MappedValidator<Employee>>()
-                .findStringValidator('name'),
+                .findValidator<StringValidator>('name'),
             value: e.name,
             onChanged: (newValue) =>
                 _fireItemChanged(bloc, e, e.copy(name: newValue)),

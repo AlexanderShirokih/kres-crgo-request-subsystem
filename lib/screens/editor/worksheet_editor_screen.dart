@@ -9,10 +9,8 @@ import 'package:kres_requests2/screens/confirmation_dialog.dart';
 import 'package:kres_requests2/screens/editor/bloc/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/screens/editor/widgets/request_item_view.dart';
 
-import 'request_editor_dialog.dart';
+import 'request_editor_dialog/request_editor_dialog.dart';
 import 'requests_move_dialog/requests_move_dialog.dart';
-
-// TODO: Move Marker to the left side?
 
 /// Show the list of requests for target [worksheetEditor] of the [document]
 class WorksheetEditorView extends StatefulWidget {

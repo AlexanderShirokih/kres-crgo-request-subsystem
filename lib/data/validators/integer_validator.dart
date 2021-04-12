@@ -11,14 +11,10 @@ class IntegerValidator extends Validator<int?> {
   /// Can field accept null values?
   final bool canBeNull;
 
-  /// Field name for describing in [ValidationError]
-  final String fieldName;
-
   const IntegerValidator({
     this.canBeNull = false,
     this.min,
     this.max,
-    required this.fieldName,
   });
 
   @override

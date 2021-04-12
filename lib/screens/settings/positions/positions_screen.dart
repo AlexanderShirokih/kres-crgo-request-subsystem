@@ -36,7 +36,7 @@ class PositionsScreen extends StatelessWidget {
           EditableNameField(
             value: e.name,
             validator: Modular.get<MappedValidator<Position>>()
-                .findStringValidator('name'),
+                .findValidator('name'),
             onChanged: (newValue) =>
                 bloc.add(UpdateItemEvent(e, e.copy(name: newValue))),
           ),

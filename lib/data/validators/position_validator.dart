@@ -7,11 +7,13 @@ import 'package:kres_requests2/domain/validator.dart';
 class PositionValidator extends MappedValidator<Position> {
   /// Creates new [PositionValidator] instance
   PositionValidator()
-      : super({
-          const StringValidator(
-            fieldName: 'name',
-            minLength: 3,
-            maxLength: 20,
-          ): (p) => p.name,
-        });
+      : super([
+          ValidationEntry(
+              'name',
+              const StringValidator(
+                minLength: 3,
+                maxLength: 20,
+              ),
+              (p) => p.name),
+        ]);
 }

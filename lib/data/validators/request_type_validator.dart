@@ -8,16 +8,20 @@ import 'mapped_validator.dart';
 class RequestTypeValidator extends MappedValidator<RequestType> {
   /// Creates new [RequestTypeValidator] instance
   RequestTypeValidator()
-      : super({
-          const StringValidator(
-            fieldName: 'shortName',
-            minLength: 3,
-            maxLength: 10,
-          ): (e) => e.shortName,
-          const StringValidator(
-            fieldName: 'fullName',
-            minLength: 5,
-            maxLength: 20,
-          ): (e) => e.fullName,
-        });
+      : super([
+          ValidationEntry(
+              'shortName',
+              const StringValidator(
+                minLength: 3,
+                maxLength: 10,
+              ),
+              (e) => e.shortName),
+          ValidationEntry(
+              'fullName',
+              const StringValidator(
+                minLength: 5,
+                maxLength: 20,
+              ),
+              (e) => e.fullName),
+        ]);
 }

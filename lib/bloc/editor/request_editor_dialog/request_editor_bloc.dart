@@ -9,6 +9,7 @@ import 'package:kres_requests2/models/request_entity.dart';
 import 'package:meta/meta.dart';
 
 part 'request_editor_events.dart';
+
 part 'request_editor_states.dart';
 
 /// BLoC for editing [RequestEntity]
@@ -50,8 +51,16 @@ class RequestEditorBloc extends Bloc<RequestEditorEvent, RequestEditorState> {
     final requestTypes = await requestTypeRepository.getAll();
     if (state is RequestEditorShowDataState) {
       final dataState = state as RequestEditorShowDataState;
+
+      var requestTypesSet = requestTypes.toSet();
+      // Merge with the current value
+      final currentRequestType = dataState.current.requestType;
+      if (currentRequestType != null) {
+        requestTypesSet.add(currentRequestType);
+      }
+
       yield RequestEditorShowDataState(
-        availableRequestTypes: requestTypes,
+        availableRequestTypes: requestTypesSet.toList(growable: false),
         current: dataState.current,
       );
     }
@@ -62,13 +71,25 @@ class RequestEditorBloc extends Bloc<RequestEditorEvent, RequestEditorState> {
       UpdateRequestFieldsEvent event) async* {
     String _sanitize(String value) => value.replaceAll(RegExp(r"[\n\r]"), "");
 
+    CounterInfo? counterInfo;
+
+    if (event.counterNumber != null && event.counterType != null) {
+      counterInfo = CounterInfo(
+        type: event.counterType!,
+        number: event.counterNumber!,
+        checkQuarter: event.checkQuarter,
+        checkYear:
+            event.checkYear != null ? int.tryParse(event.checkYear!) : null,
+      );
+    }
+
     if (state is RequestEditorShowDataState) {
       final dataState = state as RequestEditorShowDataState;
       final updatedRequest = dataState.current.copy(
         name: _sanitize(event.name),
         additionalInfo: _sanitize(event.additionalInfo),
         address: _sanitize(event.address),
-        counter: event.counter,
+        counter: counterInfo,
         accountId:
             event.accountId.isNotEmpty ? int.parse(event.accountId) : null,
         requestType: event.requestType,
@@ -76,7 +97,7 @@ class RequestEditorBloc extends Bloc<RequestEditorEvent, RequestEditorState> {
 
       final errors = requestValidator.validate(updatedRequest).toList();
 
-      if (errors.isEmpty) {
+      if (errors.isNotEmpty) {
         // We have some errors in field completion
         yield RequestValidationErrorState(errors.first);
       } else {

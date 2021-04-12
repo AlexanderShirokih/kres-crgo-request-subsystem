@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
-import 'package:kres_requests2/screens/editor/document_editor_screen.dart';
+import 'package:kres_requests2/screens/editor/editor_module.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 
@@ -14,10 +14,7 @@ class DocumentModule extends Module {
 
   @override
   final List<ModularRoute> routes = [
-    ChildRoute(
-      '/edit',
-      child: (_, args) => DocumentEditorScreen(document: args.data as Document),
-    ),
+    ModuleRoute('/edit', module: EditorModule()),
     ChildRoute(
       '/open',
       child: (_, args) => NativeImporterScreen(
