@@ -5,9 +5,9 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
 import 'package:kres_requests2/domain/validator.dart';
-import 'package:kres_requests2/screens/settings/common/bloc/undoable_data.dart';
-import 'package:kres_requests2/screens/settings/common/bloc/undoable_events.dart';
-import 'package:kres_requests2/screens/settings/common/bloc/undoable_state.dart';
+import 'package:kres_requests2/bloc/settings/common/undoable_data.dart';
+import 'package:kres_requests2/bloc/settings/common/undoable_events.dart';
+import 'package:kres_requests2/bloc/settings/common/undoable_state.dart';
 import 'package:meta/meta.dart';
 
 /// BLoC that handles actions on a list of data that can have editing history

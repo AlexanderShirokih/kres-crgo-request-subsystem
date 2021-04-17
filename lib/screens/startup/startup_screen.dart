@@ -4,7 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/domain/models/recent_document_info.dart';
 import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/screens/startup/bloc/recent_docs_bloc.dart';
+import 'package:kres_requests2/bloc/startup/recent_docs_bloc.dart';
 import 'package:kres_requests2/screens/startup/startup_screen_button.dart';
 
 /// Shows startup wizard

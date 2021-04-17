@@ -6,12 +6,12 @@ import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/position.dart';
 import 'package:kres_requests2/domain/utils.dart';
 import 'package:kres_requests2/screens/common/table_view.dart';
-import 'package:kres_requests2/screens/settings/common/bloc/undoable_bloc.dart';
-import 'package:kres_requests2/screens/settings/common/bloc/undoable_events.dart';
+import 'package:kres_requests2/bloc/settings/common/undoable_bloc.dart';
+import 'package:kres_requests2/bloc/settings/common/undoable_events.dart';
 import 'package:kres_requests2/screens/settings/common/undoable_editor_screen.dart';
 import 'package:kres_requests2/screens/settings/common/widgets/delete_button.dart';
 import 'package:kres_requests2/screens/settings/common/widgets/editable_name_field.dart';
-import 'package:kres_requests2/screens/settings/employees/bloc/employee_bloc.dart';
+import 'package:kres_requests2/bloc/settings/employees/employee_bloc.dart';
 
 /// Manages employees.
 class EmployeesScreen extends StatelessWidget {

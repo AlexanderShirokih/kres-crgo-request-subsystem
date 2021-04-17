@@ -4,13 +4,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/data/validators/mapped_validator.dart';
 import 'package:kres_requests2/domain/models/position.dart';
 import 'package:kres_requests2/screens/common/table_view.dart';
-import 'package:kres_requests2/screens/settings/common/bloc/undoable_bloc.dart';
-import 'package:kres_requests2/screens/settings/common/bloc/undoable_events.dart';
+import 'package:kres_requests2/bloc/settings/common/undoable_bloc.dart';
+import 'package:kres_requests2/bloc/settings/common/undoable_events.dart';
 import 'package:kres_requests2/screens/settings/common/undoable_editor_screen.dart';
 import 'package:kres_requests2/screens/settings/common/widgets/delete_button.dart';
 import 'package:kres_requests2/screens/settings/common/widgets/editable_name_field.dart';
-import 'package:kres_requests2/screens/settings/positions/bloc/position_bloc.dart';
-import 'package:kres_requests2/screens/settings/positions/bloc/position_data.dart';
+import 'package:kres_requests2/bloc/settings/positions/position_bloc.dart';
+import 'package:kres_requests2/bloc/settings/positions/position_data.dart';
 
 /// Manages employee positions
 class PositionsScreen extends StatelessWidget {

@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
 import 'package:kres_requests2/domain/validator.dart';
-import 'package:kres_requests2/screens/settings/common/bloc/undoable_bloc.dart';
-import 'package:kres_requests2/screens/settings/request_types/bloc/request_type_data.dart';
+import 'package:kres_requests2/bloc/settings/common/undoable_bloc.dart';
+import 'package:kres_requests2/bloc/settings/request_types/request_type_data.dart';
 
 /// BLoC that handles actions on request type list
 class RequestTypeBloc extends UndoableBloc<RequestTypeData, RequestType> {
