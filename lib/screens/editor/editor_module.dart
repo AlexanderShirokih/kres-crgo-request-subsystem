@@ -1,8 +1,8 @@
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/data/validators/mapped_validator.dart';
 import 'package:kres_requests2/data/validators/request_validator.dart';
-import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/domain/models/request_entity.dart';
 
 import 'document_editor_screen.dart';
 

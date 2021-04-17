@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
-import 'package:kres_requests2/models/connection_point.dart';
-import 'package:kres_requests2/models/counter_info.dart';
-import 'package:kres_requests2/models/request_entity.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/domain/models/connection_point.dart';
+import 'package:kres_requests2/domain/models/counter_info.dart';
+import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Controls editing of worksheet properties

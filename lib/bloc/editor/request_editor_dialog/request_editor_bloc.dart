@@ -8,9 +8,9 @@ import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
 import 'package:kres_requests2/domain/repository/repository.dart';
 import 'package:kres_requests2/domain/validator.dart';
-import 'package:kres_requests2/models/connection_point.dart';
-import 'package:kres_requests2/models/counter_info.dart';
-import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/domain/models/connection_point.dart';
+import 'package:kres_requests2/domain/models/counter_info.dart';
+import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:meta/meta.dart';
 
 part 'request_editor_events.dart';

@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/repository/employee_repository.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/domain/models/worksheet.dart';
 
 class WorksheetConfigView extends StatefulWidget {
   final EmployeeRepository employeeRepository;

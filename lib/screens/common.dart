@@ -1,7 +1,7 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/domain/models/document.dart';
 import 'package:path/path.dart' as path;
 
 class ErrorView extends StatelessWidget {

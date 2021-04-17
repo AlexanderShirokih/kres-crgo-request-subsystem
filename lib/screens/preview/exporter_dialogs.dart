@@ -2,7 +2,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:path/path.dart' as path;

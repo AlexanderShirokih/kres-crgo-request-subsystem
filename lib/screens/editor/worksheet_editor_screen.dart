@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
-import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/screens/editor/widgets/request_item_view.dart';
 
 import '../confirmation_dialog.dart';

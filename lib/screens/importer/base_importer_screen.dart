@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/screens/common.dart';
 

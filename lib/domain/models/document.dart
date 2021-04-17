@@ -5,7 +5,7 @@ import 'dart:math';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:path/path.dart' as path;
 import 'package:rxdart/rxdart.dart';
 

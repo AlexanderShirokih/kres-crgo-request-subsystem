@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';

@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:kres_requests2/data/process_executor.dart';
-import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/optional_data.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/domain/models/optional_data.dart';
+import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:path_provider/path_provider.dart';
 
 abstract class AbstractRequestProcessor {

@@ -8,7 +8,7 @@ import 'package:kres_requests2/data/validators.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/utils.dart';
-import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/domain/models/request_entity.dart';
 
 /// Dialog for editing [RequestEntity].
 class RequestEditorDialog extends StatelessWidget {

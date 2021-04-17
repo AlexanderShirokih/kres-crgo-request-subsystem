@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/models/connection_point.dart';
-import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/domain/models/connection_point.dart';
+import 'package:kres_requests2/domain/models/request_entity.dart';
 
 /// Describes single item of request entity
 class RequestItemView extends StatelessWidget {

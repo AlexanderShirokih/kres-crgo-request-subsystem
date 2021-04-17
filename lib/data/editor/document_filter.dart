@@ -1,6 +1,6 @@
-import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/request_entity.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Class that responsible for filtering requests that matches search criteria

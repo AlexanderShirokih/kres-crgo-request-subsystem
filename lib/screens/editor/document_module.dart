@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/screens/editor/editor_module.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';

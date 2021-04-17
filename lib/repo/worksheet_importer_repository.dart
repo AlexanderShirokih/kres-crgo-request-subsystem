@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:kres_requests2/data/editor/document_factory.dart';
 import 'package:kres_requests2/domain/counters_importer.dart';
 import 'package:kres_requests2/domain/domain.dart';
-import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/domain/models/worksheet.dart';
 
 abstract class WorksheetImporterRepository {
   const WorksheetImporterRepository();

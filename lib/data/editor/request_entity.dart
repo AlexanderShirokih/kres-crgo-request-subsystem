@@ -1,9 +1,9 @@
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/models/connection_point.dart';
-import 'package:kres_requests2/models/counter_info.dart';
-import 'package:kres_requests2/models/request_entity.dart';
+import 'package:kres_requests2/domain/models/connection_point.dart';
+import 'package:kres_requests2/domain/models/counter_info.dart';
+import 'package:kres_requests2/domain/models/request_entity.dart';
 
 /// Adapter to [PersistedObjectBuilder] for [RequestEntity].
 /// Builds persisted entities based on any default [RequestEntity]

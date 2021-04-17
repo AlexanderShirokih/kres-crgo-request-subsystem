@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:kres_requests2/models/optional_data.dart';
-import 'package:kres_requests2/models/worksheet.dart';
+import 'package:kres_requests2/domain/models/optional_data.dart';
+import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';

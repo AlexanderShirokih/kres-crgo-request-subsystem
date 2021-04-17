@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
-import 'package:kres_requests2/models/connection_point.dart';
-import 'package:kres_requests2/models/counter_info.dart';
+import 'package:kres_requests2/domain/models/connection_point.dart';
+import 'package:kres_requests2/domain/models/counter_info.dart';
 
 /// Describes information about work request
 abstract class RequestEntity extends Equatable {

@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:kres_requests2/data/models.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/models/connection_point.dart';
-import 'package:kres_requests2/models/counter_info.dart';
-import 'package:kres_requests2/models/document.dart';
+import 'package:kres_requests2/domain/models/connection_point.dart';
+import 'package:kres_requests2/domain/models/counter_info.dart';
+import 'package:kres_requests2/domain/models/document.dart';
 
 abstract class DocumentFactory {
   Document createDocument();
