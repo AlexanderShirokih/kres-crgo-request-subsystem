@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:path/path.dart' as path;
 import 'package:rxdart/rxdart.dart';
@@ -49,6 +50,10 @@ class Document extends Equatable {
         _activeWorksheet,
         (ws, int activeIdx) => ws[activeIdx],
       );
+
+  /// Returns `true` if document currently is empty
+  bool get currentIsEmpty =>
+      currentWorksheets.every((worksheet) => worksheet.isEmpty);
 
   /// Returns `true` if document is empty
   Stream<bool> get isEmpty => worksheets.map(
@@ -106,7 +111,7 @@ class Document extends Equatable {
 
   /// Creates an empty document
   Document.empty() {
-    addEmptyWorksheet();
+    addWorksheet();
   }
 
   /// Returns editor for [worksheet]
@@ -140,11 +145,22 @@ class Document extends Equatable {
 
   /// Adds an empty worksheet to the document.
   /// Returns [WorksheetEditor] to update the state of worksheet
-  WorksheetEditor addEmptyWorksheet({String? name}) {
+  WorksheetEditor addWorksheet({
+    String? name,
+    DateTime? targetDate,
+    Employee? mainEmployee,
+    Employee? chiefEmployee,
+    Set<Employee> membersEmployee = const {},
+    Set<String>? workTypes,
+  }) {
     final worksheet = _createEditor(
       Worksheet(
         name: name ?? '',
-        worksheetId: 0,
+        worksheetId: _getUniqueId(),
+        mainEmployee: mainEmployee,
+        chiefEmployee: chiefEmployee,
+        membersEmployee: membersEmployee,
+        workTypes: workTypes,
         requests: const [],
       ),
     );
@@ -255,6 +271,7 @@ class Document extends Equatable {
     await _savePath.requireValue.writeAsString(json.encode(toJson()));
   }
 
+  /// TODO: API: undesired function.
   /// Replaces all worksheets in the document
   void setWorksheets(List<Worksheet> worksheets) {
     if (worksheets.isEmpty) {

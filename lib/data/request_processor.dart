@@ -4,9 +4,7 @@ import 'dart:io';
 import 'package:kres_requests2/data/process_executor.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/optional_data.dart';
-import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
-import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
 abstract class AbstractRequestProcessor {
@@ -90,22 +88,25 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
         .whenComplete(() => tempFile.delete());
   }
 
+  // TODO: Use Json document factory to load the document
   @override
   Future<OptionalData<Document>> importRequests(String filePath) =>
       _requestsProcessExecutor.runProcess(['-parse', filePath]).then(
           (ProcessResult result) => _decodeProcessResult<Document>(
                 result,
                 (d) => Document()
-                  ..setWorksheets([
-                    Worksheet(
-                      worksheetId: 1,
-                      name: _getWorksheetName(filePath),
-                      requests: (d as List<dynamic>)
-                          // TODO: Use another way to create request instances
-                          .map((e) => RequestEntity.fromJson(e))
-                          .toList(),
-                    )
-                  ]),
+                // ..setWorksheets([
+                //   Worksheet(
+                //       worksheetId: 1,
+                //       name: _getWorksheetName(filePath),
+                //       requests: throw UnimplementedError()
+                //       // TODO: Unimplemented method
+                //       //(d as List<dynamic>)
+                //       // .map((e) => RequestEntity.fromJson(e))
+                //       // .toList(),
+                //       )
+                // ])
+                ,
                 "Parsing error!",
               ));
 
@@ -132,7 +133,7 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
       OptionalData(
           data: json['data'] != null ? resultBuilder(json['data']!) : null,
           error: ErrorWrapper(json['error'], json['stackTrace']));
-
-  String _getWorksheetName(String filePath) =>
-      path.basenameWithoutExtension(filePath);
+//
+// String _getWorksheetName(String filePath) =>
+//     path.basenameWithoutExtension(filePath);
 }

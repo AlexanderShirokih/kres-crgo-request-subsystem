@@ -15,6 +15,13 @@ class CounterInfo extends Equatable {
   /// Checking year
   final int? checkYear;
 
+  /// Returns `true` is all fields are empty
+  bool get isEmpty =>
+      checkQuarter == null &&
+      checkYear == null &&
+      type.isEmpty &&
+      number.isEmpty;
+
   const CounterInfo({
     required this.type,
     required this.number,

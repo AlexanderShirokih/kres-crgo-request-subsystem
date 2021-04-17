@@ -16,6 +16,7 @@ class RequestValidator extends MappedValidator<RequestEntity> {
   static const tp = 'tp';
   static const line = 'line';
   static const pillar = 'pillar';
+  static const additionalInfo = 'additionalInfo';
 
   /// Creates new [RequestValidator] instance
   RequestValidator()
@@ -35,13 +36,13 @@ class RequestValidator extends MappedValidator<RequestEntity> {
           ValidationEntry(
               phone, StringValidator(maxLength: 15), (e) => e.phoneNumber),
           ValidationEntry(tp, const StringValidator(maxLength: 6),
-              (e) => e.connectionPoint?.tp ?? ''),
+              (e) => e.connectionPoint?.tp),
           ValidationEntry(line, const StringValidator(maxLength: 3),
-              (e) => e.connectionPoint?.line ?? ''),
+              (e) => e.connectionPoint?.line),
           ValidationEntry(pillar, const StringValidator(maxLength: 6),
-              (e) => e.connectionPoint?.pillar ?? ''),
+              (e) => e.connectionPoint?.pillar),
           ValidationEntry(
-              'additionalInfo',
+              additionalInfo,
               const StringValidator(
                 minLength: 0,
                 maxLength: 30,

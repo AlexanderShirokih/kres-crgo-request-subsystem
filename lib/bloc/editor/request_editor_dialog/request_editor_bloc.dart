@@ -1,9 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kres_requests2/data/editor/request_entity.dart';
+import 'package:kres_requests2/data/repository/request_repository.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
+import 'package:kres_requests2/domain/controller/streamed_controller.dart';
+import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
 import 'package:kres_requests2/domain/repository/repository.dart';
 import 'package:kres_requests2/domain/validator.dart';
+import 'package:kres_requests2/models/connection_point.dart';
 import 'package:kres_requests2/models/counter_info.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:meta/meta.dart';
@@ -17,25 +22,48 @@ class RequestEditorBloc extends Bloc<RequestEditorEvent, RequestEditorState> {
   /// Repository for fetching request types list
   final Repository<RequestType> requestTypeRepository;
 
+  final WorksheetEditor worksheetEditor;
+
   // Repository controller for inserting or updating requests
-  final AbstractRepositoryController<RequestEntity> requestController;
+  final AbstractRepositoryController<RequestEntity> _requestController;
 
   // Validator for checking fields completion in [RequestEntity]
   final Validator<RequestEntity> requestValidator;
 
+  // The original request that will be edited
+  final RequestEntity? initial;
+
   /// Creates new [RequestEditorBloc] from existing [RequestEntity], if present
   RequestEditorBloc({
     required this.requestTypeRepository,
-    required this.requestController,
+    required this.initial,
+    required WorksheetEditor worksheetEditor,
     required this.requestValidator,
-    RequestEntity? initialRequest,
-  }) : super(
+  })   : worksheetEditor = worksheetEditor,
+        _requestController = StreamedRepositoryController(
+          RepositoryController(
+            RequestEntityPersistedBuilder(),
+            DocumentRequestEntityRepository(worksheetEditor),
+          ),
+        ),
+        super(
           RequestEditorShowDataState(
-            current: initialRequest?.copy() ?? RequestEntity.empty(),
+            current: initial ?? worksheetEditor.addRequest(),
             availableRequestTypes: <RequestType>[],
           ),
         ) {
     add(_FetchRequestTypesEvent());
+  }
+
+  @override
+  Future<void> close() async {
+    // Remove empty request that we added at start (when initial == `null`)
+    final current = state;
+    if (current is RequestEditorShowDataState && current.current.isEmpty) {
+      worksheetEditor.removeRequests([current.current]);
+    }
+
+    await super.close();
   }
 
   @override
@@ -70,46 +98,62 @@ class RequestEditorBloc extends Bloc<RequestEditorEvent, RequestEditorState> {
   Stream<RequestEditorState> _updateRequestFields(
       UpdateRequestFieldsEvent event) async* {
     String _sanitize(String value) => value.replaceAll(RegExp(r"[\n\r]"), "");
+    String? _sanitizeNotEmpty(String value) {
+      final v = _sanitize(value);
+      return v.isEmpty ? null : v;
+    }
 
     CounterInfo? counterInfo;
 
-    if (event.counterNumber != null && event.counterType != null) {
+    if (event.counterNumber.isNotEmpty && event.counterType.isNotEmpty) {
       counterInfo = CounterInfo(
-        type: event.counterType!,
-        number: event.counterNumber!,
+        type: _sanitize(event.counterType),
+        number: _sanitize(event.counterNumber),
         checkQuarter: event.checkQuarter,
-        checkYear:
-            event.checkYear != null ? int.tryParse(event.checkYear!) : null,
+        checkYear: event.checkYear.isNotEmpty
+            ? int.tryParse(_sanitize(event.checkYear))
+            : null,
       );
     }
 
     if (state is RequestEditorShowDataState) {
       final dataState = state as RequestEditorShowDataState;
-      final updatedRequest = dataState.current.copy(
-        name: _sanitize(event.name),
-        additionalInfo: _sanitize(event.additionalInfo),
-        address: _sanitize(event.address),
-        counter: counterInfo,
-        accountId:
-            event.accountId.isNotEmpty ? int.parse(event.accountId) : null,
-        requestType: event.requestType,
-      );
 
+      final tp = _sanitize(event.tp);
+      final line = _sanitize(event.line);
+      final pillar = _sanitize(event.pillar);
+
+      final updatedRequestBuilder = dataState.current.rebuild()
+        ..name = _sanitize(event.name)
+        ..additionalInfo = _sanitizeNotEmpty(event.additionalInfo)
+        ..address = _sanitize(event.address)
+        ..phoneNumber = _sanitizeNotEmpty(event.phone)
+        ..counter = counterInfo
+        ..accountId =
+            event.accountId.isNotEmpty ? int.parse(event.accountId) : null
+        ..requestType = event.requestType
+        ..connectionPoint = ConnectionPoint(
+          tp: _sanitizeNotEmpty(tp),
+          line: _sanitizeNotEmpty(line),
+          pillar: _sanitizeNotEmpty(pillar),
+        );
+
+      final updatedRequest = updatedRequestBuilder.build();
       final errors = requestValidator.validate(updatedRequest).toList();
 
       if (errors.isNotEmpty) {
         // We have some errors in field completion
-        yield RequestValidationErrorState(errors.first);
+        yield RequestValidationErrorState(errors.join(', '));
       } else {
-        if (dataState.current.isNew) {
+        if (dataState.current.isEmpty) {
           // Newly created request
-          requestController.add(updatedRequest);
+          _requestController.add(updatedRequest);
         } else {
           // Updated request
-          requestController.update(dataState.current, updatedRequest);
+          _requestController.update(dataState.current, updatedRequest);
         }
 
-        await requestController.commit();
+        await _requestController.commit();
         yield RequestEditingCompletedState();
       }
     }

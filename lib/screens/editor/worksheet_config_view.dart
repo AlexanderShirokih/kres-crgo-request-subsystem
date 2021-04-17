@@ -163,20 +163,27 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
     yield _WorkTypesList(w);
   }
 
+  /// TODO: Remove business logic
   Iterable<Widget> _spreadTeamMembers(
-          List<Employee> employees, List<Employee> teamMembers) =>
+          List<Employee> employees, Set<Employee> teamMembers) =>
       Iterable.generate(
         teamMembers.length,
         (i) => Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: _createDropdownEmployeeForm(
             positionDesc: "Выберите члена бригады",
-            current: teamMembers[i],
+            current: teamMembers.elementAt(i),
             employees: employees,
-            onChanged: (value) => setState(() {
-              teamMembers[i] = value!;
-            }),
-            onRemove: () => setState(() => teamMembers.removeAt(i)),
+            onChanged: (value) {
+              // TODO: refactor code
+              // setState(() {
+              // teamMembers[i] = value!;
+              // });
+            },
+            onRemove: () {
+              // TODO: refactor code
+              // setState(() => teamMembers.removeAt(i));
+            },
           ),
         ),
       );
@@ -197,7 +204,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
   Widget _createDropdownEmployeeForm({
     required String positionDesc,
     required Employee current,
-    required List<Employee> employees,
+    required Iterable<Employee> employees,
     required void Function(Employee?) onChanged,
     void Function()? onRemove,
   }) =>
@@ -228,7 +235,7 @@ class _WorksheetConfigViewState extends State<WorksheetConfigView> {
                     (e) => DropdownMenuItem(
                       value: e,
                       child: Text(
-                              "${e.name}, ${e.position.name}, ${e.accessGroup} гр."),
+                          "${e.name}, ${e.position.name}, ${e.accessGroup} гр."),
                     ),
                   )
                   .toList(),

@@ -105,6 +105,7 @@ abstract class AbstractRepositoryController<E> {
   Future<bool> commit();
 }
 
+/// Allows making changes on repository undoable and deferred.
 class RepositoryController<E> implements AbstractRepositoryController<E> {
   final Repository<E> _repository;
   final PersistedObjectBuilder<E> _persistedObjectBuilder;

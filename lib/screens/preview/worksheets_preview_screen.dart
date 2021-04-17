@@ -335,8 +335,8 @@ class WorksheetCard extends StatelessWidget {
                   const SizedBox(height: 8.0),
                   _showDate(context),
                   const SizedBox(height: 8.0),
-                  _showSubtitle(context, 'Заявок:',
-                      Text('${worksheet.requests.length}')),
+                  _showSubtitle(
+                      context, 'Заявок:', Text('${worksheet.requests.length}')),
                   const SizedBox(height: 8.0),
                   _printWorksheetStatus(context),
                 ],
@@ -389,7 +389,7 @@ class WorksheetCard extends StatelessWidget {
       );
 
   Widget _printMultipleChildField(
-          BuildContext ctx, String label, List<Employee> emp) =>
+          BuildContext ctx, String label, Set<Employee> emp) =>
       Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,

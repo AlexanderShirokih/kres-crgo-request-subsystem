@@ -89,7 +89,7 @@ class WorksheetMasterBloc
         );
         return;
       case WorksheetCreationMode.empty:
-        _document.makeActive(_document.addEmptyWorksheet().current);
+        _document.makeActive(_document.addWorksheet().current);
         yield WorksheetMasterIdleState(_document);
     }
   }

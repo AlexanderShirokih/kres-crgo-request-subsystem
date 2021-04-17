@@ -34,8 +34,6 @@ class WorksheetEditorBloc
       yield* _keepSelectionState(_handleWorksheetUpdate(event.worksheet));
     } else if (event is SwapRequestsEvent) {
       worksheet.swapRequests(event.from, event.to);
-    } else if (event is SaveRequestEvent) {
-      yield* _keepSelectionState(saveRequest(event.request));
     } else if (event is RequestSelectionEvent) {
       yield* _handleSelectionEvent(event.target, event.action);
     } else if (event is ChangeGroupEvent) {
@@ -54,22 +52,6 @@ class WorksheetEditorBloc
       // First time emitting
       yield WorksheetDataState(requests: worksheet.requests);
     }
-  }
-
-  /// Saves new or updates an existing request
-  Stream<WorksheetEditorState> saveRequest(RequestEntity request) async* {
-    // If previous value was selected, then update selection references
-    // TODO: Implement code
-    // final old = request;
-    // if (_selectionList != null && _selectionList!.contains(old)) {
-    //   _selectionList!
-    //     ..remove(old)
-    //     ..add(edited);
-    // }
-    //
-    // final oldIdx = worksheet.requests!.indexOf(old);
-    // worksheet.requests![oldIdx] = edited;
-    // TODO: Yield updated state
   }
 
   // TODO: Remember selection list should be updated after WorksheetMoveDialog

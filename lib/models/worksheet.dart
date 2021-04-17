@@ -1,6 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:kres_requests2/data/editor/request_entity.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
+import 'package:kres_requests2/models/counter_info.dart';
 import 'package:kres_requests2/models/request_entity.dart';
+
+import 'connection_point.dart';
 
 /// Contains info about single working document
 class Worksheet extends Equatable {
@@ -16,8 +21,8 @@ class Worksheet extends Equatable {
   /// The chief employee. `null` if unset
   final Employee? chiefEmployee;
 
-  /// A list of the members employee.
-  final List<Employee> membersEmployee;
+  /// A set of the members employee.
+  final Set<Employee> membersEmployee;
 
   /// All requests related with the worksheet
   final List<RequestEntity> requests;
@@ -36,7 +41,7 @@ class Worksheet extends Equatable {
     this.targetDate,
     this.mainEmployee,
     this.chiefEmployee,
-    this.membersEmployee = const [],
+    this.membersEmployee = const {},
   }) : this.workTypes = workTypes == null ? const {} : workTypes;
 
   /// Returns `true` if worksheet list is empty
@@ -69,6 +74,37 @@ class Worksheet extends Equatable {
   //   'workTypes': workTypes.toList(),
   // };
 
+  static int _lastRequestId = 0;
+
+  // Allocates new request id
+  int _nextRequestId() => ++_lastRequestId;
+
+  /// Creates new empty request entity
+  RequestEntity createRequestEntity({
+    int? accountId,
+    String? name,
+    String? reason,
+    String? address,
+    CounterInfo? counter,
+    ConnectionPoint? connectionPoint,
+    String? phoneNumber,
+    String? additionalInfo,
+    RequestType? requestType,
+  }) {
+    return RequestEntityImpl(
+      id: _nextRequestId(),
+      accountId: accountId,
+      name: name ?? '',
+      reason: reason,
+      address: address ?? '',
+      counter: counter,
+      connectionPoint: connectionPoint,
+      phoneNumber: phoneNumber,
+      additionalInfo: additionalInfo,
+      requestType: requestType,
+    );
+  }
+
   /// Creates a copy with customizing any parameters
   Worksheet copy({
     int? worksheetId,
@@ -78,7 +114,7 @@ class Worksheet extends Equatable {
     DateTime? targetDate,
     Employee? mainEmployee,
     Employee? chiefEmployee,
-    List<Employee>? membersEmployee,
+    Set<Employee>? membersEmployee,
   }) =>
       Worksheet(
         worksheetId: worksheetId ?? this.worksheetId,

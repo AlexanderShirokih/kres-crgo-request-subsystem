@@ -26,22 +26,15 @@ class CountersImporterRepository extends WorksheetImporterRepository {
 
   @override
   Future<Document?> importDocument(String filePath) async {
-    final namedRequests =
-        await importer.importAsRequestsList(filePath, tableChooser);
+    final document = Document(updateDate: DateTime.now());
 
-    if (namedRequests.requests.isEmpty) {
+    await importer.importAsRequestsList(filePath, document, tableChooser);
+
+    if (document.currentIsEmpty) {
       return null;
     }
 
-    final worksheets = [
-      Worksheet(
-        worksheetId: 1,
-        name: namedRequests.name,
-        requests: namedRequests.requests,
-      )
-    ];
-
-    return Document(updateDate: DateTime.now())..setWorksheets(worksheets);
+    return document;
   }
 }
 

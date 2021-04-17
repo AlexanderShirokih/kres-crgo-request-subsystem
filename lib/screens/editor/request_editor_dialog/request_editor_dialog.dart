@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/editor/request_editor_dialog/request_editor_bloc.dart';
 import 'package:kres_requests2/data/validators.dart';
+import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/utils.dart';
 import 'package:kres_requests2/models/request_entity.dart';
@@ -15,23 +16,23 @@ class RequestEditorDialog extends StatelessWidget {
   /// will be created
   final RequestEntity? initial;
 
+  final WorksheetEditor worksheetEditor;
   final MappedValidator<RequestEntity> validator;
-  final AbstractRepositoryController<RequestEntity> controller;
 
   const RequestEditorDialog({
     Key? key,
     this.initial,
+    required this.worksheetEditor,
     required this.validator,
-    required this.controller,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<RequestEditorBloc>(
       create: (_) => RequestEditorBloc(
-        initialRequest: initial,
+        initial: initial,
         requestValidator: validator,
-        requestController: controller,
+        worksheetEditor: worksheetEditor,
         requestTypeRepository: Modular.get(),
       ),
       child: BlocConsumer<RequestEditorBloc, RequestEditorState>(
@@ -40,6 +41,7 @@ class RequestEditorDialog extends StatelessWidget {
           if (state is RequestEditorShowDataState) {
             return _RequestEditorView(state, validator);
           }
+
           throw 'Unsupported state: $state';
         },
         listener: (context, state) {
@@ -90,7 +92,7 @@ class _RequestEditorView extends HookWidget {
     return AlertDialog(
       actionsPadding: const EdgeInsets.only(bottom: 16.0, right: 24.0),
       title: Text(
-        request.isNew
+        request.isEmpty
             ? 'Создание заявки'
             : 'Редактирование заявки | Л/С №${request.printableAccountId}',
         textAlign: TextAlign.center,
@@ -107,11 +109,12 @@ class _RequestEditorView extends HookWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _createMainRow(id, requestType),
-              const SizedBox(height: 6.0),
-              _createInputField("ФИО: ", "Введите ФИО", name),
-              const SizedBox(height: 6.0),
-              _createInputField("Адрес: ", "Введите адрес", address),
-              const SizedBox(height: 6.0),
+              const SizedBox(height: 8.0),
+              _createInputField("ФИО", "Поле ФИО не должно быть пустым", name),
+              const SizedBox(height: 8.0),
+              _createInputField(
+                  "Адрес", "Поле адреса не должно быть пустым", address),
+              const SizedBox(height: 8.0),
               _createPhoneAndConnectionPointRow(phone, tp, line, pillar),
               const SizedBox(height: 28),
               ..._createCounterRow(
@@ -144,7 +147,11 @@ class _RequestEditorView extends HookWidget {
                     additionalInfo: additional.text,
                     address: address.text,
                     accountId: id.text,
+                    phone: phone.text,
                     counterType: counterType.text,
+                    tp: tp.text,
+                    line: line.text,
+                    pillar: pillar.text,
                     counterNumber: counterNumber.text,
                     checkQuarter: checkQuarter.value,
                     checkYear: checkYear.text,
@@ -287,6 +294,9 @@ class _RequestEditorView extends HookWidget {
       TextEditingController counterNumber,
       ValueNotifier<int?> checkQuarter,
       TextEditingController checkYear) sync* {
+    bool hasNoCounterFilled() =>
+        counterNumber.text.isEmpty || counterType.text.isEmpty;
+
     yield Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -313,7 +323,10 @@ class _RequestEditorView extends HookWidget {
             autovalidateMode: AutovalidateMode.always,
             onChanged: (newValue) => checkQuarter.value = newValue,
             validator: (quarter) =>
-                quarter == null && checkYear.text.isNotEmpty ? "" : null,
+                (quarter == null && checkYear.text.isNotEmpty) ||
+                        (quarter != null && hasNoCounterFilled())
+                    ? ""
+                    : null,
             value: checkQuarter.value,
             items: dataState.availableCheckQuarters
                 .map((q) => DropdownMenuItem(
@@ -330,7 +343,8 @@ class _RequestEditorView extends HookWidget {
             autovalidateMode: AutovalidateMode.always,
             maxLength: 4,
             validator: (year) {
-              if (year!.isEmpty && checkQuarter.value != null) return '';
+              if ((year!.isEmpty && checkQuarter.value != null) ||
+                  (year.isNotEmpty && hasNoCounterFilled())) return '';
 
               final yearRegExp = RegExp(r'^\d{2}$|^(19|20)\d{2}$');
               if (year.isNotEmpty && !yearRegExp.hasMatch(year))

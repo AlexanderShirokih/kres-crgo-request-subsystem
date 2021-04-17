@@ -5,7 +5,7 @@ import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/request_entity.dart';
 import 'package:kres_requests2/models/worksheet.dart';
 import 'package:kres_requests2/screens/bloc.dart';
-import 'package:kres_requests2/screens/editor/requests_move_dialog/bloc/requests_move_dialog_bloc.dart';
+import 'package:kres_requests2/bloc/editor/requests_move_dialog/requests_move_dialog_bloc.dart';
 
 /// Defines worksheet movement strategy
 enum MoveMethod {

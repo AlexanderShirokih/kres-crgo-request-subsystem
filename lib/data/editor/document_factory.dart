@@ -1,14 +1,12 @@
 import 'dart:io';
 
 import 'package:kres_requests2/data/models.dart';
+import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/models/connection_point.dart';
 import 'package:kres_requests2/models/counter_info.dart';
 import 'package:kres_requests2/models/document.dart';
-import 'package:kres_requests2/models/request_entity.dart';
-import 'package:kres_requests2/models/worksheet.dart';
 
-/// Factory class for building [Document] instances
 abstract class DocumentFactory {
   Document createDocument();
 }
@@ -18,32 +16,33 @@ class JsonDocumentFactory implements DocumentFactory {
   final Map<String, dynamic> _data;
   final File? savePath;
 
-  const JsonDocumentFactory(this._data, this.savePath);
+  JsonDocumentFactory(this._data, this.savePath);
 
   @override
   Document createDocument() {
-    final List<Worksheet> worksheets = (_data['worksheets'] as List<dynamic>)
-        .map((w) => _createWorksheet(w))
-        .toList();
+    final document = Document(
+      savePath: savePath,
+      updateDate: DateTime.fromMillisecondsSinceEpoch(_data['updateDate']),
+    );
+
+    for (final worksheet in (_data['worksheets'] as List<dynamic>)) {
+      _createWorksheet(document, worksheet);
+    }
 
     var activeWorksheetIdx = _data['activeWorksheet'] ?? 0;
+
+    final worksheets = document.currentWorksheets;
 
     if (activeWorksheetIdx >= worksheets.length) {
       activeWorksheetIdx = 0;
     }
 
-    return Document(
-      savePath: savePath,
-      updateDate: DateTime.fromMillisecondsSinceEpoch(_data['updateDate']),
-    )
-      ..setWorksheets(worksheets)
-      ..makeActive(worksheets[activeWorksheetIdx]);
+    return document..makeActive(worksheets[activeWorksheetIdx]);
   }
 
-  Worksheet _createWorksheet(Map<String, dynamic> ws) {
-    return Worksheet(
-      worksheetId: 0,
-      name: ws['name'] as String,
+  void _createWorksheet(Document document, Map<String, dynamic> ws) {
+    final worksheetEditor = document.addWorksheet(
+      name: ws['name'],
       mainEmployee: ws['mainEmployee'] == null
           ? null
           : _createEmployee(ws['mainEmployee']),
@@ -53,14 +52,65 @@ class JsonDocumentFactory implements DocumentFactory {
       membersEmployee: (ws['membersEmployee'] as List<dynamic>)
           .map((e) => _createEmployee(e))
           .take(6)
-          .toList(),
-      requests: (ws['requests'] as List<dynamic>)
-          .map((r) => _createRequestEntity(r))
-          .toList(),
+          .toSet(),
       targetDate: ws['date'] == null
           ? null
           : DateTime.fromMillisecondsSinceEpoch(ws['date']),
       workTypes: (ws['workTypes'] as List<dynamic>).cast<String>().toSet(),
+    );
+
+    for (final request in (ws['requests'] as List<dynamic>)) {
+      _createRequestEntity(worksheetEditor, request);
+    }
+  }
+
+  void _createRequestEntity(WorksheetEditor editor, Map<String, dynamic> data) {
+    final int? accountId = data['accountId'];
+    final String name = data['name'];
+    final String address = data['address'];
+    final String? reason = data['reason'];
+    String? additional = data['additionalInfo'];
+    String? phone;
+    ConnectionPoint? connectionPoint;
+
+    // TODO: Load new (split) counterInfo
+    final CounterInfo? counter = _splitCounterInfo(data['counterInfo']);
+
+    if (additional != null) {
+      final tpRegExp = RegExp(r'ТП[\:\.\s]*([\dТРП\\\/]{1,6})');
+      final String? tp = tpRegExp.firstMatch(additional)?.group(1)?.trim();
+      additional = additional.replaceAll(tpRegExp, '');
+
+      final lineRegExp = RegExp(r'Ф[\:\s\.]*([\\\/\d]{1,3})');
+      final String? line = lineRegExp.firstMatch(additional)?.group(1)?.trim();
+      additional = additional.replaceAll(lineRegExp, '');
+
+      final pillarRegExp = RegExp(r'(оп|опора|Опора)[\:\.\s]*([\\\/\d]{1,5})');
+      final String? pillar =
+          pillarRegExp.firstMatch(additional)?.group(2)?.trim();
+      additional = additional.replaceAll(pillarRegExp, '');
+      connectionPoint = ConnectionPoint(tp: tp, line: line, pillar: pillar);
+
+      final phoneRegExp = RegExp(r'\+?[\d\-\(\)]{6,}');
+      phone = phoneRegExp.firstMatch(additional)?.group(0);
+      additional = additional.replaceAll(phoneRegExp, '');
+      additional = additional.replaceAll(RegExp(r'(тел\.\:|\|)'), '').trim();
+    }
+
+    editor.addRequest(
+      accountId: accountId,
+      name: name,
+      address: address,
+      reason: reason,
+      counter: counter,
+      phoneNumber: phone,
+      connectionPoint: connectionPoint,
+      additionalInfo: additional,
+      // TODO: Hook up RequestTypeEntities
+      requestType: RequestType(
+        shortName: data['reqType'],
+        fullName: data['fullReqType'],
+      ),
     );
   }
 
@@ -91,57 +141,6 @@ class JsonDocumentFactory implements DocumentFactory {
     //   // TODO: Fetch position from repository
     //   return PositionPersistedBuilder().build(map['id'], map['name]);
     // }
-  }
-
-  RequestEntity _createRequestEntity(Map<String, dynamic> data) {
-    final int? accountId = data['accountId'];
-    final String name = data['name'];
-    final String address = data['address'];
-    final String? reason = data['reason'];
-    String? additional = data['additionalInfo'];
-    String? phone;
-    ConnectionPoint? connectionPoint;
-
-    // TODO: Load new (split) counterInfo
-    final CounterInfo? counter = _splitCounterInfo(data['counterInfo']);
-
-    if (additional != null) {
-      final tpRegExp = RegExp(r'ТП[\:\.\s]*([\dТРП\\\/]{1,6})');
-      final String? tp = tpRegExp.firstMatch(additional)?.group(1);
-      additional = additional.replaceAll(tpRegExp, '');
-
-      final lineRegExp = RegExp(r'Ф[\:\s\.]*([\\\/\d]{1,3})');
-      final String? line = lineRegExp.firstMatch(additional)?.group(1);
-      additional = additional.replaceAll(lineRegExp, '');
-
-      final pillarRegExp = RegExp(r'(оп|опора|Опора)[\:\.\s]*([\\\/\d]{1,5})');
-      final String? pillar = pillarRegExp.firstMatch(additional)?.group(2);
-      additional = additional.replaceAll(pillarRegExp, '');
-      connectionPoint = ConnectionPoint(tp: tp, line: line, pillar: pillar);
-
-      final phoneRegExp = RegExp(r'\+?[\d\-\(\)]{6,}');
-      phone = phoneRegExp.firstMatch(additional)?.group(0);
-      additional = additional.replaceAll(phoneRegExp, '');
-      additional = additional.replaceAll(RegExp(r'(тел\.\:|\|)'), '').trim();
-    }
-
-    final requestEntity = RequestEntity(
-      accountId: accountId,
-      name: name,
-      address: address,
-      reason: reason,
-      counter: counter,
-      phoneNumber: phone,
-      connectionPoint: connectionPoint,
-      additionalInfo: additional,
-      // TODO: Hook up RequestTypeEntities
-      requestType: RequestType(
-        shortName: data['reqType'],
-        fullName: data['fullReqType'],
-      ),
-    );
-
-    return requestEntity;
   }
 
   // Splits counter info from single line into [CounterInfo] class

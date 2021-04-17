@@ -6,18 +6,6 @@ abstract class WorksheetEditorEvent extends Equatable {
   const WorksheetEditorEvent._();
 }
 
-/// TODO: This event is unnecessary because request watching by stream on
-/// TODO: worksheet editor. So only updating WorksheetEditor will be enough
-/// Used to save new or update an existing request in the worksheet
-class SaveRequestEvent extends WorksheetEditorEvent {
-  final RequestEntity request;
-
-  const SaveRequestEvent(this.request) : super._();
-
-  @override
-  List<Object?> get props => [request];
-}
-
 /// Sends signal to swap two requests in the list
 class SwapRequestsEvent extends WorksheetEditorEvent {
   final RequestEntity from;

@@ -171,7 +171,7 @@ class RequestItemView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 24.0),
             child: Text(
-              request.additionalInfo!,
+              request.additionalInfo ?? '',
               style: TextStyle(fontSize: 16.0),
             ),
           ),
@@ -194,7 +194,7 @@ class RequestItemView extends StatelessWidget {
 
   Widget _printConnectionPoint(ConnectionPoint? connectionPoint) {
     Iterable<Widget> printConnectionPoint0() sync* {
-      if (connectionPoint == null) {
+      if (connectionPoint == null || connectionPoint.isEmpty) {
         yield Text('--');
         return;
       }

@@ -39,7 +39,7 @@ class RequestsMoveDialogBloc extends Bloc<RequestMoveEvent, BaseState> {
       final WorksheetEditor target;
 
       if (event.target == null) {
-        target = _document.addEmptyWorksheet(name: _sourceWorksheet.name);
+        target = _document.addWorksheet(name: _sourceWorksheet.name);
         _document.makeActive(target.current);
       } else {
         target = _document.edit(event.target!);

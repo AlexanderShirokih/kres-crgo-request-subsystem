@@ -5,10 +5,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/models/document.dart';
 import 'package:kres_requests2/models/request_entity.dart';
-import 'package:kres_requests2/screens/confirmation_dialog.dart';
-import 'package:kres_requests2/screens/editor/bloc/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/screens/editor/widgets/request_item_view.dart';
 
+import '../confirmation_dialog.dart';
+import '../../bloc/editor/worksheet_editor_bloc.dart';
 import 'request_editor_dialog/request_editor_dialog.dart';
 import 'requests_move_dialog/requests_move_dialog.dart';
 
@@ -106,21 +106,7 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
             child: FloatingActionButton(
               child: FaIcon(FontAwesomeIcons.plus),
               tooltip: "Добавить заявку",
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) => RequestEditorDialog(
-                          controller: Modular.get(),
-                          validator: Modular.get(),
-                        )).then((created) {
-                  if (created != null) {
-                    context
-                        .read<WorksheetEditorBloc>()
-                        .add(SaveRequestEvent(created));
-                  }
-                });
-              },
+              onPressed: () => _showRequestEditorDialog(context),
             ),
           ),
         ),
@@ -173,23 +159,7 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
           onLongPress: () => context
               .read<WorksheetEditorBloc>()
               .add(RequestSelectionEvent(SelectionAction.begin, request)),
-          onDoubleTap: () {
-            showDialog<RequestEntity?>(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => RequestEditorDialog(
-                controller: Modular.get(),
-                validator: Modular.get(),
-                initial: request,
-              ),
-            ).then((edited) {
-              if (edited != null) {
-                context
-                    .read<WorksheetEditorBloc>()
-                    .add(SaveRequestEvent(edited));
-              }
-            });
-          },
+          onDoubleTap: () => _showRequestEditorDialog(context, request),
           child: RequestItemView(
             request: request,
             position: index + 1,
@@ -226,6 +196,17 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
       },
     );
   }
+
+  void _showRequestEditorDialog(BuildContext ctx, [RequestEntity? initial]) =>
+      showDialog(
+        context: ctx,
+        barrierDismissible: false,
+        builder: (_) => RequestEditorDialog(
+          worksheetEditor: widget.worksheetEditor,
+          validator: Modular.get(),
+          initial: initial,
+        ),
+      );
 
   Widget _createSelectionContextMenu({
     required BuildContext context,

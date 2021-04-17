@@ -32,13 +32,25 @@ class UpdateRequestFieldsEvent extends RequestEditorEvent {
   final String accountId;
 
   /// Counter type
-  final String? counterType;
+  final String counterType;
+
+  /// Phone number
+  final String phone;
 
   /// Counter number
-  final String? counterNumber;
+  final String counterNumber;
 
   /// Check year
-  final String? checkYear;
+  final String checkYear;
+
+  /// Transformation station number
+  final String tp;
+
+  /// Connection line number
+  final String line;
+
+  /// Endpoint pillar number
+  final String pillar;
 
   /// Check quarter
   final int? checkQuarter;
@@ -46,6 +58,10 @@ class UpdateRequestFieldsEvent extends RequestEditorEvent {
   const UpdateRequestFieldsEvent({
     required this.requestType,
     required this.name,
+    required this.phone,
+    required this.tp,
+    required this.line,
+    required this.pillar,
     required this.additionalInfo,
     required this.address,
     required this.counterType,
@@ -57,14 +73,18 @@ class UpdateRequestFieldsEvent extends RequestEditorEvent {
 
   @override
   List<Object?> get props => [
-        requestType,
+        tp,
+        line,
         name,
-        additionalInfo,
+        phone,
+        pillar,
         address,
-        counterType,
-        counterNumber,
         checkYear,
-        checkQuarter,
         accountId,
+        counterType,
+        requestType,
+        checkQuarter,
+        counterNumber,
+        additionalInfo,
       ];
 }

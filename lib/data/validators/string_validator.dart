@@ -1,7 +1,7 @@
 import 'package:kres_requests2/domain/validator.dart';
 
 /// [Validator] that validates String field in its length
-class StringValidator extends Validator<String> {
+class StringValidator extends Validator<String?> {
   /// Minimal string length
   final int minLength;
 
@@ -14,7 +14,11 @@ class StringValidator extends Validator<String> {
   });
 
   @override
-  Iterable<String> validate(String entity) sync* {
+  Iterable<String> validate(String? entity) sync* {
+    if (entity == null) {
+      entity = '';
+    }
+
     // TODO: move hardcoded strings to i18n file
     if (entity.isEmpty && minLength != 0) {
       yield 'Поле не должно быть пустым!';
