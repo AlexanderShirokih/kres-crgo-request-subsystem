@@ -19,5 +19,5 @@ class RecentDocumentInfo extends Equatable {
   });
 
   @override
-  List<Object?> get props => [path, updateDate];
+  List<Object?> get props => [path, name];
 }

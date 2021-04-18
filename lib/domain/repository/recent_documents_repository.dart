@@ -14,6 +14,16 @@ class RecentDocumentsRepository extends PersistedStorageRepository<
   @override
   Future<List<RecentDocumentInfo>> getAll() async {
     final all = await super.getAll();
+
+    final deleted = all.where((item) => !item.path.existsSync()).toList();
+
+    if (deleted.isNotEmpty) {
+      for (final toDelete in deleted) {
+        await delete(toDelete);
+        all.remove(toDelete);
+      }
+    }
+
     return all.cast<RecentDocumentEntity>()
       ..sort((a, b) => b.id.compareTo(a.id));
   }
