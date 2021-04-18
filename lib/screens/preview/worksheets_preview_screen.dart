@@ -5,12 +5,9 @@ import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
-import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
-
-import 'exporter_dialogs.dart';
-import 'print_dialog.dart';
 
 class WorksheetsPreviewScreen extends StatefulWidget {
   final Document document;
@@ -163,12 +160,13 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
         builder: (_) => StreamBuilder<List<Worksheet>>(
             stream: selectedWorksheets,
             builder: (context, snapshot) {
-              return ExporterDialog(
-                format,
-                snapshot.requireData,
-                (ext) =>
-                    '', // TODO: Broken getSuggestedName(currentDocument, ext),
-              );
+              throw UnimplementedError();
+              // return ExporterDialog(
+              //   format,
+              //   snapshot.requireData,
+              //   (ext) =>
+              //       throw UnimplementedError(), // TODO: Broken getSuggestedName(currentDocument, ext),
+              // );
             }),
       ).then(
         (resultMessage) {
@@ -188,7 +186,9 @@ class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
         builder: (_) => StreamBuilder<List<Worksheet>>(
             stream: selectedWorksheets,
             builder: (context, snapshot) {
-              return PrintDialog(snapshot.requireData);
+              // TODO: Unimplemented
+              throw UnimplementedError();
+              // return PrintDialog(snapshot.requireData);
             }),
       ).then(
         (resultMessage) {

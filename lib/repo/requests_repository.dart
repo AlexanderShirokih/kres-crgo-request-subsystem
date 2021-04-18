@@ -1,11 +1,11 @@
 import 'package:kres_requests2/data/request_processor.dart';
-import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/domain/models/optional_data.dart';
-import 'package:kres_requests2/domain/models/worksheet.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 
+/// Exception class used when request processor module is missing
 class ImporterProcessorMissingException implements Exception {}
 
+/// A class responsible for exporting and printing documents
 class RequestsRepository extends WorksheetImporterRepository {
   final AbstractRequestProcessor _requestProcessor;
 
@@ -14,44 +14,31 @@ class RequestsRepository extends WorksheetImporterRepository {
   /// Checks that the request processor is ready for doing work
   Future<bool> isAvailable() => _requestProcessor.isAvailable();
 
-  /// Prints all [worksheets] on [printerName]
+  /// Prints all worksheet in the [document] on printer named [printerName]
   /// If [noLists] is `true` only order pages will be printed
-  Future<OptionalData<bool>> printWorksheets(
-          List<Worksheet> worksheets, String printerName, bool noLists) =>
-      _requestProcessor
-          .printWorksheets(worksheets, printerName, noLists)
-          .catchError((e, s) => OptionalData.ofError<bool>(e, s));
+  Future<bool> printDocument(
+          Document document, String printerName, bool noLists) =>
+      _requestProcessor.printDocument(document, printerName, noLists);
 
-  /// Exports all [worksheets] to PDF file to [destinationPath]
-  Future<OptionalData> exportToPdf(
-          List<Worksheet> worksheets, String destinationPath) =>
-      _requestProcessor
-          .exportToPdf(worksheets, destinationPath)
-          .catchError((e, s) => OptionalData.ofError(e, s));
+  /// Exports all worksheets in the [document] to PDF file and saves it
+  /// at the [destinationPath]
+  Future<void> exportToPdf(Document document, String destinationPath) =>
+      _requestProcessor.exportToPdf(document, destinationPath);
 
-  /// Exports all [worksheets] (as lists) to Excel XLSX file to [destinationPath]
-  Future<OptionalData> exportToXlsx(
-          List<Worksheet> worksheets, String destinationPath) =>
-      _requestProcessor
-          .exportToXlsx(worksheets, destinationPath)
-          .catchError((e, s) => OptionalData.ofError(e, s));
+  /// Exports all worksheets (as lists) in the [document] to Excel XLSX file and
+  /// saves it at the [destinationPath]
+  Future<void> exportToXlsx(Document document, String destinationPath) =>
+      _requestProcessor.exportToXlsx(document, destinationPath);
 
-  /// Imports worksheet previously exported to XLS by Mega-billing app
+  /// Imports document previously exported to XLS by Mega-billing app
   @override
   Future<Document?> importDocument(String filePath) async {
     final isExists = await isAvailable();
     if (!isExists) throw ImporterProcessorMissingException();
 
-    final importResult = await _requestProcessor.importRequests(filePath);
-    if (importResult.hasError()) {
-      throw importResult.error!;
-    }
-
-    return importResult.data;
+    return await _requestProcessor.importRequests(filePath);
   }
 
   /// Gets all available printers that can handle document printing
-  Future<OptionalData<List<String>>> listPrinters() => _requestProcessor
-      .listPrinters()
-      .catchError((e, s) => OptionalData.ofError<List<String>>(e, s));
+  Future<List<String>> listPrinters() => _requestProcessor.listPrinters();
 }

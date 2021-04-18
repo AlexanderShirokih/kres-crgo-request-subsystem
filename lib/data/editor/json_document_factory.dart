@@ -2,27 +2,23 @@ import 'dart:io';
 
 import 'package:kres_requests2/data/models.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
+import 'package:kres_requests2/domain/editor/document_factory.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/models/connection_point.dart';
-import 'package:kres_requests2/domain/models/counter_info.dart';
-import 'package:kres_requests2/domain/models/document.dart';
 
-abstract class DocumentFactory {
-  Document createDocument();
-}
-
-/// Builds [Document]  instances from JSON data
+/// Builds [Document] instances from JSON data
 class JsonDocumentFactory implements DocumentFactory {
   final Map<String, dynamic> _data;
   final File? savePath;
 
-  JsonDocumentFactory(this._data, this.savePath);
+  JsonDocumentFactory(this._data, [this.savePath]);
 
   @override
   Document createDocument() {
     final document = Document(
       savePath: savePath,
-      updateDate: DateTime.fromMillisecondsSinceEpoch(_data['updateDate']),
+      updateDate: DateTime.fromMillisecondsSinceEpoch(
+        _data['updateDate'] ?? DateTime.now(),
+      ),
     );
 
     for (final worksheet in (_data['worksheets'] as List<dynamic>)) {
@@ -32,8 +28,9 @@ class JsonDocumentFactory implements DocumentFactory {
     var activeWorksheetIdx = _data['activeWorksheet'] ?? 0;
 
     final worksheets = document.currentWorksheets;
+    final worksheetsCount = worksheets.length;
 
-    if (activeWorksheetIdx >= worksheets.length) {
+    if (activeWorksheetIdx >= worksheetsCount) {
       activeWorksheetIdx = 0;
     }
 
@@ -51,7 +48,6 @@ class JsonDocumentFactory implements DocumentFactory {
           : _createEmployee(ws['chiefEmployee']),
       membersEmployee: (ws['membersEmployee'] as List<dynamic>)
           .map((e) => _createEmployee(e))
-          .take(6)
           .toSet(),
       targetDate: ws['date'] == null
           ? null
@@ -73,8 +69,9 @@ class JsonDocumentFactory implements DocumentFactory {
     String? phone;
     ConnectionPoint? connectionPoint;
 
-    // TODO: Load new (split) counterInfo
-    final CounterInfo? counter = _splitCounterInfo(data['counterInfo']);
+    final counter = data['counter'] != null
+        ? _createCounter(data['counter'])
+        : _splitCounterInfo(data['counterInfo']);
 
     if (additional != null) {
       final tpRegExp = RegExp(r'ТП[\:\.\s]*([\dТРП\\\/]{1,6})');
@@ -97,6 +94,21 @@ class JsonDocumentFactory implements DocumentFactory {
       additional = additional.replaceAll(RegExp(r'(тел\.\:|\|)'), '').trim();
     }
 
+    final requestType = data['type'] != null
+        ? _createRequestType(data['type'])
+        : RequestType(
+            shortName: data['reqType'],
+            fullName: data['fullReqType'] ?? data['reqType'],
+          );
+
+    if (data['phone'] != null) {
+      phone = data['phone'];
+    }
+
+    if (data['c_point'] != null) {
+      connectionPoint = _createConnectionPoint(data['c_point']);
+    }
+
     editor.addRequest(
       accountId: accountId,
       name: name,
@@ -106,11 +118,7 @@ class JsonDocumentFactory implements DocumentFactory {
       phoneNumber: phone,
       connectionPoint: connectionPoint,
       additionalInfo: additional,
-      // TODO: Hook up RequestTypeEntities
-      requestType: RequestType(
-        shortName: data['reqType'],
-        fullName: data['fullReqType'],
-      ),
+      requestType: requestType,
     );
   }
 
@@ -118,29 +126,32 @@ class JsonDocumentFactory implements DocumentFactory {
     final employee = Employee(
       name: e['name'],
       accessGroup: e['accessGroup'],
-      position: _createPosition(e['position']),
+      position: e['position2'] == null
+          ? Position(name: e['position'])
+          : _createPosition(e['position2']),
     );
 
     if (e['id'] != null) {
-      // TODO: Fetch employee from repository
       return EmployeePersistedBuilder().build(e['id'], employee);
     }
 
     return employee;
   }
 
-  Position _createPosition(dynamic p) {
-    if (p is String) {
-      return Position(name: p);
+  Position _createPosition(Map<String, dynamic> map) {
+    final position = Position(name: map['name']);
+    if (map['id'] != null) {
+      return PositionPersistedBuilder().build(map['id'], position);
     }
+    return position;
+  }
 
-    // TODO: Implement real instances loading with backward compatibility
-    throw UnimplementedError();
-    // final map = p as Map<String, dynamic>;
-    // if (map['id'] != null) {
-    //   // TODO: Fetch position from repository
-    //   return PositionPersistedBuilder().build(map['id'], map['name]);
-    // }
+  ConnectionPoint _createConnectionPoint(Map<String, dynamic> map) {
+    return ConnectionPoint(
+      tp: map['tp'],
+      line: map['line'],
+      pillar: map['pillar'],
+    );
   }
 
   // Splits counter info from single line into [CounterInfo] class
@@ -149,7 +160,11 @@ class JsonDocumentFactory implements DocumentFactory {
   // 2) 5СМ4  №1644748
   // 3) №011073151064584  ЦЭ6803 В
   // 4) ПУ отсутств.
-  CounterInfo? _splitCounterInfo(String info) {
+  CounterInfo? _splitCounterInfo(String? info) {
+    if (info == null) {
+      return null;
+    }
+
     final numberRegExp = RegExp(r'№\s*(\d{5,})');
     final numberMatch = numberRegExp.firstMatch(info);
     final number = numberMatch?.group(1);
@@ -202,5 +217,27 @@ class JsonDocumentFactory implements DocumentFactory {
       default:
         return null;
     }
+  }
+
+  RequestType _createRequestType(Map<String, dynamic> data) {
+    final requestType = RequestType(
+      shortName: data['short'],
+      fullName: data['full'],
+    );
+
+    if (data['id'] != null) {
+      return RequestTypePersistedBuilder().build(data['id'], requestType);
+    }
+
+    return requestType;
+  }
+
+  CounterInfo _createCounter(Map<String, dynamic> data) {
+    return CounterInfo(
+      type: data['type'],
+      number: data['number'],
+      checkYear: data['year'],
+      checkQuarter: data['quarter'],
+    );
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
 import 'package:kres_requests2/domain/counters_importer.dart';
+import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
@@ -21,13 +22,18 @@ import 'widgets/worksheet_page_controller.dart';
 /// Screen that manages whole document state
 class DocumentEditorScreen extends StatelessWidget {
   final Document document;
+  final DocumentSaver documentSaver;
 
-  DocumentEditorScreen({required this.document});
+  DocumentEditorScreen({
+    required this.document,
+    required this.documentSaver,
+  });
 
   @override
   Widget build(BuildContext context) => BlocProvider(
         create: (_) => WorksheetMasterBloc(
           document,
+          documentSaver: documentSaver,
           savePathChooser: showSaveDialog,
         ),
         child: Scaffold(

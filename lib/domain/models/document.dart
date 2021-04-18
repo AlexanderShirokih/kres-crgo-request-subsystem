@@ -1,9 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
+import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:path/path.dart' as path;
@@ -43,6 +43,9 @@ class Document extends Equatable {
   /// Last save date
   Stream<DateTime> get updateDate => _updateDate;
 
+  /// Last save date
+  DateTime get currentUpdateDate => _updateDate.requireValue;
+
   /// Returns currently active Worksheet
   Stream<Worksheet> get active =>
       Rx.combineLatest2<List<Worksheet>, int, Worksheet>(
@@ -71,21 +74,7 @@ class Document extends Equatable {
       );
 
   /// Returns current save path
-  Future<File?> get currentSavePath async {
-    try {
-      return await savePath.first;
-    } on StateError {
-      return null;
-    }
-  }
-
-  /// Converts [Document] instance to JSON representation
-  Map<String, dynamic> toJson() => {
-        'updateDate': _updateDate.requireValue.millisecondsSinceEpoch,
-        'activeWorksheet': _activeWorksheet.requireValue,
-        'worksheets':
-            _worksheets.requireValue.map((w) => w.current.toJson()).toList()
-      };
+  File? get currentSavePath => _savePath.value;
 
   /// Makes target [worksheet] active
   void makeActive(Worksheet worksheet) {
@@ -237,6 +226,7 @@ class Document extends Equatable {
   /// Returns `true` if document was saved to the storage.
   Future<bool> saveDocument(
     bool changePath,
+    DocumentSaver documentSaver,
     Future<String?> Function(Document document, String workingDirectory)
         savePathChooser,
   ) async {
@@ -257,18 +247,18 @@ class Document extends Equatable {
       );
     }
 
-    await _save();
+    await _save(documentSaver);
     return true;
   }
 
-  Future<void> _save() async {
+  Future<void> _save(DocumentSaver saver) async {
     if (!_savePath.hasValue) {
       throw ('savePath == null!');
     }
 
-    _updateDate.add(DateTime.now());
+    await saver.store(this);
 
-    await _savePath.requireValue.writeAsString(json.encode(toJson()));
+    _updateDate.add(DateTime.now());
   }
 
   /// TODO: API: undesired function.

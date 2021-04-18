@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/bloc/worksheets/worksheet_creation_mode.dart';
 import 'package:kres_requests2/data/editor/document_filter.dart';
+import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/optional_data.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
@@ -20,11 +21,15 @@ class WorksheetMasterBloc
   final Future<String?> Function(Document, String) savePathChooser;
 
   final Document _document;
+  final DocumentSaver documentSaver;
   final DocumentFilter _documentFilter;
 
   /// Creates new [WorksheetMasterBloc] instance for [document].
-  WorksheetMasterBloc(this._document, {required this.savePathChooser})
-      : _documentFilter = DocumentFilter(_document),
+  WorksheetMasterBloc(
+    this._document, {
+    required this.savePathChooser,
+    required this.documentSaver,
+  })  : _documentFilter = DocumentFilter(_document),
         super(WorksheetMasterIdleState(_document));
 
   @override
@@ -46,8 +51,11 @@ class WorksheetMasterBloc
     try {
       yield WorksheetMasterSavingState(state.currentDocument, completed: false);
 
-      final wasSaved =
-          await _document.saveDocument(changePath, savePathChooser);
+      final wasSaved = await _document.saveDocument(
+        changePath,
+        documentSaver,
+        savePathChooser,
+      );
 
       if (wasSaved) {
         yield WorksheetMasterSavingState(state.currentDocument,

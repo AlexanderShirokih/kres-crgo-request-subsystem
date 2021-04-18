@@ -1,3 +1,4 @@
+import 'package:kres_requests2/data/editor/json_document_saver.dart';
 import 'package:kres_requests2/data/java_process_executor.dart';
 import 'package:kres_requests2/data/models/java_process_info.dart';
 import 'package:kres_requests2/data/request_processor.dart';
@@ -26,6 +27,7 @@ class RepositoryModule {
           javaProcessInfo:
               JavaProcessInfo.fromMap(configRepo.getRequestsProcessInfoData()),
         ),
+        JsonDocumentSaver(saveLegacyInfo: false),
       ),
     );
 

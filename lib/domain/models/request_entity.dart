@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:kres_requests2/domain/models/request_type.dart';
 import 'package:kres_requests2/domain/models/connection_point.dart';
 import 'package:kres_requests2/domain/models/counter_info.dart';
+import 'package:kres_requests2/domain/models/request_type.dart';
 
 /// Describes information about work request
 abstract class RequestEntity extends Equatable {
@@ -57,34 +57,6 @@ abstract class RequestEntity extends Equatable {
   /// Converts account ID to string
   String get printableAccountId =>
       accountId?.toString().padLeft(6, '0') ?? "--";
-
-  /// Creates [RequestEntity] instance from JSON
-  /// TODO: Legacy!
-  // factory RequestEntity.fromJson(Map<String, dynamic> data) => RequestEntity(
-  //       accountId: data['accountId'],
-  //       name: data['name'],
-  //       address: data['address'],
-  //       requestType: RequestType(
-  //         shortName: data['reqType'],
-  //         fullName: data['fullReqType'],
-  //       ),
-  //       additionalInfo: data['additionalInfo'],
-  //       counter: data['counterInfo'],
-  //       reason: data['reason'],
-  //     );
-
-  /// Converts [RequestEntity] to JSON representation
-  /// TODO: Legacy!
-  Map<String, dynamic> toJson() => {
-        'accountId': accountId,
-        'name': name,
-        'address': address,
-        'reqType': requestType?.shortName,
-        'fullReqType': requestType?.fullName,
-        'additionalInfo': additionalInfo,
-        'counterInfo': counter?.fullInfo,
-        'reason': reason,
-      };
 
   /// Creates a builder to create a deep copy of the object
   RequestEntityBuilder rebuild();

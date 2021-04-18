@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/editor/request_entity.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/counter_info.dart';
+import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
 
 import 'connection_point.dart';
@@ -56,23 +56,6 @@ class Worksheet extends Equatable {
           .cast<String>(),
     );
   }
-
-  /// Converts [Worksheet] to JSON representation
-  /// TODO: Create new code
-  Map<String, dynamic> toJson() => throw UnimplementedError();
-
-  // {
-  //   'name': name,
-  //   'mainEmployee': mainEmployee?.toMap(),
-  //   'chiefEmployee': chiefEmployee?.toMap(),
-  //   'membersEmployee': membersEmployee
-  //       .where((e) => e != null)
-  //       .map((e) => e.toMap())
-  //       .toList(),
-  //   'date': date?.millisecondsSinceEpoch,
-  //   'requests': requests.map((r) => r.toJson()).toList(),
-  //   'workTypes': workTypes.toList(),
-  // };
 
   static int _lastRequestId = 0;
 

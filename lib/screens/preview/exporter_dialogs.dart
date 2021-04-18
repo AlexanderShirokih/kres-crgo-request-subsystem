@@ -2,7 +2,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
-import 'package:kres_requests2/domain/models/worksheet.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:path/path.dart' as path;
@@ -19,13 +19,13 @@ extension on ExportFormat {
 }
 
 class ExporterDialog extends StatelessWidget {
-  final List<Worksheet> worksheets;
+  final Document document;
   final String suggestedExportBasename;
   final ExportFormat exportFormat;
 
   ExporterDialog(
     this.exportFormat,
-    this.worksheets,
+    this.document,
     String Function(String) suggestedNameProvider,
   ) : suggestedExportBasename =
             suggestedNameProvider('.${exportFormat.formatExtension()}');
@@ -42,15 +42,15 @@ class ExporterDialog extends StatelessWidget {
             exportFormat: exportFormat,
             repositoryModule: context.watch<RepositoryModule>(),
             fileChooser: _showFileChooser,
-            worksheets: worksheets,
+            document: document,
           ),
           child: Builder(
             builder: (context) => BlocConsumer<ExporterBloc, ExporterState>(
               builder: (context, state) {
                 if (state is ExporterErrorState) {
                   return ErrorView(
-                    errorDescription: state.error.error.toString(),
-                    stackTrace: state.error.stackTrace,
+                    errorDescription: state.error,
+                    stackTrace: StackTrace.fromString(state.stackTrace),
                   );
                 }
                 if (state is ExporterIdle) {

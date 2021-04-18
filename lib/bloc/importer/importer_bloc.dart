@@ -11,6 +11,7 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 part 'importer_event.dart';
+
 part 'importer_state.dart';
 
 /// BLoc that controls importing worksheet to the existing or a new document
@@ -69,7 +70,7 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
     Future<Document> _copyToTarget(Document source) async {
       final target = targetDocument!;
 
-      final currentSavePath = await target.currentSavePath;
+      final currentSavePath = target.currentSavePath;
       if (currentSavePath == null) {
         target.setSavePath(File(p.withoutExtension(filePath) + ".json"));
       }

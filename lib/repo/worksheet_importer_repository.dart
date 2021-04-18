@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:kres_requests2/data/editor/document_factory.dart';
+import 'package:kres_requests2/data/editor/json_document_factory.dart';
 import 'package:kres_requests2/domain/counters_importer.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/models/document.dart';
