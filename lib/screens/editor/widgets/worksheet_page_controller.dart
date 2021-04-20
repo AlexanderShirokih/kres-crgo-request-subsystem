@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
+import 'package:kres_requests2/bloc/editor/worksheet_master_bloc.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';

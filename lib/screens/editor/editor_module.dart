@@ -5,6 +5,7 @@ import 'package:kres_requests2/data/validators/request_validator.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/screens/preview/preview_module.dart';
 
 import 'document_editor_screen.dart';
 
@@ -25,6 +26,10 @@ class EditorModule extends Module {
         document: args.data as Document,
         documentSaver: Modular.get(),
       ),
+    ),
+    ModuleRoute(
+      '/preview',
+      module: PreviewModule(),
     ),
   ];
 }

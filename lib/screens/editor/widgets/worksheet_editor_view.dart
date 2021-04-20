@@ -7,10 +7,10 @@ import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/screens/editor/widgets/request_item_view.dart';
 
-import '../confirmation_dialog.dart';
-import '../../bloc/editor/worksheet_editor_bloc.dart';
-import 'request_editor_dialog/request_editor_dialog.dart';
-import 'requests_move_dialog/requests_move_dialog.dart';
+import '../../confirmation_dialog.dart';
+import '../../../bloc/editor/editor_view/worksheet_editor_bloc.dart';
+import '../request_editor_dialog/request_editor_dialog.dart';
+import '../requests_move_dialog/requests_move_dialog.dart';
 
 /// Show the list of requests for target [worksheetEditor] of the [document]
 class WorksheetEditorView extends StatefulWidget {

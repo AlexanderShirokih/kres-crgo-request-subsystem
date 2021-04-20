@@ -3,19 +3,18 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/bloc/worksheets/worksheet_master_bloc.dart';
+import 'package:kres_requests2/bloc/editor/worksheet_master_bloc.dart';
 import 'package:kres_requests2/domain/counters_importer.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/screens/common.dart';
+import 'package:kres_requests2/screens/editor/widgets/worksheet_editor_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view/worksheet_config_view.dart';
-import 'package:kres_requests2/screens/editor/worksheet_editor_screen.dart';
 import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
-import 'package:kres_requests2/screens/preview/worksheets_preview_screen.dart';
 
 import 'widgets/worksheet_page_controller.dart';
 
@@ -72,7 +71,7 @@ class DocumentEditorScreen extends StatelessWidget {
               return Stack(children: [
                 Positioned.fill(child: _buildBody(context, state)),
                 Align(
-                  alignment: Alignment(1, -1),
+                  alignment: Alignment.topRight,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 12.0),
                     child: Container(
@@ -167,7 +166,7 @@ class DocumentEditorScreen extends StatelessWidget {
   AppBar _buildAppBar() => AppBar(
         leading: Builder(
           builder: (context) => IconButton(
-            icon: FaIcon(FontAwesomeIcons.arrowLeft),
+            icon: Icon(Icons.arrow_back),
             onPressed: () => Navigator.maybePop(context),
           ),
         ),
@@ -181,7 +180,7 @@ class DocumentEditorScreen extends StatelessWidget {
         actions: [
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.search),
-            tooltip: "Поиск",
+            tooltip: 'Поиск',
             onPressed: (context) => context
                 .read<WorksheetMasterBloc>()
                 .add(WorksheetMasterSearchEvent()),
@@ -189,7 +188,7 @@ class DocumentEditorScreen extends StatelessWidget {
           const SizedBox(width: 24.0),
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.save),
-            tooltip: "Сохранить",
+            tooltip: 'Сохранить',
             onPressed: (context) => context
                 .read<WorksheetMasterBloc>()
                 .add(WorksheetMasterSaveEvent()),
@@ -197,7 +196,7 @@ class DocumentEditorScreen extends StatelessWidget {
           const SizedBox(width: 24.0),
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.solidSave),
-            tooltip: "Сохранить как (копия)",
+            tooltip: 'Сохранить как (копия)',
             onPressed: (context) => context
                 .read<WorksheetMasterBloc>()
                 .add(WorksheetMasterSaveEvent(changePath: true)),
@@ -206,16 +205,11 @@ class DocumentEditorScreen extends StatelessWidget {
           Builder(
             builder: (context) => IconButton(
               icon: FaIcon(FontAwesomeIcons.fileExport),
-              tooltip: "Вывод",
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
-                    builder: (context, state) =>
-                        WorksheetsPreviewScreen(state.currentDocument),
-                  ),
-                ),
+              tooltip: 'Вывод',
+              onPressed: () => Modular.to.pushNamed(
+                'preview',
+                arguments:
+                    context.read<WorksheetMasterBloc>().state.currentDocument,
               ),
             ),
           ),

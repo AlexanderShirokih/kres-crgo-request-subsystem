@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:kres_requests2/bloc/worksheets/worksheet_creation_mode.dart';
+import 'package:kres_requests2/bloc/editor/worksheet_creation_mode.dart';
 import 'package:kres_requests2/data/editor/document_filter.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';

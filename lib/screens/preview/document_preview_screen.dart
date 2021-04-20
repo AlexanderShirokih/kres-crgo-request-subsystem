@@ -9,17 +9,21 @@ import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 
-class WorksheetsPreviewScreen extends StatefulWidget {
+/// The page responsible for preparing document worksheets for printing or
+/// exporting to external formats
+class DocumentPreviewScreen extends StatefulWidget {
+  /// Currently opened document
   final Document document;
 
-  const WorksheetsPreviewScreen(this.document);
+  const DocumentPreviewScreen({
+    required this.document,
+  });
 
   @override
-  _WorksheetsPreviewScreenState createState() =>
-      _WorksheetsPreviewScreenState();
+  _DocumentPreviewScreenState createState() => _DocumentPreviewScreenState();
 }
 
-class _WorksheetsPreviewScreenState extends State<WorksheetsPreviewScreen> {
+class _DocumentPreviewScreenState extends State<DocumentPreviewScreen> {
   late Stream<List<Worksheet>> selectedWorksheets;
 
   @override
