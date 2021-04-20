@@ -1,9 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
-import 'package:kres_requests2/domain/models/request_type.dart';
 import 'package:kres_requests2/domain/models/connection_point.dart';
 import 'package:kres_requests2/domain/models/counter_info.dart';
+import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/domain/models/request_type.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -17,13 +18,14 @@ class WorksheetEditor extends Equatable {
   WorksheetEditor(Worksheet initialWorksheet)
       : _worksheet = BehaviorSubject.seeded(initialWorksheet);
 
-  /// Returns worksheet actual state stream
+  /// Returns stream that keeps actual worksheet state
   Stream<Worksheet> get actualState => _worksheet;
 
   // Closes internal streams
   Future<void> close() => _worksheet.close();
 
   /// Swaps request positions in the worksheet
+  /// Both requests should already be present on worksheet
   void swapRequests(RequestEntity from, RequestEntity to) {
     if (from == to) {
       return;
@@ -75,8 +77,10 @@ class WorksheetEditor extends Equatable {
   void addAll(List<RequestEntity> requests) {
     _worksheet.add(
       current.copy(
-        requests: List.of(current.requests + requests),
-      ),
+          requests: List.of(current.requests + requests),
+          workTypes: current.workTypes.union(
+            _getDefaultWorkTypes(),
+          )),
     );
   }
 
@@ -108,5 +112,41 @@ class WorksheetEditor extends Equatable {
     );
     addAll([request]);
     return request;
+  }
+
+  /// Updates main employee assignment in the worksheet
+  void setMainEmployee(Employee? employee) {
+    _worksheet.add(current.copy(mainEmployee: employee));
+  }
+
+  /// Updates chief employee assignment in the worksheet
+  void setChiefEmployee(Employee? employee) {
+    _worksheet.add(current.copy(chiefEmployee: employee));
+  }
+
+  /// Updates worksheet targeting date
+  void setTargetDate(DateTime targetDate) {
+    _worksheet.add(current.copy(targetDate: targetDate));
+  }
+
+  /// Updates team members list
+  void setTeamMembers(Set<Employee> employee) {
+    _worksheet.add(current.copy(membersEmployee: employee));
+  }
+
+  /// Updates work types on worksheet. Note work types got from requests can't
+  /// be removed and always holds on the list. So passing empty set to this method
+  /// will reset to request's types.
+  void setWorkTypes(Set<String> workTypes) {
+    _worksheet.add(current.copy(
+      workTypes: workTypes.union(_getDefaultWorkTypes()),
+    ));
+  }
+
+  Set<String> _getDefaultWorkTypes() {
+    return current.requests
+        .where((r) => r.requestType != null)
+        .map((r) => r.requestType!.fullName)
+        .toSet();
   }
 }

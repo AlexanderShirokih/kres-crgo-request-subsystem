@@ -9,6 +9,7 @@ class EmployeeRepository
   EmployeeRepository(Dao<Employee, EmployeeEntity> employeeDao)
       : super(employeeDao);
 
+  /// Returns all employees which have access group at least [minGroup]
   Future<List<Employee>> getAllByMinGroup(int minGroup) async {
     final employees = await getAll();
     return employees

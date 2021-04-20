@@ -10,7 +10,7 @@ import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:kres_requests2/screens/common.dart';
-import 'package:kres_requests2/screens/editor/worksheet_config_view.dart';
+import 'package:kres_requests2/screens/editor/worksheet_config_view/worksheet_config_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_editor_screen.dart';
 import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';
@@ -23,6 +23,7 @@ import 'widgets/worksheet_page_controller.dart';
 class DocumentEditorScreen extends StatelessWidget {
   final Document document;
   final DocumentSaver documentSaver;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   DocumentEditorScreen({
     required this.document,
@@ -37,6 +38,7 @@ class DocumentEditorScreen extends StatelessWidget {
           savePathChooser: showSaveDialog,
         ),
         child: Scaffold(
+          key: _scaffoldKey,
           endDrawer: _buildEndDrawer(),
           appBar: _buildAppBar(),
           body: BlocConsumer<WorksheetMasterBloc, WorksheetMasterState>(
@@ -67,7 +69,32 @@ class DocumentEditorScreen extends StatelessWidget {
               //     ),
               //   ]);
               // } else {
-              return _buildBody(context, state);
+              return Stack(children: [
+                Positioned.fill(child: _buildBody(context, state)),
+                Align(
+                  alignment: Alignment(1, -1),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12.0),
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(8.0),
+                          bottomLeft: Radius.circular(8.0),
+                        ),
+                        color: Colors.white,
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.menu_open),
+                        onPressed: () {
+                          _scaffoldKey.currentState!.openEndDrawer();
+                        },
+                      ),
+                    ),
+                  ),
+                )
+              ]);
               // }
             },
           ),
@@ -128,9 +155,8 @@ class DocumentEditorScreen extends StatelessWidget {
                 builder: (context, snap) {
                   return snap.hasData
                       ? WorksheetConfigView(
-                          // TODO: Is dependency injected
                           Modular.get(),
-                          snap.requireData,
+                          state.currentDocument.edit(snap.requireData),
                         )
                       : Container();
                 }),
