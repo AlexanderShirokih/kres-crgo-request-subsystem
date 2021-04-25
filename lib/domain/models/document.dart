@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:equatable/equatable.dart';
+import 'package:intl/intl.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models.dart';
@@ -295,6 +296,16 @@ class Document extends Equatable {
   /// Updates save path of the document
   void setSavePath(File savePath) {
     _savePath.add(savePath);
+  }
+
+  /// Returns suggested filename without extension based update date
+  String get suggestedName {
+    final savePath = currentSavePath;
+    final updateDate = currentUpdateDate;
+    String fmtDate(DateTime d) => DateFormat('dd.MM.yyyy').format(d);
+    return savePath == null
+        ? 'Заявки ${fmtDate(updateDate)}'
+        : '${path.basenameWithoutExtension(savePath.path)}';
   }
 
   @override

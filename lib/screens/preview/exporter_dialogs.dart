@@ -26,9 +26,8 @@ class ExporterDialog extends StatelessWidget {
   ExporterDialog(
     this.exportFormat,
     this.document,
-    String Function(String) suggestedNameProvider,
   ) : suggestedExportBasename =
-            suggestedNameProvider('.${exportFormat.formatExtension()}');
+            '${document.suggestedName}.${exportFormat.formatExtension()}';
 
   @override
   Widget build(BuildContext context) {

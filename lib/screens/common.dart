@@ -1,8 +1,6 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:kres_requests2/domain/models/document.dart';
-import 'package:path/path.dart' as path;
 
 class ErrorView extends StatelessWidget {
   final String errorDescription;
@@ -70,7 +68,7 @@ class LoadingView extends StatelessWidget {
 Future<String?> showSaveDialog(
     Document currentDoc, String currentDirectory) async {
   final res = await getSavePath(
-    suggestedName: await getSuggestedName(currentDoc, '.json').first,
+    suggestedName: '${currentDoc.suggestedName}.json',
     initialDirectory: currentDirectory,
     confirmButtonText: 'Сохранить',
     acceptedTypeGroups: [
@@ -81,11 +79,4 @@ Future<String?> showSaveDialog(
     ],
   );
   return res;
-}
-
-Stream<String> getSuggestedName(Document currentDocument, String ext) {
-  String fmtDate(DateTime d) => DateFormat('dd.MM.yyyy').format(d);
-  return currentDocument.savePath.asyncMap((file) async => file == null
-      ? "Заявки ${fmtDate(await currentDocument.updateDate.first)}$ext"
-      : "${path.basenameWithoutExtension(file.path)}$ext");
 }
