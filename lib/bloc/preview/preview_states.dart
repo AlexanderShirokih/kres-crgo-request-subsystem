@@ -50,8 +50,10 @@ class ShowDocumentState extends PreviewState {
       throw 'There are no printable worksheets';
     }
 
-    return Document(updateDate: _document.currentUpdateDate)
-      ..setWorksheets(selectedWorksheets);
+    return Document(
+      updateDate: _document.currentUpdateDate,
+      savePath: _document.currentSavePath,
+    )..setWorksheets(selectedWorksheets);
   }
 
   /// Creates a copy of the object with customizable parameters

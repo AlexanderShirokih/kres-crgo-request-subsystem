@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -6,9 +7,9 @@ import 'package:kres_requests2/bloc/editor/worksheet_creation_mode.dart';
 import 'package:kres_requests2/data/editor/document_filter.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/domain/models/optional_data.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' as path;
 
 part 'worksheet_master_event.dart';
 part 'worksheet_master_state.dart';
@@ -49,15 +50,14 @@ class WorksheetMasterBloc
   Stream<WorksheetMasterState> _saveDocument(
       bool changePath, bool popAfterSave) async* {
     try {
-      yield WorksheetMasterSavingState(state.currentDocument, completed: false);
+      final pathChosen = await _saveDocument0(changePath, documentSaver);
 
-      final wasSaved = await _document.saveDocument(
-        changePath,
-        documentSaver,
-        savePathChooser,
-      );
+      if (pathChosen) {
+        yield WorksheetMasterSavingState(state.currentDocument,
+            completed: false);
 
-      if (wasSaved) {
+        await _document.save(documentSaver);
+
         yield WorksheetMasterSavingState(state.currentDocument,
             completed: true);
       }
@@ -70,9 +70,32 @@ class WorksheetMasterBloc
     } catch (e, s) {
       yield WorksheetMasterSavingState(
         state.currentDocument,
-        error: ErrorWrapper(e, s),
+        error: e.toString(),
+        stackTrace: s,
       );
     }
+  }
+
+  Future<bool> _saveDocument0(
+    bool changePath,
+    DocumentSaver documentSaver,
+  ) async {
+    final savePath = _document.currentSavePath;
+
+    if (savePath == null || changePath) {
+      final chosenSavePath =
+          await savePathChooser(_document, _document.workingDirectory);
+
+      if (chosenSavePath == null) return false;
+
+      _document.setSavePath(
+        path.extension(chosenSavePath) != '.json'
+            ? File('$chosenSavePath.json')
+            : File(chosenSavePath),
+      );
+    }
+
+    return true;
   }
 
   Stream<WorksheetMasterState> _createNewWorksheet(

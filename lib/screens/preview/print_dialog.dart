@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/common.dart';
 
+/// Dialog used to create printable document and send it to the printer
 class PrintDialog extends StatelessWidget {
+  /// Target document
   final Document document;
 
   const PrintDialog(this.document);
@@ -20,7 +23,8 @@ class PrintDialog extends StatelessWidget {
         height: 380.0,
         child: BlocProvider.value(
           value: ExporterBloc(
-            repositoryModule: context.watch<RepositoryModule>(),
+            requestsRepository: Modular.get(),
+            settingsRepository: Modular.get(),
             document: document,
           ),
           child: Builder(
@@ -33,7 +37,7 @@ class PrintDialog extends StatelessWidget {
                     state.availablePrinters,
                   );
                 } else if (state is ExporterIdle) {
-                  return LoadingView(state.message!);
+                  return LoadingView(state.message ?? '');
                 } else if (state is ExporterErrorState) {
                   return ErrorView(
                     errorDescription: state.error,
@@ -62,22 +66,20 @@ class PrintDialog extends StatelessWidget {
   }
 }
 
-class _ListPrintersView extends StatefulWidget {
+class _ListPrintersView extends HookWidget {
   final String? preferredPrinter;
   final List<String> availablePrinters;
 
-  const _ListPrintersView(this.preferredPrinter, this.availablePrinters);
-
-  @override
-  __ListPrintersViewState createState() => __ListPrintersViewState();
-}
-
-class __ListPrintersViewState extends State<_ListPrintersView> {
-  bool noLists = false;
+  const _ListPrintersView(
+    this.preferredPrinter,
+    this.availablePrinters,
+  );
 
   @override
   Widget build(BuildContext context) {
-    if (widget.availablePrinters.isEmpty) {
+    final noLists = useState(false);
+
+    if (availablePrinters.isEmpty) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -97,17 +99,15 @@ class __ListPrintersViewState extends State<_ListPrintersView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          ..._showLastPrinter(context),
-          ..._showAvailablePrinters(context),
+          ..._showLastPrinter(context, noLists.value),
+          ..._showAvailablePrinters(context, noLists.value),
           const SizedBox(height: 24.0),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Checkbox(
-                value: noLists,
-                onChanged: (newValue) => setState(() {
-                  noLists = newValue!;
-                }),
+                value: noLists.value,
+                onChanged: (newValue) => noLists.value = newValue!,
               ),
               const SizedBox(height: 8.0),
               Text('Печать без списка работ'),
@@ -117,7 +117,7 @@ class __ListPrintersViewState extends State<_ListPrintersView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              OutlineButton(
+              OutlinedButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text('Отмена'),
               )
@@ -128,31 +128,41 @@ class __ListPrintersViewState extends State<_ListPrintersView> {
     }
   }
 
-  Iterable<Widget> _showLastPrinter(BuildContext context) sync* {
-    if (widget.preferredPrinter == null) return;
+  Iterable<Widget> _showLastPrinter(
+    BuildContext context,
+    bool noLists,
+  ) sync* {
+    if (preferredPrinter == null) return;
 
     yield Text('Последний принтер:');
     yield const SizedBox(height: 12.0);
-    yield _createPrinterItem(context, widget.preferredPrinter!);
+    yield _createPrinterItem(context, preferredPrinter!, noLists);
     yield const SizedBox(height: 18.0);
   }
 
-  Iterable<Widget> _showAvailablePrinters(BuildContext context) sync* {
+  Iterable<Widget> _showAvailablePrinters(
+    BuildContext context,
+    bool noLists,
+  ) sync* {
     yield Text('Доступные принтеры:');
     yield const SizedBox(height: 12.0);
     yield Expanded(
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: widget.availablePrinters
-              .map((p) => _createPrinterItem(context, p))
+          children: availablePrinters
+              .map((p) => _createPrinterItem(context, p, noLists))
               .toList(),
         ),
       ),
     );
   }
 
-  Widget _createPrinterItem(BuildContext context, String printerName) =>
+  Widget _createPrinterItem(
+    BuildContext context,
+    String printerName,
+    bool noLists,
+  ) =>
       ListTile(
         leading: FaIcon(FontAwesomeIcons.print),
         title: Text(printerName),

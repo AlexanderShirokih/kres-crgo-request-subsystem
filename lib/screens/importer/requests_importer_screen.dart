@@ -4,24 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 
 class RequestsImporterScreen extends BaseImporterScreen {
   final String? initialDirectory;
-
-  factory RequestsImporterScreen.fromContext({
-    required BuildContext context,
-    required Document targetDocument,
-    String? initialDirectory,
-  }) =>
-      RequestsImporterScreen(
-        targetDocument: targetDocument,
-        requestsRepository:
-            context.watch<RepositoryModule>().getRequestsRepository(),
-        initialDirectory: initialDirectory,
-      );
 
   RequestsImporterScreen({
     required Document targetDocument,

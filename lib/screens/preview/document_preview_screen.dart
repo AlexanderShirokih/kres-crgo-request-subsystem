@@ -8,7 +8,7 @@ import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/preview/print_dialog.dart';
 
-import 'exporter_dialogs.dart';
+import 'exporter_dialog.dart';
 import 'widgets/worksheet_card_group.dart';
 
 /// The page responsible for preparing document worksheets for printing or
@@ -93,7 +93,7 @@ class DocumentPreviewScreen extends StatelessWidget {
                       'Excel 2007-365 (Только списки работ)',
                   onPressed: state.hasPrintableWorksheets
                       ? () =>
-                          _showExportDialog(context, state, ExportFormat.Excel)
+                          _showExportDialog(context, state, ExportFormat.excel)
                       : null,
                 ),
                 _buildActionBarItem(
@@ -103,7 +103,7 @@ class DocumentPreviewScreen extends StatelessWidget {
                   tooltip: 'Сохранить выбранные листы в формате PDF',
                   onPressed: state.hasPrintableWorksheets
                       ? () =>
-                          _showExportDialog(context, state, ExportFormat.Pdf)
+                          _showExportDialog(context, state, ExportFormat.pdf)
                       : null,
                 ),
                 _buildActionBarItem(

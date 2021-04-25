@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/domain/models/optional_data.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
 import 'package:meta/meta.dart';
@@ -103,8 +102,6 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
       );
     } on ImporterProcessorMissingException {
       yield ImporterModuleMissingState();
-    } on ErrorWrapper catch (e) {
-      yield ImportErrorState(e.error.toString(), e.stackTrace);
     } catch (e, s) {
       yield ImportErrorState(e.toString(), s);
     }

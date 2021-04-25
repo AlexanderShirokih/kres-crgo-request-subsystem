@@ -242,10 +242,11 @@ class DocumentEditorScreen extends StatelessWidget {
         );
 
     scaffold.removeCurrentSnackBar();
+
     if (state.error != null) {
-      print("${state.error!.error}\n${state.error!.stackTrace}");
+      print("${state.error}\n${state.stackTrace}");
       showSnackbar(
-        'Не удалось сохранить! ${state.error!.error}',
+        'Не удалось сохранить! ${state.error}',
         const Duration(seconds: 6),
       );
     } else if (state.completed) {
@@ -254,21 +255,21 @@ class DocumentEditorScreen extends StatelessWidget {
         const Duration(seconds: 2),
       );
     } else {
-      showSnackbar('Сохранение...', const Duration(seconds: 20));
+      showSnackbar('Сохранение...', const Duration(seconds: 5));
     }
   }
 
   void _onShowImporterScreen(
       BuildContext context, WorksheetMasterShowImporterState state) async {
-    final workingDirectory = await state.currentDocument.workingDirectory.first;
+    final workingDirectory = state.currentDocument.workingDirectory;
     switch (state.importerType) {
       case WorksheetImporterType.requestsImporter:
         _navigateToImporter(
           context,
-          RequestsImporterScreen.fromContext(
+          RequestsImporterScreen(
             initialDirectory: workingDirectory,
             targetDocument: state.currentDocument,
-            context: context,
+            requestsRepository: Modular.get(),
           ),
         );
         break;

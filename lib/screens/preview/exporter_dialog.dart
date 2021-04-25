@@ -1,27 +1,33 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/repo/repository_module.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:path/path.dart' as path;
 
+/// Extension for getting file extension string from [ExportFormat].
 extension on ExportFormat {
   String formatExtension() {
     switch (this) {
-      case ExportFormat.Pdf:
+      case ExportFormat.pdf:
         return "pdf";
-      case ExportFormat.Excel:
+      case ExportFormat.excel:
         return "xlsx";
     }
   }
 }
 
+/// Opens file chooser dialog for exporting file to external formats
 class ExporterDialog extends StatelessWidget {
+  /// Exporting document
   final Document document;
-  final String suggestedExportBasename;
+
+  /// Target export format
   final ExportFormat exportFormat;
+
+  final String suggestedExportBasename;
 
   ExporterDialog(
     this.exportFormat,
@@ -39,7 +45,8 @@ class ExporterDialog extends StatelessWidget {
         child: BlocProvider.value(
           value: ExporterBloc(
             exportFormat: exportFormat,
-            repositoryModule: context.watch<RepositoryModule>(),
+            requestsRepository: Modular.get(),
+            settingsRepository: Modular.get(),
             fileChooser: _showFileChooser,
             document: document,
           ),
@@ -47,13 +54,28 @@ class ExporterDialog extends StatelessWidget {
             builder: (context) => BlocConsumer<ExporterBloc, ExporterState>(
               builder: (context, state) {
                 if (state is ExporterErrorState) {
-                  return ErrorView(
-                    errorDescription: state.error,
-                    stackTrace: StackTrace.fromString(state.stackTrace),
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: ErrorView(
+                          errorDescription: state.error,
+                          stackTrace: StackTrace.fromString(state.stackTrace),
+                        ),
+                      ),
+                      BackButton(
+                        onPressed: () {
+                          Navigator.pop(
+                            context,
+                            'Ошибка экспорта: ${state.error}',
+                          );
+                        },
+                      ),
+                    ],
                   );
                 }
                 if (state is ExporterIdle) {
-                  return LoadingView(state.message!);
+                  return LoadingView(state.message ?? '...');
                 } else
                   return Center(
                     child: CircularProgressIndicator(),
@@ -79,6 +101,7 @@ class ExporterDialog extends StatelessWidget {
     final extension = exportFormat.formatExtension();
     final dotExtension = '.$extension';
     final res = await getSavePath(
+      initialDirectory: document.currentSavePath?.parent.absolute.path,
       suggestedName: _correctExtension(suggestedExportBasename, dotExtension),
       confirmButtonText: 'Сохранить',
       acceptedTypeGroups: [

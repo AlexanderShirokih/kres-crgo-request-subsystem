@@ -3,65 +3,73 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/request_processor.dart';
-import 'package:kres_requests2/domain/domain.dart';
-import 'package:kres_requests2/domain/models/optional_data.dart';
-import 'package:kres_requests2/repo/repository_module.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 
 part 'exporter_event.dart';
+
 part 'exporter_state.dart';
 
-enum ExportFormat { Pdf, Excel }
+/// Describes supported export formats
+enum ExportFormat { pdf, excel }
 
+/// BLoC for exporting documents
 class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
+  /// Exporting document
   final Document document;
+
+  /// File picker function
   final Future<String?> Function()? fileChooser;
+
+  /// Target export format
   final ExportFormat? exportFormat;
 
-  final RequestsRepository _requestsRepository;
-  final SettingsRepository _settingsRepository;
+  /// Requests repository for handling export/print actions
+  final RequestsRepository requestsRepository;
+
+  /// Settings repository for updating preferred printer name
+  final SettingsRepository settingsRepository;
 
   ExporterBloc({
-    required RepositoryModule repositoryModule,
+    required this.requestsRepository,
+    required this.settingsRepository,
     required this.document,
     this.exportFormat,
     this.fileChooser,
-  })  : _requestsRepository = repositoryModule.getRequestsRepository(),
-        _settingsRepository = repositoryModule.getSettingsRepository(),
-        super(ExporterIdle()) {
+  }) : super(ExporterIdle()) {
     if (fileChooser != null)
-      add(ExporterShowSaveDialogEvent());
+      add(_ExporterShowSaveDialogEvent());
     else
       add(ExporterShowPrintersListEvent());
   }
 
   @override
   Stream<ExporterState> mapEventToState(ExporterEvent event) async* {
-    if (event is ExporterInitialEvent) {
-      if (!await _requestsRepository.isAvailable()) {
+    if (event is _ExporterInitialEvent) {
+      if (!await requestsRepository.isAvailable()) {
         yield ExporterMissingState();
         return;
       }
     }
 
-    if (event is ExporterShowSaveDialogEvent) {
+    if (event is _ExporterShowSaveDialogEvent) {
       yield* _doExport();
     } else if (event is ExporterShowPrintersListEvent) {
       yield* _listPrinters();
     } else if (event is ExporterPrintDocumentEvent) {
       yield* _printDocument(event.printerName, event.noLists);
-    } else if (event is ExporterErrorEvent) {
+    } else if (event is _ExporterErrorEvent) {
       yield ExporterErrorState(
-        event.error.error.toString(),
-        event.error.stackTrace.toString(),
+        event.error.toString(),
+        event.stackTrace.toString(),
       );
     }
   }
 
   @override
   void onError(Object error, StackTrace stackTrace) {
-    add(ExporterErrorEvent(ErrorWrapper(error, stackTrace)));
+    add(_ExporterErrorEvent(error.toString(), stackTrace));
     super.onError(error, stackTrace);
   }
 
@@ -69,10 +77,10 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
     yield ExporterIdle(message: 'Поиск доступных принтеров');
 
     try {
-      final availablePrinters = await _requestsRepository.listPrinters();
+      final availablePrinters = await requestsRepository.listPrinters();
       final preferred =
-          availablePrinters.contains(_settingsRepository.lastUsedPrinter)
-              ? _settingsRepository.lastUsedPrinter
+          availablePrinters.contains(settingsRepository.lastUsedPrinter)
+              ? await settingsRepository.lastUsedPrinter
               : null;
 
       yield ExporterListPrintersState(
@@ -88,13 +96,13 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
 
   Stream<ExporterState> _printDocument(
       String printerName, bool noLists) async* {
-    _settingsRepository.lastUsedPrinter = printerName;
+    await settingsRepository.setLastUsedPrinter(printerName);
 
     yield ExporterIdle(
         message: 'Создание документа и отправка задания на печать');
 
     try {
-      await _requestsRepository.printDocument(document, printerName, noLists);
+      await requestsRepository.printDocument(document, printerName, noLists);
       yield ExporterClosingState(isCompleted: true);
     } on RequestProcessorError catch (e) {
       yield ExporterErrorState(e.error, e.stackTrace);
@@ -119,7 +127,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
     yield ExporterIdle(message: 'Экспорт файла');
 
     try {
-      await _runExporter(filePath);
+      await runExporter(filePath);
       yield ExporterClosingState(isCompleted: true);
     } on RequestProcessorError catch (e) {
       yield ExporterErrorState(e.error, e.stackTrace);
@@ -128,14 +136,14 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
     }
   }
 
-  Future<void> _runExporter(String savePath) {
+  Future<void> runExporter(String savePath) {
     switch (exportFormat) {
-      case ExportFormat.Pdf:
-        return _requestsRepository.exportToPdf(document, savePath);
-      case ExportFormat.Excel:
-        return _requestsRepository.exportToXlsx(document, savePath);
+      case ExportFormat.pdf:
+        return requestsRepository.exportToPdf(document, savePath);
+      case ExportFormat.excel:
+        return requestsRepository.exportToXlsx(document, savePath);
       default:
-        throw ("Cannot run exporter without export format");
+        throw ('Cannot run exporter without export format');
     }
   }
 }

@@ -24,8 +24,8 @@ class DocumentModule extends Module {
     ),
     ChildRoute(
       '/import/requests',
-      child: (ctx, args) => RequestsImporterScreen.fromContext(
-        context: ctx,
+      child: (_, args) => RequestsImporterScreen(
+        requestsRepository: Modular.get(),
         targetDocument: args.data as Document,
       ),
     ),

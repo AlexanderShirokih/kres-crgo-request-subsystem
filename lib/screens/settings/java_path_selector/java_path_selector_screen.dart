@@ -23,7 +23,8 @@ class JavaPathSelectorScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () => _showJavaPathSelector().then((newPath) {
               if (newPath != null) {
-                Modular.get<SettingsRepository>().javaPath = newPath;
+                // TODO: Refactor with BLoC
+                Modular.get<SettingsRepository>().setJavaPath(newPath);
               }
             }),
             child: Text('Изменить'),
@@ -35,7 +36,7 @@ class JavaPathSelectorScreen extends StatelessWidget {
 
   // TODO: Move logic to bloc or viewmodel
   String _getCurrentJavaPath() {
-    final path = Modular.get<SettingsRepository>().javaPath;
+    final path = null; //Modular.get<SettingsRepository>().javaPath;
     if (path == null) return '(Не установлено)';
     final filePath = Directory(path).absolute;
     if (!filePath.existsSync()) {

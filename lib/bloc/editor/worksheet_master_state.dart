@@ -42,16 +42,23 @@ class WorksheetMasterSavingState extends WorksheetMasterState {
   final bool completed;
 
   /// Contains error if [completed] == `true` and saving was unsuccessful
-  final ErrorWrapper? error;
+  final String? error;
+  final StackTrace? stackTrace;
 
   const WorksheetMasterSavingState(
     Document currentDocument, {
     this.completed = false,
     this.error,
+    this.stackTrace,
   }) : super._(currentDocument);
 
   @override
-  List<Object?> get props => [...super.props, completed, error];
+  List<Object?> get props => [
+        ...super.props,
+        completed,
+        error,
+        stackTrace,
+      ];
 }
 
 /// Describes document importer types

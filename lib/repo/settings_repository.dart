@@ -1,49 +1,64 @@
+import 'dart:async';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class SettingsRepository {
-  String? get javaPath;
+  Future<String?> get javaPath;
 
-  set javaPath(String? file);
+  Future<void> setJavaPath(String? file);
 
-  String? get lastUsedPrinter;
+  Future<String?> get lastUsedPrinter;
 
-  set lastUsedPrinter(String? printer);
+  Future<void> setLastUsedPrinter(String? printer);
 
   const SettingsRepository();
 
-  factory SettingsRepository.fromPreferences(SharedPreferences prefs) =>
-      _PrefsSettingsRepository(prefs);
+  factory SettingsRepository.fromPreferences() => _PrefsSettingsRepository._();
 }
 
 class _PrefsSettingsRepository extends SettingsRepository {
   static const _kLastUsedPrinter = 'last_printer';
   static const _kJavaPath = 'java_home';
 
-  final SharedPreferences _prefs;
+  Completer<SharedPreferences>? _prefsCompleter;
 
-  const _PrefsSettingsRepository(this._prefs);
+  _PrefsSettingsRepository._();
+
+  Future<SharedPreferences> get _prefs {
+    if (_prefsCompleter == null) {
+      _prefsCompleter = Completer();
+      _prefsCompleter!.complete(SharedPreferences.getInstance());
+    }
+    return _prefsCompleter!.future;
+  }
 
   @override
-  String? get javaPath => _prefs.getString(_kJavaPath);
+  Future<String?> get javaPath =>
+      _prefs.then((prefs) => prefs.getString(_kJavaPath));
 
   @override
-  set javaPath(String? path) {
+  Future<void> setJavaPath(String? path) async {
+    final prefs = await _prefs;
+
     if (path == null) {
-      _prefs.remove(_kJavaPath);
+      await prefs.remove(_kJavaPath);
     } else {
-      _prefs.setString(_kJavaPath, path);
+      await prefs.setString(_kJavaPath, path);
     }
   }
 
   @override
-  String? get lastUsedPrinter => _prefs.getString(_kLastUsedPrinter);
+  Future<String?> get lastUsedPrinter =>
+      _prefs.then((prefs) => prefs.getString(_kLastUsedPrinter));
 
   @override
-  set lastUsedPrinter(String? printer) {
+  Future<void> setLastUsedPrinter(String? printer) async {
+    final prefs = await _prefs;
+
     if (printer == null) {
-      _prefs.remove(_kLastUsedPrinter);
+      await prefs.remove(_kLastUsedPrinter);
     } else {
-      _prefs.setString(_kLastUsedPrinter, printer);
+      await prefs.setString(_kLastUsedPrinter, printer);
     }
   }
 }

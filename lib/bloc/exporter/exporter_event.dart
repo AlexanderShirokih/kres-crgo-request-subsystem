@@ -1,34 +1,44 @@
 part of 'exporter_bloc.dart';
 
+/// Base event class for [ExporterBloc]
 abstract class ExporterEvent extends Equatable {
   const ExporterEvent();
 }
 
-abstract class ExporterInitialEvent extends ExporterEvent {
-  const ExporterInitialEvent();
-}
+/// Used internally when some error happened on exporting time
+class _ExporterErrorEvent extends ExporterEvent {
+  final String error;
+  final StackTrace stackTrace;
 
-class ExporterErrorEvent extends ExporterEvent {
-  final ErrorWrapper error;
-
-  const ExporterErrorEvent(this.error);
+  const _ExporterErrorEvent(this.error, this.stackTrace);
 
   @override
-  List<Object> get props => [error];
+  List<Object> get props => [error, this.stackTrace];
 }
 
-class ExporterShowSaveDialogEvent extends ExporterInitialEvent {
-  @override
-  List<Object> get props => [];
-}
-
-class ExporterShowPrintersListEvent extends ExporterInitialEvent {
+/// Used internally to open save dialog
+class _ExporterShowSaveDialogEvent extends ExporterEvent {
   @override
   List<Object> get props => [];
 }
 
-class ExporterPrintDocumentEvent extends ExporterEvent {
+/// Common class for starting events
+abstract class _ExporterInitialEvent extends ExporterEvent {
+  const _ExporterInitialEvent() : super();
+}
+
+/// Used to fetch printers list
+class ExporterShowPrintersListEvent extends _ExporterInitialEvent {
+  @override
+  List<Object> get props => [];
+}
+
+/// Signals to print target document on [printerName]
+class ExporterPrintDocumentEvent extends _ExporterInitialEvent {
+  /// Chosen printer
   final String printerName;
+
+  /// Skip printing working lists
   final bool noLists;
 
   const ExporterPrintDocumentEvent(this.printerName, this.noLists);

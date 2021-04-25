@@ -65,14 +65,11 @@ class Document extends Equatable {
       );
 
   /// Directory where document saved or could be saved
-  Stream<String> get workingDirectory => Rx.concat(
-        [
-          Stream.value('./'),
-          _savePath.map(
-            (file) => path.dirname(file.path),
-          ),
-        ],
-      );
+  String get workingDirectory {
+    final savePath = currentSavePath;
+    if (savePath == null) return './';
+    return path.dirname(savePath.path);
+  }
 
   /// Returns current save path
   File? get currentSavePath => _savePath.value;
@@ -146,6 +143,7 @@ class Document extends Equatable {
     final worksheet = _createEditor(
       Worksheet(
         name: name ?? '',
+        targetDate: targetDate,
         worksheetId: _getUniqueId(),
         mainEmployee: mainEmployee,
         chiefEmployee: chiefEmployee,
@@ -221,38 +219,9 @@ class Document extends Equatable {
     }
   }
 
-  /// Saves document in local storage
-  /// If [changePath] is `true` save path will be updated by picking it from
-  /// [savePathChooser].
-  /// Returns `true` if document was saved to the storage.
-  Future<bool> saveDocument(
-    bool changePath,
-    DocumentSaver documentSaver,
-    Future<String?> Function(Document document, String workingDirectory)
-        savePathChooser,
-  ) async {
-    final savePath = _savePath.value;
-
-    if (savePath == null || changePath) {
-      final chosenSavePath = await savePathChooser(
-        this,
-        await workingDirectory.first,
-      );
-
-      if (chosenSavePath == null) return false;
-
-      _savePath.add(
-        path.extension(chosenSavePath) != '.json'
-            ? File('$chosenSavePath.json')
-            : File(chosenSavePath),
-      );
-    }
-
-    await _save(documentSaver);
-    return true;
-  }
-
-  Future<void> _save(DocumentSaver saver) async {
+  /// Stores document in [DocumentSaver].
+  /// Before calling this function. Document should have [savePath] set.
+  Future<void> save(DocumentSaver saver) async {
     if (!_savePath.hasValue) {
       throw ('savePath == null!');
     }
@@ -262,8 +231,8 @@ class Document extends Equatable {
     _updateDate.add(DateTime.now());
   }
 
-  /// TODO: API: undesired function.
-  /// Replaces all worksheets in the document
+  /// Replaces all worksheets in the document.
+  /// Note: this function can potentially break internal document state.
   void setWorksheets(List<Worksheet> worksheets) {
     if (worksheets.isEmpty) {
       throw ('Cannot set an empty worksheet list');
