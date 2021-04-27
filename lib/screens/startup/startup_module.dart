@@ -17,10 +17,7 @@ class StartupModule extends Module {
   @override
   List<Bind<Object>> get binds => [
         Bind.factory<ProcessExecutor>(
-          (i) => JavaProcessExecutor(
-            settingsRepository: i(),
-            configRepository: i(),
-          ),
+          (i) => JavaProcessExecutor(settingsRepository: i()),
         ),
         // Employee-related binds
         Bind.lazySingleton<Dao<Employee, EmployeeEntity>>(

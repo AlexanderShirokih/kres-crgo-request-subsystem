@@ -2,19 +2,16 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:kres_requests2/data/process_executor.dart';
-import 'package:kres_requests2/data/repository/config_repository.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 
 import 'java_info.dart';
 
 class JavaProcessExecutor extends ProcessExecutor {
-  final SettingsRepository settingsRepository;
-  final ConfigRepository configRepository;
+  static final Directory _javaProcessHome = Directory('requests/lib');
 
-  const JavaProcessExecutor({
-    required this.settingsRepository,
-    required this.configRepository,
-  });
+  final SettingsRepository settingsRepository;
+
+  const JavaProcessExecutor({required this.settingsRepository});
 
   @override
   Future<ProcessResult> runProcess(List<String> args) async {
@@ -24,14 +21,16 @@ class JavaProcessExecutor extends ProcessExecutor {
       throw ('Java executable does not exists!');
     }
 
-    final javaProcessInfo = await configRepository.javaProcessInfo;
-
-    if (!await Directory(javaProcessInfo.appHome).exists()) {
+    if (!await _javaProcessHome.exists()) {
       throw ('Requests processor module does not exists!');
     }
 
-    final res =
-        await Process.run(javaBin.absolute.path, await _buildArgs(args));
+    final res = await Process.run(javaBin.absolute.path, [
+      '-classpath',
+      '${_javaProcessHome.path}/*',
+      'ru.aleshi.requests.AppKt',
+      ...args,
+    ]);
     return res;
   }
 
@@ -93,25 +92,4 @@ class JavaProcessExecutor extends ProcessExecutor {
   }
 
   Future<bool> _isJavaBinariesExists(File javaBin) => javaBin.exists();
-
-  Future<List<String>> _buildArgs(List<String> args) async {
-    final classPath = await _resolveClasspath();
-
-    final javaProcessInfo = await configRepository.javaProcessInfo;
-
-    return ['-classpath', classPath, javaProcessInfo.mainClassName, ...args];
-  }
-
-  Future<String> _resolveClasspath() async {
-    final javaProcessInfo = await configRepository.javaProcessInfo;
-
-    final appHome = Directory(javaProcessInfo.appHome);
-
-    if (!await appHome.exists()) {
-      throw ('Java app home folder "${appHome.absolute.path} is not exists"');
-    }
-
-    return javaProcessInfo.classpath
-        .replaceAll('%APP_HOME%', appHome.absolute.path);
-  }
 }
