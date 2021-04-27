@@ -1,6 +1,5 @@
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/data/editor/json_document_saver.dart';
-import 'package:kres_requests2/data/java_process_executor.dart';
 import 'package:kres_requests2/data/request_processor.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/repo/requests_repository.dart';
@@ -12,10 +11,7 @@ class PreviewModule extends Module {
   List<Bind<Object>> get binds => [
         Bind.factory((i) => RequestsRepository(
               RequestProcessorImpl(
-                JavaProcessExecutor(
-                  settingsRepository: i(),
-                  configRepository: i(),
-                ),
+                i(),
                 JsonDocumentSaver(saveLegacyInfo: false),
               ),
             )),

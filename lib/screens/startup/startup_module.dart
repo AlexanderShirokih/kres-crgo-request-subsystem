@@ -1,7 +1,9 @@
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/data/daos.dart';
+import 'package:kres_requests2/data/java/java_process_executor.dart';
 import 'package:kres_requests2/data/models.dart';
 import 'package:kres_requests2/data/models/recent_document_info.dart';
+import 'package:kres_requests2/data/process_executor.dart';
 import 'package:kres_requests2/data/repository/storage_repository.dart';
 import 'package:kres_requests2/data/validators.dart';
 import 'package:kres_requests2/domain/domain.dart';
@@ -14,6 +16,12 @@ import 'package:kres_requests2/screens/startup/startup_screen.dart';
 class StartupModule extends Module {
   @override
   List<Bind<Object>> get binds => [
+        Bind.factory<ProcessExecutor>(
+          (i) => JavaProcessExecutor(
+            settingsRepository: i(),
+            configRepository: i(),
+          ),
+        ),
         // Employee-related binds
         Bind.lazySingleton<Dao<Employee, EmployeeEntity>>(
           (i) => EmployeeDao(i(), i()),

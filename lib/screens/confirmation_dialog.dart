@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+/// Confirmation dialog for Yes/No choice.
+/// Returns `true` on 'Yes' or `false` on 'No' choice
 class ConfirmationDialog extends StatelessWidget {
   final String message;
 
@@ -9,19 +11,15 @@ class ConfirmationDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       actionsPadding: EdgeInsets.all(8.0),
-      content: Text(
-        message,
-        textAlign: TextAlign.center,
-      ),
+      content: Text(message, textAlign: TextAlign.center),
       actions: [
-        FlatButton(
+        TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: Text("Нет"),
+          child: Text('Нет'),
         ),
-        RaisedButton(
+        ElevatedButton(
           onPressed: () => Navigator.pop(context, true),
-          color: Theme.of(context).accentColor,
-          child: Text("Да"),
+          child: Text('Да'),
         )
       ],
     );

@@ -53,7 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _NavigableItem(
         icon: FaIcon(FontAwesomeIcons.java),
         title: 'Путь к Java (JAVA_HOME)',
-        builder: () => JavaPathSelectorScreen(),
+        builder: () => JavaPathChooserScreen(),
       ),
     ];
     return Scaffold(
