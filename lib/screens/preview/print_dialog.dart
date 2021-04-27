@@ -99,7 +99,9 @@ class _ListPrintersView extends HookWidget {
             onPressed: () => context
                 .read<ExporterBloc>()
                 .add(ExporterShowPrintersListEvent()),
-          )
+          ),
+          const SizedBox(height: 12.0),
+          BackButton(),
         ],
       );
     } else {
