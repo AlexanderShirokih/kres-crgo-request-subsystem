@@ -73,7 +73,7 @@ class DocumentEditorScreen extends StatelessWidget {
                 Align(
                   alignment: Alignment.topRight,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
+                    padding: const EdgeInsets.only(top: 36.0),
                     child: Container(
                       width: 60,
                       height: 60,

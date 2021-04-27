@@ -21,8 +21,8 @@ class PrintDialog extends StatelessWidget {
       content: Container(
         width: 340.0,
         height: 380.0,
-        child: BlocProvider.value(
-          value: ExporterBloc(
+        child: BlocProvider(
+          create: (_) => ExporterBloc(
             requestsRepository: Modular.get(),
             settingsRepository: Modular.get(),
             document: document,
@@ -39,9 +39,17 @@ class PrintDialog extends StatelessWidget {
                 } else if (state is ExporterIdle) {
                   return LoadingView(state.message ?? '');
                 } else if (state is ExporterErrorState) {
-                  return ErrorView(
-                    errorDescription: state.error,
-                    stackTrace: StackTrace.fromString(state.stackTrace),
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: ErrorView(
+                          errorDescription: state.error,
+                          stackTrace: StackTrace.fromString(state.stackTrace),
+                        ),
+                      ),
+                      BackButton(),
+                    ],
                   );
                 } else
                   return Center(
