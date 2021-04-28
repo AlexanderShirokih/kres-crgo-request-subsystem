@@ -4,15 +4,18 @@ import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.xssf.usermodel.XSSFRow
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import ru.aleshi.requests.data.Document
 import ru.aleshi.requests.data.RequestItem
 import ru.aleshi.requests.data.Worksheet
 import java.nio.file.Files
 import java.nio.file.Paths
 
 
-class XlsxExporter(private val worksheets: Array<Worksheet>) {
+class XlsxExporter(private val document: Document) {
 
     fun export(destinationPath: String) {
+        val worksheets = document.worksheets
+
         XSSFWorkbook().use { workbook ->
 
             for (worksheet in worksheets) {
@@ -56,8 +59,8 @@ class XlsxExporter(private val worksheets: Array<Worksheet>) {
         row.createStringCell(2, request.name)
         row.createStringCell(3, request.address)
         row.createStringCell(4, request.counterInfo)
-        row.createStringCell(5, request.reqType)
-        row.createStringCell(6, request.additionalInfo)
+        row.createStringCell(5, request.type.short)
+        row.createStringCell(6, request.fullAdditional)
     }
 
     private fun XSSFRow.createStringCell(column: Int, value: String) =

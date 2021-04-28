@@ -4,9 +4,22 @@ data class RequestItem(
     val accountId: Int?,
     val name: String,
     val address: String,
-    val reqType: String,
-    val fullReqType: String,
+    var phone: String?,
+    var connectionPoint: ConnectionPoint?,
+    val type: RequestType,
     val reason: String?,
+    var counter: CounterInfo?,
     var additionalInfo: String = "",
-    var counterInfo: String = ""
-)
+
+    ) {
+
+    val counterInfo: String
+        get() = counter?.fullInfo ?: "ПУ отсутств."
+
+    val fullAdditional: String
+        get() =
+            listOfNotNull(connectionPoint?.formatted, phone, additionalInfo)
+                .map { it.trim() }
+                .filter { it.isNotBlank() }
+                .joinToString(separator = " | ")
+}

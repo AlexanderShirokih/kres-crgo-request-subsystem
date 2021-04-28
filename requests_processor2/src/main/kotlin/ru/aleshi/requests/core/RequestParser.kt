@@ -2,7 +2,10 @@ package ru.aleshi.requests.core
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel.CellType
+import ru.aleshi.requests.data.ConnectionPoint
+import ru.aleshi.requests.data.CounterInfo
 import ru.aleshi.requests.data.RequestItem
+import ru.aleshi.requests.data.RequestType
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -78,7 +81,7 @@ object RequestParser {
 
         return requests.map {
             if (it.counterInfo.isBlank())
-                it.copy(counterInfo = "ПУ отсутств.")
+                it.copy(counter = null)
             else it
         }
     }
@@ -93,48 +96,55 @@ object RequestParser {
             accountId = mainLine[1].toInt(),
             name = mainLine[2],
             address = mainLine[3].substringAfter("Керчь").trim(),
-            reqType = requestType.shortName,
-            fullReqType = requestType.fullName,
-            reason = capitalize(mainLine[5].trim())
+            type = RequestType(
+                short = requestType.shortName,
+                full = requestType.fullName,
+            ),
+            reason = mainLine[5].capitalize().trim(),
+            phone = "",
+            connectionPoint = null,
+            counter = null,
         )
     }
 
     private fun attachCounterInfo(requestItem: RequestItem, line: List<String>) {
-        val counterInfo = line[0].substringAfter("Счетчик:").substringBefore(" p.").trim()
-        val gp = translateCheckDate(line[0].substringAfter("госп: ", "").substringBefore(" место"))
+        Regex("№ (\\d+) (.+) ([\\d] p\\.)(.*) госп: ([\\d]{2}\\.[\\d]{2}.[\\d]{4})")
+            .find(line[0])
+            ?.let { counterMatch ->
+                val (number, type, _, _, checkDate) = counterMatch.groups.drop(1).map { it!!.value }
+                val (_, month, year) = checkDate.split(".")
 
-        requestItem.counterInfo = if (counterInfo == "нет") "ПУ отсутств." else counterInfo
-            .substringBefore("госп:")
-            .dropLast(1)
-            .trim() + gp
+                val counter = CounterInfo(
+                    number = number,
+                    type = type,
+                    quarter = month.toInt() / 4 + 1,
+                    year = year.toInt()
+                )
+                requestItem.counter = counter
+            }
     }
 
     private fun attachAdditionalInfo(requestItem: RequestItem, line: List<String>) {
-        requestItem.additionalInfo = sanitizeAdditionalInfo(line[0])
-    }
+        val tpMatch = Regex("ТП: ([ТРП\\w]+)").find(line[0])
+        val lineMatch = Regex("Ф\\. (\\d+)").find(line[0])
+        val pillarMatch = Regex("оп\\. ([\\w/]+)").find(line[0])
 
-    private fun translateCheckDate(rawCD: String): String {
-        return if (rawCD.isEmpty()) ""
-        else {
-            try {
-                buildString {
-                    val (_, m, y) = rawCD.split(".")
+        ConnectionPoint(
+            tp = tpMatch?.groups?.get(1)?.value,
+            line = lineMatch?.groups?.get(1)?.value,
+            pillar = pillarMatch?.groups?.get(1)?.value,
+        )
+            .takeIf { !it.isEmpty }
+            ?.run { requestItem.connectionPoint = this }
 
-                    append("| п. ")
-                    append(
-                        when (m.toInt()) {
-                            in 1..3 -> "I"
-                            in 4..6 -> "II"
-                            in 7..9 -> "III"
-                            in 10..12 -> "IV"
-                            else -> "???"
-                        }
-                    )
-                    append('-')
-                    append(y.takeLast(2))
-                }
-            } catch (_: IndexOutOfBoundsException) {
-                ""
+        Regex("тел\\.: \\+?(\\d{5,12})").find(line[0])?.run {
+            requestItem.phone = groups[1]!!.value
+        }
+
+        Regex("Мощность: (\\d{1,3},?\\d?)").find(line[0])?.run {
+            val power = groups[1]!!.value
+            if (power != "0") {
+                requestItem.additionalInfo = "М: $power"
             }
         }
     }
@@ -143,17 +153,4 @@ object RequestParser {
         defaultReqTypeReplacements.firstOrNull { it.pattern == requestType } ?: WorkReplacementTemplate(
             requestType
         )
-
-
-    private fun sanitizeAdditionalInfo(additional: String): String {
-        return additional
-            .replace(Regex("\\([\\dR-]+\\)"), "")
-            .replace(Regex("Мощность: (2,2[\\d]+|3,5|0)"), "")
-            .replace("Мощность:", "М:")
-            .replace("тел.: ", "")
-            .replace("+", "")
-            .dropLastWhile { it == ' ' || it == '|' }
-    }
-
-    private fun capitalize(line: String) = line.take(1).toUpperCase() + line.drop(1)
 }

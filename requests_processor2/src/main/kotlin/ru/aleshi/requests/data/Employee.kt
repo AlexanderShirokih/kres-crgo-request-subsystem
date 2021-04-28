@@ -2,15 +2,15 @@ package ru.aleshi.requests.data
 
 data class Employee(
     val name: String,
-    val position: String,
+    val position2: Position,
     val accessGroup: Int
 ) {
 
-    fun getFully() = "$name, $position, ${toRoman()} гр."
+    fun getFully() = "$name, ${position2.name}, ${toRoman()} гр."
 
     fun getNameWithGroup() = "$name ${toRoman()} гр."
 
-    fun getNameWithPosition() = "$position $name"
+    fun getNameWithPosition() = "${position2.name} $name"
 
 
     private fun toRoman() =

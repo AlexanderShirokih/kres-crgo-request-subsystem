@@ -6,8 +6,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 import ru.aleshi.requests.core.PdfExporter
 import ru.aleshi.requests.core.RequestParser
 import ru.aleshi.requests.core.XlsxExporter
+import ru.aleshi.requests.data.Document
 import ru.aleshi.requests.data.ProcessResult
-import ru.aleshi.requests.data.Worksheet
 import java.nio.file.Files
 import java.nio.file.Paths
 import javax.print.PrintServiceLookup
@@ -20,12 +20,12 @@ object AppKt {
         loadResult {
             if (args.isNotEmpty()) {
                 when (args[0]) {
-                    "-export-pdf" -> PdfExporter(loadWorksheets(args[1])).export(args[2])
-                    "-export-xlsx" -> XlsxExporter(loadWorksheets(args[1])).export(args[2])
+                    "-export-pdf" -> PdfExporter(loadDocument(args[1])).export(args[2])
+                    "-export-xlsx" -> XlsxExporter(loadDocument(args[1])).export(args[2])
                     "-parse" -> RequestParser.parse(filePath = Paths.get(args[1]))
                     "-list-printers" -> getAvailablePrinters()
                     "-print" -> printDocument(
-                        worksheets = loadWorksheets(args[1]),
+                        document = loadDocument(args[1]),
                         printerName = args[2],
                         noLists = args.size > 3 && args[3] == "-no-lists"
                     )
@@ -51,9 +51,13 @@ object AppKt {
         println(GsonBuilder().setPrettyPrinting().create().toJson(result))
     }
 
-    private fun loadWorksheets(sourcePath: String): Array<Worksheet> {
+    private fun loadDocument(sourcePath: String): Document {
         val reader = Files.newBufferedReader(Paths.get(sourcePath))
-        return Gson().fromJson(reader, Array<Worksheet>::class.java)
+        val document = Gson().fromJson(reader, Document::class.java)
+        if (document.version < 2) {
+            throw RuntimeException("Document version at least '2' required!")
+        }
+        return document
     }
 
     private fun getAvailablePrinters(): List<String> {
@@ -66,12 +70,12 @@ object AppKt {
             .map { it.name }
     }
 
-    private fun printDocument(worksheets: Array<Worksheet>, printerName: String, noLists: Boolean): Boolean {
+    private fun printDocument(document: Document, printerName: String, noLists: Boolean): Boolean {
         val printer = PrintServiceLookup
             .lookupPrintServices(null, null)
             .first { it.name == printerName }
 
-        PdfExporter(worksheets).print(printer, noLists)
+        PdfExporter(document).print(printer, noLists)
         return true
     }
 }

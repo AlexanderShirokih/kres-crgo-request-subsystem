@@ -74,7 +74,7 @@ class JsonDocumentSaver implements DocumentSaver {
         'address': request.address,
         'phone': request.phoneNumber,
         if (request.connectionPoint != null)
-          'c_point': _storeConnectionPoint(request.connectionPoint!),
+          'connectionPoint': _storeConnectionPoint(request.connectionPoint!),
         if (saveLegacyInfo) 'reqType': request.requestType?.shortName,
         if (saveLegacyInfo) 'fullReqType': request.requestType?.fullName,
         if (request.requestType != null)

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm") version "1.3.72"
     application
@@ -21,4 +23,10 @@ dependencies {
     implementation("org.apache.poi:poi-ooxml:4.1.2")
     implementation("org.apache.pdfbox:pdfbox:2.0.21")
     implementation("org.apache.commons:commons-lang3:3.11")
+}
+
+val compileKotlin: KotlinCompile by tasks
+
+compileKotlin.kotlinOptions {
+    languageVersion = "1.4"
 }

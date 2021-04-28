@@ -7,6 +7,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream
 import org.apache.pdfbox.pdmodel.font.PDFont
 import org.apache.pdfbox.pdmodel.font.PDType0Font
 import org.apache.pdfbox.printing.PDFPageable
+import ru.aleshi.requests.data.Document
 import ru.aleshi.requests.data.RequestItem
 import ru.aleshi.requests.data.Worksheet
 import java.awt.Color
@@ -15,12 +16,12 @@ import javax.print.PrintService
 import javax.print.attribute.HashPrintRequestAttributeSet
 import javax.print.attribute.standard.Sides
 
-class PdfExporter(private val worksheets: Array<Worksheet>) {
+class PdfExporter(private val document: Document) {
 
     private val loader = PdfExporter::class.java.classLoader
 
-
     fun print(printer: PrintService, noLists: Boolean) {
+        val worksheets = document.worksheets
         val ordersDoc = PDDocument().apply {
             writeOrders(
                 this, worksheets, PDType0Font.load(
@@ -64,6 +65,7 @@ class PdfExporter(private val worksheets: Array<Worksheet>) {
     }
 
     fun export(destinationPath: String) {
+        val worksheets = document.worksheets
         val target = PDDocument()
         val font = PDType0Font.load(
             target,
@@ -77,7 +79,7 @@ class PdfExporter(private val worksheets: Array<Worksheet>) {
         target.close()
     }
 
-    private fun writeOrders(target: PDDocument, worksheets: Array<Worksheet>, font: PDFont) {
+    private fun writeOrders(target: PDDocument, worksheets: List<Worksheet>, font: PDFont) {
         val orderTemplate = PDDocument.load(loader.getResourceAsStream("templates/order.pdf"))
 
         for (worksheet in worksheets) {
@@ -187,7 +189,7 @@ class PdfExporter(private val worksheets: Array<Worksheet>) {
         )
     }
 
-    private fun writeLists(target: PDDocument, worksheets: Array<Worksheet>, font: PDFont) {
+    private fun writeLists(target: PDDocument, worksheets: List<Worksheet>, font: PDFont) {
         val listTemplate = PDDocument.load(loader.getResourceAsStream("templates/application.pdf"))
 
         for (worksheet in worksheets) {
@@ -280,9 +282,9 @@ class PdfExporter(private val worksheets: Array<Worksheet>) {
         )
         writeTextAt(120.0f, baseline + 16.0f - yOffset, request.name.take(29), font, 9.0f)
         writeTextAt(270.0f, baseline + 16.0f - yOffset, request.address, font, 9.0f)
-        writeTextAt(493.0f, baseline + 17.0f - yOffset, request.reqType, font, 10.0f)
+        writeTextAt(493.0f, baseline + 17.0f - yOffset, request.type.short, font, 10.0f)
         writeTextAt(76.0f, baseline - 1.0f - yOffset, request.counterInfo.take(36), font, 10.0f)
-        writeTextAt(270.0f, baseline - 3.0f - yOffset, request.additionalInfo.take(56), font, 9.0f)
+        writeTextAt(270.0f, baseline - 3.0f - yOffset, request.fullAdditional.take(56), font, 9.0f)
     }
 
     private fun PDPageContentStream.writeMultiline(
