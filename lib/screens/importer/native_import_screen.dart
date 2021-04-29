@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
-import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
+import 'package:kres_requests2/repo/worksheet_importer_service.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 
 /// The page responsible for opening native file formats
 class NativeImporterScreen extends BaseImporterScreen {
-  final NativeImporterRepository importerRepository;
+  final NativeImporterService importerRepository;
   final String? initialDirectory;
   final Document? targetDocument;
 

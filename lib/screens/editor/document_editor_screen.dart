@@ -8,7 +8,7 @@ import 'package:kres_requests2/domain/counters_importer.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
-import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
+import 'package:kres_requests2/repo/worksheet_importer_service.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/editor/widgets/worksheet_editor_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view/worksheet_config_view.dart';
@@ -264,6 +264,7 @@ class DocumentEditorScreen extends StatelessWidget {
     final workingDirectory = state.currentDocument.workingDirectory;
     switch (state.importerType) {
       case WorksheetImporterType.requestsImporter:
+        // TODO: Replace with modular
         _navigateToImporter(
           context,
           RequestsImporterScreen(
@@ -274,12 +275,13 @@ class DocumentEditorScreen extends StatelessWidget {
         );
         break;
       case WorksheetImporterType.countersImporter:
+      // TODO: Replace with modular
         _navigateToImporter(
           context,
           CountersImporterScreen(
             initialDirectory: workingDirectory,
             targetDocument: state.currentDocument,
-            importerRepository: CountersImporterRepository(
+            importerRepository: CountersImporterService(
               importer: CountersImporter(),
               tableChooser: (tables) => showDialog<String>(
                 context: context,
@@ -296,7 +298,7 @@ class DocumentEditorScreen extends StatelessWidget {
             initialDirectory: workingDirectory,
             targetDocument: state.currentDocument,
             importerRepository:
-                NativeImporterRepository(Modular.get(), (tables) async {
+                NativeImporterService(Modular.get(), (tables) async {
               final worksheets = await showDialog<List<Worksheet>>(
                 context: context,
                 builder: (_) => SelectWorksheetsDialog(tables),

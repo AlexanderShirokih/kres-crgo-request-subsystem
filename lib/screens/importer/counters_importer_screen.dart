@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
+import 'package:kres_requests2/repo/worksheet_importer_service.dart';
 
 import 'base_importer_screen.dart';
 
@@ -13,7 +13,7 @@ class CountersImporterScreen extends BaseImporterScreen {
 
   CountersImporterScreen({
     required Document targetDocument,
-    required CountersImporterRepository importerRepository,
+    required CountersImporterService importerRepository,
     this.initialDirectory,
   }) : super(
           title: 'Импорт списка счетчиков на замену',

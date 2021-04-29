@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
+import 'package:kres_requests2/repo/worksheet_importer_service.dart';
 import 'package:kres_requests2/screens/common.dart';
 
 /// Common screen for all importer types
@@ -13,7 +13,7 @@ abstract class BaseImporterScreen extends StatelessWidget {
   final String title;
 
   /// Repository for importing objects
-  final WorksheetImporterRepository importerRepository;
+  final WorksheetImporterService importerRepository;
 
   /// Target document to be inflated with importer results.
   /// If not present then new document will be created

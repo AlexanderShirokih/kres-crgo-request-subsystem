@@ -45,7 +45,7 @@ class ExporterDialog extends StatelessWidget {
         child: BlocProvider(
           create: (_) => ExporterBloc(
             exportFormat: exportFormat,
-            requestsRepository: Modular.get(),
+            requestsService: Modular.get(),
             settingsRepository: Modular.get(),
             fileChooser: _showFileChooser,
             document: document,

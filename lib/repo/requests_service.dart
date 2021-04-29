@@ -1,15 +1,15 @@
 import 'package:kres_requests2/data/request_processor.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
+import 'package:kres_requests2/repo/worksheet_importer_service.dart';
 
 /// Exception class used when request processor module is missing
 class ImporterProcessorMissingException implements Exception {}
 
 /// A class responsible for exporting and printing documents
-class RequestsRepository extends WorksheetImporterRepository {
+class RequestsService extends WorksheetImporterService {
   final AbstractRequestProcessor _requestProcessor;
 
-  RequestsRepository(this._requestProcessor);
+  RequestsService(this._requestProcessor);
 
   /// Checks that the request processor is ready for doing work
   Future<bool> isAvailable() => _requestProcessor.isAvailable();

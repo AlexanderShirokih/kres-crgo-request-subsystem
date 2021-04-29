@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/repo/requests_repository.dart';
-import 'package:kres_requests2/repo/worksheet_importer_repository.dart';
+import 'package:kres_requests2/repo/requests_service.dart';
+import 'package:kres_requests2/repo/worksheet_importer_service.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
@@ -17,7 +17,7 @@ part 'importer_state.dart';
 /// from external sources
 class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
   /// Repository for importing data
-  final WorksheetImporterRepository importerRepository;
+  final WorksheetImporterService importerRepository;
 
   /// Target document where should consists import results
   final Document? targetDocument;
