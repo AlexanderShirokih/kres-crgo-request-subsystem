@@ -78,11 +78,13 @@ class JsonDocumentFactory implements DocumentFactory {
       final String? tp = tpRegExp.firstMatch(additional)?.group(1)?.trim();
       additional = additional.replaceAll(tpRegExp, '');
 
-      final lineRegExp = RegExp(r'Ф[\:\s\.]*([\\\/\d]{1,3})');
+      final lineRegExp = RegExp(r'Ф[\:\s\.]{0,2}([\\\/\d]{1,3})');
       final String? line = lineRegExp.firstMatch(additional)?.group(1)?.trim();
       additional = additional.replaceAll(lineRegExp, '');
 
-      final pillarRegExp = RegExp(r'(оп|опора|Опора)[\:\.\s]*([\\\/\d]{1,5})');
+      final pillarRegExp =
+          RegExp(r'(оп|опора|Опора)[\:\.\s]{0,2}(\d{1,3}([\\\/][\dА-я]{1,2})?)');
+
       final String? pillar =
           pillarRegExp.firstMatch(additional)?.group(2)?.trim();
       additional = additional.replaceAll(pillarRegExp, '');
@@ -165,7 +167,7 @@ class JsonDocumentFactory implements DocumentFactory {
       return null;
     }
 
-    final numberRegExp = RegExp(r'№\s*(\d{5,})');
+    final numberRegExp = RegExp(r'№?\s*(\d{5,})');
     final numberMatch = numberRegExp.firstMatch(info);
     final number = numberMatch?.group(1);
 

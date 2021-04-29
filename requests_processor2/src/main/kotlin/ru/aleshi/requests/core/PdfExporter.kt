@@ -284,7 +284,7 @@ class PdfExporter(private val document: Document) {
         writeTextAt(270.0f, baseline + 16.0f - yOffset, request.address, font, 9.0f)
         writeTextAt(493.0f, baseline + 17.0f - yOffset, request.type.short, font, 10.0f)
         writeTextAt(76.0f, baseline - 1.0f - yOffset, request.counterInfo.take(36), font, 10.0f)
-        writeTextAt(270.0f, baseline - 3.0f - yOffset, request.fullAdditional.take(56), font, 9.0f)
+        writeTextAt(270.0f, baseline - 3.0f - yOffset, request.fullAdditional.take(62), font, 9.0f)
     }
 
     private fun PDPageContentStream.writeMultiline(

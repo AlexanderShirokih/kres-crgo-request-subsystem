@@ -124,7 +124,7 @@ class _RequestEditorView extends HookWidget {
                 checkYear,
               ),
               const SizedBox(height: 28),
-              _createInputField("Дополнительно", null, additional, limit: 30),
+              _createInputField("Дополнительно", null, additional, limit: 35),
               Divider(),
             ],
           ),

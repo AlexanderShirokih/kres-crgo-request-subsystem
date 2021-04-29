@@ -45,7 +45,7 @@ class RequestValidator extends MappedValidator<RequestEntity> {
               additionalInfo,
               const StringValidator(
                 minLength: 0,
-                maxLength: 30,
+                maxLength: 35,
               ),
               (e) => e.additionalInfo),
         ]);
