@@ -8,14 +8,14 @@ import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 
 /// Service used to import document from external formats
-abstract class WorksheetImporterService {
-  const WorksheetImporterService();
+abstract class DocumentImporterService {
+  const DocumentImporterService();
 
   /// Runs parser program and returns document containing parsing result
   Future<Document?> importDocument(String filePath);
 }
 
-class CountersImporterService extends WorksheetImporterService {
+class CountersImporterService extends DocumentImporterService {
   final CountersImporter importer;
 
   final TableChooser tableChooser;
@@ -42,14 +42,14 @@ class CountersImporterService extends WorksheetImporterService {
 typedef MultiTableChooser = Future<List<Worksheet>> Function(List<Worksheet>);
 
 /// Create documents from native file format
-class NativeImporterService extends WorksheetImporterService {
-  final MultiTableChooser? _tableChooser;
+class NativeImporterService extends DocumentImporterService {
+  final MultiTableChooser? tableChooser;
   final StreamedRepositoryController<RecentDocumentInfo> _repositoryController;
 
   const NativeImporterService(
-    this._repositoryController, [
-    this._tableChooser,
-  ]);
+    this._repositoryController, {
+    this.tableChooser,
+  });
 
   @override
   Future<Document?> importDocument(String filePath) async {
@@ -61,9 +61,9 @@ class NativeImporterService extends WorksheetImporterService {
     final documentFactory = JsonDocumentFactory(jsonData, documentFile);
     final document = documentFactory.createDocument();
 
-    final optDocument = _tableChooser == null
+    final optDocument = tableChooser == null
         ? document
-        : await _chooseWorksheets(document, _tableChooser!);
+        : await _chooseWorksheets(document, tableChooser!);
 
     // Register file in the recent documents list
     _repositoryController.add(RecentDocumentInfo(path: documentFile));

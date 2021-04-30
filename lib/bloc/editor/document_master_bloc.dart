@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/editor/worksheet_creation_mode.dart';
 import 'package:kres_requests2/data/editor/document_filter.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
@@ -11,12 +12,13 @@ import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 
-part 'worksheet_master_event.dart';
-part 'worksheet_master_state.dart';
+part 'document_master_event.dart';
+
+part 'document_master_state.dart';
 
 /// BLoC that manages global state of the [Document]
-class WorksheetMasterBloc
-    extends Bloc<WorksheetMasterEvent, WorksheetMasterState> {
+class DocumentMasterBloc
+    extends Bloc<DocumentMasterEvent, DocumentMasterState> {
   /// Function that returns document save path based on [Document] current
   /// working directory
   final Future<String?> Function(Document, String) savePathChooser;
@@ -25,8 +27,8 @@ class WorksheetMasterBloc
   final DocumentSaver documentSaver;
   final DocumentFilter _documentFilter;
 
-  /// Creates new [WorksheetMasterBloc] instance for [document].
-  WorksheetMasterBloc(
+  /// Creates new [DocumentMasterBloc] instance for [document].
+  DocumentMasterBloc(
     this._document, {
     required this.savePathChooser,
     required this.documentSaver,
@@ -34,8 +36,8 @@ class WorksheetMasterBloc
         super(WorksheetMasterIdleState(_document));
 
   @override
-  Stream<WorksheetMasterState> mapEventToState(
-      WorksheetMasterEvent event) async* {
+  Stream<DocumentMasterState> mapEventToState(
+      DocumentMasterEvent event) async* {
     if (event is WorksheetMasterSaveEvent) {
       yield* _saveDocument(event.changePath, event.popAfterSave);
     } else if (event is WorksheetMasterAddNewWorksheetEvent) {
@@ -47,7 +49,7 @@ class WorksheetMasterBloc
     }
   }
 
-  Stream<WorksheetMasterState> _saveDocument(
+  Stream<DocumentMasterState> _saveDocument(
       bool changePath, bool popAfterSave) async* {
     try {
       final pathChosen = await _saveDocument0(changePath, documentSaver);
@@ -98,25 +100,30 @@ class WorksheetMasterBloc
     return true;
   }
 
-  Stream<WorksheetMasterState> _createNewWorksheet(
+  Stream<DocumentMasterState> _createNewWorksheet(
       WorksheetCreationMode mode) async* {
+    Map<String, dynamic> _buildArguments() => {
+          'document': state.currentDocument,
+          'workingDirectory': state.currentDocument.workingDirectory,
+        };
+
     switch (mode) {
       case WorksheetCreationMode.import:
-        yield WorksheetMasterShowImporterState(
-          state.currentDocument,
-          WorksheetImporterType.requestsImporter,
+        await Modular.to.pushNamed(
+          '/document/import/requests',
+          arguments: _buildArguments(),
         );
         return;
       case WorksheetCreationMode.importCounters:
-        yield WorksheetMasterShowImporterState(
-          state.currentDocument,
-          WorksheetImporterType.countersImporter,
+        await Modular.to.pushNamed(
+          '/document/import/counters',
+          arguments: _buildArguments(),
         );
         return;
       case WorksheetCreationMode.importNative:
-        yield WorksheetMasterShowImporterState(
-          state.currentDocument,
-          WorksheetImporterType.nativeImporter,
+        await Modular.to.pushNamed(
+          '/document/open?pickPages=true',
+          arguments: _buildArguments(),
         );
         return;
       case WorksheetCreationMode.empty:
@@ -125,7 +132,7 @@ class WorksheetMasterBloc
     }
   }
 
-  Stream<WorksheetMasterState> _handleWorksheetAction(
+  Stream<DocumentMasterState> _handleWorksheetAction(
       Worksheet targetWorksheet, WorksheetAction action) async* {
     switch (action) {
       case WorksheetAction.remove:
@@ -139,7 +146,7 @@ class WorksheetMasterBloc
     yield WorksheetMasterIdleState(_document);
   }
 
-  Stream<WorksheetMasterState> _toggleSearchMode(
+  Stream<DocumentMasterState> _toggleSearchMode(
       WorksheetMasterSearchEvent event) async* {
     _documentFilter.setSearchingTest(event.searchText ?? '');
   }

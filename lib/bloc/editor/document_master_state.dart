@@ -1,9 +1,9 @@
-part of 'worksheet_master_bloc.dart';
+part of 'document_master_bloc.dart';
 
 /// Base state of worksheet master BLoC
 @sealed
-abstract class WorksheetMasterState extends Equatable {
-  const WorksheetMasterState._(this.currentDocument);
+abstract class DocumentMasterState extends Equatable {
+  const DocumentMasterState._(this.currentDocument);
 
   /// Currently opened document
   final Document currentDocument;
@@ -19,13 +19,13 @@ abstract class WorksheetMasterState extends Equatable {
 }
 
 /// A state that signals that the current document should be closed
-class WorksheetMasterPopState extends WorksheetMasterState {
+class WorksheetMasterPopState extends DocumentMasterState {
   const WorksheetMasterPopState(Document currentDocument)
       : super._(currentDocument);
 }
 
 /// Default worksheet master state that shows document in a normal mode
-class WorksheetMasterIdleState extends WorksheetMasterState {
+class WorksheetMasterIdleState extends DocumentMasterState {
   static int _updateCounter = 0;
 
   final int _updateId = ++_updateCounter;
@@ -37,7 +37,7 @@ class WorksheetMasterIdleState extends WorksheetMasterState {
 }
 
 /// A state used when document is saving
-class WorksheetMasterSavingState extends WorksheetMasterState {
+class WorksheetMasterSavingState extends DocumentMasterState {
   /// `true` if saving was completed with any result
   final bool completed;
 
@@ -59,30 +59,4 @@ class WorksheetMasterSavingState extends WorksheetMasterState {
         error,
         stackTrace,
       ];
-}
-
-/// Describes document importer types
-enum WorksheetImporterType {
-  /// Imports page from request list prepared in the specified format
-  requestsImporter,
-
-  /// Opens previously document saved in the native format to separate pages
-  nativeImporter,
-
-  /// Imports a list of counters in a separate page
-  countersImporter,
-}
-
-/// State that triggers opening importer wizard
-class WorksheetMasterShowImporterState extends WorksheetMasterState {
-  /// Importer type
-  final WorksheetImporterType importerType;
-
-  const WorksheetMasterShowImporterState(
-    Document currentDocument,
-    this.importerType,
-  ) : super._(currentDocument);
-
-  @override
-  List<Object?> get props => [...super.props, importerType];
 }

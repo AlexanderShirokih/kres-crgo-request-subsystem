@@ -3,104 +3,82 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/bloc/editor/worksheet_master_bloc.dart';
-import 'package:kres_requests2/domain/counters_importer.dart';
-import 'package:kres_requests2/domain/editor/document_saver.dart';
+import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
-import 'package:kres_requests2/repo/worksheet_importer_service.dart';
-import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/editor/widgets/worksheet_editor_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view/worksheet_config_view.dart';
-import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
-import 'package:kres_requests2/screens/importer/native_import_screen.dart';
-import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 
 import 'widgets/worksheet_page_controller.dart';
 
 /// Screen that manages whole document state
+/// Requires [DocumentMasterBloc] to be injected in the widget ancestor.
 class DocumentEditorScreen extends StatelessWidget {
-  final Document document;
-  final DocumentSaver documentSaver;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
-  DocumentEditorScreen({
-    required this.document,
-    required this.documentSaver,
-  });
-
   @override
-  Widget build(BuildContext context) => BlocProvider(
-        create: (_) => WorksheetMasterBloc(
-          document,
-          documentSaver: documentSaver,
-          savePathChooser: showSaveDialog,
-        ),
-        child: Scaffold(
-          key: _scaffoldKey,
-          endDrawer: _buildEndDrawer(),
-          appBar: _buildAppBar(),
-          body: BlocConsumer<WorksheetMasterBloc, WorksheetMasterState>(
-            listener: (context, state) {
-              if (state is WorksheetMasterPopState) {
-                Navigator.pop(context);
-              } else if (state is WorksheetMasterSavingState) {
-                _handleSavingState(context, state);
-              } else if (state is WorksheetMasterShowImporterState) {
-                _onShowImporterScreen(context, state);
-              }
-            },
-            builder: (context, state) {
-              // FIXME: BROKEN
-              // if (state is WorksheetMasterSearchingState) {
-              //   return Stack(children: [
-              //     Positioned.fill(child: _buildBody(context, state)),
-              //     Align(
-              //       alignment: Alignment.topRight,
-              //       child: Padding(
-              //         padding: const EdgeInsets.only(top: 12.0, right: 12.0),
-              //         child: SearchBox(
-              //           textWatcher: (String searchText) => context
-              //               .read<WorksheetMasterBloc>()
-              //               .add(WorksheetMasterSearchEvent(searchText)),
-              //         ),
-              //       ),
-              //     ),
-              //   ]);
-              // } else {
-              return Stack(children: [
-                Positioned.fill(child: _buildBody(context, state)),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 36.0),
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(8.0),
-                          bottomLeft: Radius.circular(8.0),
-                        ),
-                        color: Colors.white,
+  Widget build(BuildContext context) => Scaffold(
+        key: _scaffoldKey,
+        endDrawer: _buildEndDrawer(),
+        appBar: _buildAppBar(),
+        body: BlocConsumer<DocumentMasterBloc, DocumentMasterState>(
+          listener: (context, state) {
+            if (state is WorksheetMasterPopState) {
+              Navigator.pop(context);
+            } else if (state is WorksheetMasterSavingState) {
+              _handleSavingState(context, state);
+            }
+          },
+          builder: (context, state) {
+            // FIXME: BROKEN
+            // if (state is WorksheetMasterSearchingState) {
+            //   return Stack(children: [
+            //     Positioned.fill(child: _buildBody(context, state)),
+            //     Align(
+            //       alignment: Alignment.topRight,
+            //       child: Padding(
+            //         padding: const EdgeInsets.only(top: 12.0, right: 12.0),
+            //         child: SearchBox(
+            //           textWatcher: (String searchText) => context
+            //               .read<WorksheetMasterBloc>()
+            //               .add(WorksheetMasterSearchEvent(searchText)),
+            //         ),
+            //       ),
+            //     ),
+            //   ]);
+            // } else {
+            return Stack(children: [
+              Positioned.fill(child: _buildBody(context, state)),
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 36.0),
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(8.0),
+                        bottomLeft: Radius.circular(8.0),
                       ),
-                      child: IconButton(
-                        icon: Icon(Icons.menu_open),
-                        onPressed: () {
-                          _scaffoldKey.currentState!.openEndDrawer();
-                        },
-                      ),
+                      color: Colors.white,
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.menu_open),
+                      onPressed: () {
+                        _scaffoldKey.currentState!.openEndDrawer();
+                      },
                     ),
                   ),
-                )
-              ]);
-              // }
-            },
-          ),
+                ),
+              )
+            ]);
+            // }
+          },
         ),
       );
 
-  Widget _buildBody(BuildContext context, WorksheetMasterState state) {
+  Widget _buildBody(BuildContext context, DocumentMasterState state) {
     final document = state.currentDocument;
     return WillPopScope(
       onWillPop: () => _showExitConfirmationDialog(document, context),
@@ -113,9 +91,10 @@ class DocumentEditorScreen extends StatelessWidget {
           ),
           Expanded(
             child: Container(
-                color: Color(0xFFE5E5E5),
-                height: double.maxFinite,
-                child: _buildEditor(document)),
+              color: Color(0xFFE5E5E5),
+              height: double.maxFinite,
+              child: _buildEditor(document),
+            ),
           ),
         ],
       ),
@@ -145,7 +124,7 @@ class DocumentEditorScreen extends StatelessWidget {
   }
 
   Widget _buildEndDrawer() =>
-      BlocBuilder<WorksheetMasterBloc, WorksheetMasterState>(
+      BlocBuilder<DocumentMasterBloc, DocumentMasterState>(
         builder: (context, state) => Container(
           width: 420.0,
           child: Drawer(
@@ -172,7 +151,7 @@ class DocumentEditorScreen extends StatelessWidget {
         ),
         title: Builder(
           builder: (context) => StreamBuilder<String>(
-            stream: context.watch<WorksheetMasterBloc>().state.documentTitle,
+            stream: context.watch<DocumentMasterBloc>().state.documentTitle,
             builder: (_, snap) => Text(
                 'Редактирование - ${snap.data ?? "Несохранённый документ"}'),
           ),
@@ -182,7 +161,7 @@ class DocumentEditorScreen extends StatelessWidget {
             icon: FaIcon(FontAwesomeIcons.search),
             tooltip: 'Поиск',
             onPressed: (context) => context
-                .read<WorksheetMasterBloc>()
+                .read<DocumentMasterBloc>()
                 .add(WorksheetMasterSearchEvent()),
           ),
           const SizedBox(width: 24.0),
@@ -190,7 +169,7 @@ class DocumentEditorScreen extends StatelessWidget {
             icon: FaIcon(FontAwesomeIcons.save),
             tooltip: 'Сохранить',
             onPressed: (context) => context
-                .read<WorksheetMasterBloc>()
+                .read<DocumentMasterBloc>()
                 .add(WorksheetMasterSaveEvent()),
           ),
           const SizedBox(width: 24.0),
@@ -198,7 +177,7 @@ class DocumentEditorScreen extends StatelessWidget {
             icon: FaIcon(FontAwesomeIcons.solidSave),
             tooltip: 'Сохранить как (копия)',
             onPressed: (context) => context
-                .read<WorksheetMasterBloc>()
+                .read<DocumentMasterBloc>()
                 .add(WorksheetMasterSaveEvent(changePath: true)),
           ),
           const SizedBox(width: 24.0),
@@ -209,7 +188,7 @@ class DocumentEditorScreen extends StatelessWidget {
               onPressed: () => Modular.to.pushNamed(
                 'preview',
                 arguments:
-                    context.read<WorksheetMasterBloc>().state.currentDocument,
+                    context.read<DocumentMasterBloc>().state.currentDocument,
               ),
             ),
           ),
@@ -258,71 +237,6 @@ class DocumentEditorScreen extends StatelessWidget {
       showSnackbar('Сохранение...', const Duration(seconds: 5));
     }
   }
-
-  void _onShowImporterScreen(
-      BuildContext context, WorksheetMasterShowImporterState state) async {
-    final workingDirectory = state.currentDocument.workingDirectory;
-    switch (state.importerType) {
-      case WorksheetImporterType.requestsImporter:
-        // TODO: Replace with modular
-        _navigateToImporter(
-          context,
-          RequestsImporterScreen(
-            initialDirectory: workingDirectory,
-            targetDocument: state.currentDocument,
-            requestsRepository: Modular.get(),
-          ),
-        );
-        break;
-      case WorksheetImporterType.countersImporter:
-      // TODO: Replace with modular
-        _navigateToImporter(
-          context,
-          CountersImporterScreen(
-            initialDirectory: workingDirectory,
-            targetDocument: state.currentDocument,
-            importerRepository: CountersImporterService(
-              importer: CountersImporter(),
-              tableChooser: (tables) => showDialog<String>(
-                context: context,
-                builder: (_) => TableSelectionDialog(tables),
-              ),
-            ),
-          ),
-        );
-        break;
-      case WorksheetImporterType.nativeImporter:
-        _navigateToImporter(
-          context,
-          NativeImporterScreen(
-            initialDirectory: workingDirectory,
-            targetDocument: state.currentDocument,
-            importerRepository:
-                NativeImporterService(Modular.get(), (tables) async {
-              final worksheets = await showDialog<List<Worksheet>>(
-                context: context,
-                builder: (_) => SelectWorksheetsDialog(tables),
-              );
-              return worksheets!;
-            }),
-          ),
-        );
-        break;
-    }
-  }
-
-  Future _navigateToImporter(BuildContext context, Widget importerScreen) =>
-      Navigator.push<Document>(
-        context,
-        MaterialPageRoute(builder: (_) => importerScreen),
-      ).then(
-        (resultDoc) {
-          throw UnimplementedError();
-          // context
-          //   .read<WorksheetMasterBloc>()
-          //   .add(WorksheetMasterImportResultsEvent(resultDoc!));
-        },
-      );
 
   Future<bool> _showExitConfirmationDialog(
       Document document, BuildContext context) async {

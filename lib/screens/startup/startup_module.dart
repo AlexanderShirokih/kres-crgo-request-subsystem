@@ -10,7 +10,6 @@ import 'package:kres_requests2/data/request_processor.dart';
 import 'package:kres_requests2/data/validators.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/repository/recent_documents_repository.dart';
-import 'package:kres_requests2/repo/requests_service.dart';
 import 'package:kres_requests2/screens/editor/document_module.dart';
 import 'package:kres_requests2/screens/settings/settings_module.dart';
 import 'package:kres_requests2/screens/startup/startup_screen.dart';
@@ -22,12 +21,12 @@ class StartupModule extends Module {
         Bind.factory<ProcessExecutor>(
           (i) => JavaProcessExecutor(settingsRepository: i()),
         ),
-        Bind.factory((i) => RequestsService(
-              RequestProcessorImpl(
-                i(),
-                JsonDocumentSaver(saveLegacyInfo: false),
-              ),
-            )),
+        Bind.factory<AbstractRequestProcessor>(
+          (i) => RequestProcessorImpl(
+            i(),
+            JsonDocumentSaver(saveLegacyInfo: false),
+          ),
+        ),
         // Employee-related binds
         Bind.lazySingleton<Dao<Employee, EmployeeEntity>>(
           (i) => EmployeeDao(i(), i()),

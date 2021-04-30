@@ -1,86 +1,56 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/repo/worksheet_importer_service.dart';
 import 'package:kres_requests2/screens/common.dart';
 
-/// Common screen for all importer types
-abstract class BaseImporterScreen extends StatelessWidget {
+/// Page used to show document import wizard
+/// Requires [ImporterBloc] to be injected
+abstract class ImporterScreen extends StatelessWidget {
   /// Page title
   final String title;
 
-  /// Repository for importing objects
-  final WorksheetImporterService importerRepository;
-
-  /// Target document to be inflated with importer results.
-  /// If not present then new document will be created
-  final Document? targetDocument;
-
-  /// Builder for titling screen
-  final WidgetBuilder mainWidgetBuilder;
-
-  /// Path for opening. If present document will be opened from this path.
-  /// Otherwise file chooser will be opened.
-  final File? openPath;
-
-  const BaseImporterScreen({
+  const ImporterScreen({
     required this.title,
-    required this.importerRepository,
-    required this.targetDocument,
-    required this.mainWidgetBuilder,
-    this.openPath,
   });
 
-  /// Creates proper file chooser
-  Future<String?> showOpenDialog(BuildContext context);
+  /// Builder for titling screen
+  Widget buildIdleView(BuildContext context);
 
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: Text(title),
         ),
-        body: BlocProvider(
-          create: (_) => ImporterBloc(
-            targetDocument: targetDocument,
-            filePath: openPath,
-            importerRepository: importerRepository,
-            fileChooser: () => showOpenDialog(context),
-          ),
-          child: Builder(
-            builder: (ctx) => BlocConsumer<ImporterBloc, ImporterState>(
-              bloc: ctx.read<ImporterBloc>(),
-              builder: (_, state) {
-                if (state is ImporterLoadingState) {
-                  return LoadingView("Загрузка файла ${state.path}");
-                } else if (state is ImportErrorState) {
-                  return ErrorView(
-                    errorDescription: state.error,
-                    stackTrace: state.stackTrace,
-                  );
-                } else if (state is ImporterDoneState &&
-                    state.importResult == ImportResult.documentEmpty) {
-                  return _EmptyStateView();
-                } else {
-                  return mainWidgetBuilder(context);
-                }
-              },
-              listener: (context, state) {
-                if (state is ImporterDoneState) {
-                  Navigator.pop(context, state.document);
-                } else if (state is ImporterModuleMissingState) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      duration: Duration(seconds: 6),
-                      content:
-                          Text('Ошибка: Модуль экспорта файлов отсутcтвует'),
-                    ),
-                  );
-                }
-              },
-            ),
+        body: Builder(
+          builder: (ctx) => BlocConsumer<ImporterBloc, ImporterState>(
+            bloc: ctx.read<ImporterBloc>(),
+            builder: (_, state) {
+              if (state is ImporterLoadingState) {
+                return LoadingView("Загрузка файла ${state.path}");
+              } else if (state is ImportErrorState) {
+                return ErrorView(
+                  errorDescription: state.error,
+                  stackTrace: state.stackTrace,
+                );
+              } else if (state is ImporterDoneState &&
+                  state.importResult == ImportResult.documentEmpty) {
+                return _EmptyStateView();
+              } else {
+                return buildIdleView(context);
+              }
+            },
+            listener: (context, state) {
+              if (state is ImporterDoneState) {
+                Navigator.pop(context, state.document);
+              } else if (state is ImporterModuleMissingState) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    duration: Duration(seconds: 6),
+                    content: Text('Ошибка: Модуль экспорта файлов отсутcтвует'),
+                  ),
+                );
+              }
+            },
           ),
         ),
       );

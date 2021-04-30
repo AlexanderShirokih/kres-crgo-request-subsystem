@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/bloc/preview/preview_bloc.dart';
-import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/preview/print_dialog.dart';
 
@@ -13,39 +12,30 @@ import 'widgets/worksheet_card_group.dart';
 
 /// The page responsible for preparing document worksheets for printing or
 /// exporting to external formats
+/// Requires [PreviewBloc] to be injected in the widget tree.
 class DocumentPreviewScreen extends StatelessWidget {
-  /// Currently opened document
-  final Document document;
-
-  const DocumentPreviewScreen({
-    required this.document,
-  });
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Вывод документа'),
       ),
-      body: BlocProvider(
-        create: (_) => PreviewBloc(document),
-        child: BlocBuilder<PreviewBloc, PreviewState>(
-          builder: (context, state) {
-            if (state is EmptyDocumentState) {
-              return Center(
-                child: Text(
-                  'Документ пуст',
-                  style: Theme.of(context).textTheme.headline4!.copyWith(
-                      color: Theme.of(context).textTheme.caption!.color),
-                ),
-              );
-            } else if (state is ShowDocumentState) {
-              return Builder(builder: (ctx) => _buildPage(ctx, state));
-            } else {
-              return LoadingView('...');
-            }
-          },
-        ),
+      body: BlocBuilder<PreviewBloc, PreviewState>(
+        builder: (context, state) {
+          if (state is EmptyDocumentState) {
+            return Center(
+              child: Text(
+                'Документ пуст',
+                style: Theme.of(context).textTheme.headline4!.copyWith(
+                    color: Theme.of(context).textTheme.caption!.color),
+              ),
+            );
+          } else if (state is ShowDocumentState) {
+            return Builder(builder: (ctx) => _buildPage(ctx, state));
+          } else {
+            return LoadingView('...');
+          }
+        },
       ),
     );
   }

@@ -1,46 +1,15 @@
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/repo/requests_service.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 
-/// Request import wizard
-class RequestsImporterScreen extends BaseImporterScreen {
-  // TODO: Load initial directory from preferences (lastWorkspaceDirectory)
-  final String? initialDirectory;
-
-  RequestsImporterScreen({
-    required Document targetDocument,
-    required RequestsService requestsRepository,
-    this.initialDirectory,
-  }) : super(
-          title: 'Импорт заявок',
-          targetDocument: targetDocument,
-          mainWidgetBuilder: (_) => _RequestsImporterIdleView(),
-          importerRepository: requestsRepository,
-        );
+/// Mega-billing XLS request files import wizard
+class RequestsImporterScreen extends ImporterScreen {
+  const RequestsImporterScreen() : super(title: 'Импорт заявок');
 
   @override
-  Future<String?> showOpenDialog(BuildContext context) async {
-    return await openFile(
-      initialDirectory: initialDirectory,
-      confirmButtonText: 'Открыть',
-      acceptedTypeGroups: [
-        XTypeGroup(
-          label: "Файлы Excel 97-2003",
-          extensions: ["xls"],
-        )
-      ],
-    ).then((file) => file?.path);
-  }
-}
-
-class _RequestsImporterIdleView extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
+  Widget buildIdleView(BuildContext context) {
     return Center(
       heightFactor: 4.0,
       child: Column(

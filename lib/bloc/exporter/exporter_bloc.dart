@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/request_processor.dart';
+import 'package:kres_requests2/domain/exchange/requests_export_service.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/repo/requests_service.dart';
 import 'package:kres_requests2/repo/settings_repository.dart';
 
 part 'exporter_event.dart';
@@ -26,7 +26,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
   final ExportFormat? exportFormat;
 
   /// Requests repository for handling export/print actions
-  final RequestsService requestsService;
+  final RequestsExportService requestsService;
 
   /// Settings repository for updating preferred printer name
   final SettingsRepository settingsRepository;

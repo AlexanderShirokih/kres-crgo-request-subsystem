@@ -1,15 +1,11 @@
 import 'package:kres_requests2/data/request_processor.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/repo/worksheet_importer_service.dart';
-
-/// Exception class used when request processor module is missing
-class ImporterProcessorMissingException implements Exception {}
 
 /// A class responsible for exporting and printing documents
-class RequestsService extends WorksheetImporterService {
+class RequestsExportService {
   final AbstractRequestProcessor _requestProcessor;
 
-  RequestsService(this._requestProcessor);
+  RequestsExportService(this._requestProcessor);
 
   /// Checks that the request processor is ready for doing work
   Future<bool> isAvailable() => _requestProcessor.isAvailable();
@@ -29,15 +25,6 @@ class RequestsService extends WorksheetImporterService {
   /// saves it at the [destinationPath]
   Future<void> exportToXlsx(Document document, String destinationPath) =>
       _requestProcessor.exportToXlsx(document, destinationPath);
-
-  /// Imports document previously exported to XLS by Mega-billing app
-  @override
-  Future<Document?> importDocument(String filePath) async {
-    final isExists = await isAvailable();
-    if (!isExists) throw ImporterProcessorMissingException();
-
-    return await _requestProcessor.importRequests(filePath);
-  }
 
   /// Gets all available printers that can handle document printing
   Future<List<String>> listPrinters() => _requestProcessor.listPrinters();

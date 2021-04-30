@@ -39,7 +39,7 @@ class RequestEditorBloc extends Bloc<RequestEditorEvent, RequestEditorState> {
     required this.initial,
     required WorksheetEditor worksheetEditor,
     required this.requestValidator,
-  })   : worksheetEditor = worksheetEditor,
+  })  : worksheetEditor = worksheetEditor,
         _requestController = StreamedRepositoryController(
           RepositoryController(
             RequestEntityPersistedBuilder(),

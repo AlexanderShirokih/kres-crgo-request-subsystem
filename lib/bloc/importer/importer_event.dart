@@ -4,13 +4,8 @@ abstract class ImporterEvent extends Equatable {
   const ImporterEvent();
 }
 
-class InitialEvent extends ImporterEvent {
-  const InitialEvent();
-
-  @override
-  List<Object> get props => [];
-}
-
+/// Used to begin importing file at [filePath] into the document.
+/// If [filePath] is not set file chooser will be opened
 class ImportEvent extends ImporterEvent {
   final File? filePath;
 
@@ -20,11 +15,12 @@ class ImportEvent extends ImporterEvent {
   List<Object?> get props => [filePath];
 }
 
-class ImportErrorEvent extends ImporterEvent {
+/// Used internally to signal an error
+class _ImportErrorEvent extends ImporterEvent {
   final Object error;
   final StackTrace? stackTrace;
 
-  const ImportErrorEvent(this.error, this.stackTrace);
+  const _ImportErrorEvent(this.error, this.stackTrace);
 
   @override
   List<Object?> get props => [error, stackTrace];

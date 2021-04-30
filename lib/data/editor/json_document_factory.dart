@@ -16,9 +16,9 @@ class JsonDocumentFactory implements DocumentFactory {
   Document createDocument() {
     final document = Document(
       savePath: savePath,
-      updateDate: DateTime.fromMillisecondsSinceEpoch(
-        _data['updateDate'] ?? DateTime.now(),
-      ),
+      updateDate: _data['updateDate'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(_data['updateDate'])
+          : DateTime.now(),
     );
 
     for (final worksheet in (_data['worksheets'] as List<dynamic>)) {
@@ -46,13 +46,17 @@ class JsonDocumentFactory implements DocumentFactory {
       chiefEmployee: ws['chiefEmployee'] == null
           ? null
           : _createEmployee(ws['chiefEmployee']),
-      membersEmployee: (ws['membersEmployee'] as List<dynamic>)
-          .map((e) => _createEmployee(e))
-          .toSet(),
+      membersEmployee: ws['membersEmployee'] == null
+          ? {}
+          : (ws['membersEmployee'] as List<dynamic>)
+              .map((e) => _createEmployee(e))
+              .toSet(),
       targetDate: ws['date'] == null
           ? null
           : DateTime.fromMillisecondsSinceEpoch(ws['date']),
-      workTypes: (ws['workTypes'] as List<dynamic>).cast<String>().toSet(),
+      workTypes: ws['workTypes'] == null
+          ? null
+          : (ws['workTypes'] as List<dynamic>).cast<String>().toSet(),
     );
 
     for (final request in (ws['requests'] as List<dynamic>)) {
@@ -82,8 +86,8 @@ class JsonDocumentFactory implements DocumentFactory {
       final String? line = lineRegExp.firstMatch(additional)?.group(1)?.trim();
       additional = additional.replaceAll(lineRegExp, '');
 
-      final pillarRegExp =
-          RegExp(r'(оп|опора|Опора)[\:\.\s]{0,2}(\d{1,3}([\\\/][\dА-я]{1,2})?)');
+      final pillarRegExp = RegExp(
+          r'(оп|опора|Опора)[\:\.\s]{0,2}(\d{1,3}([\\\/][\dА-я]{1,2})?)');
 
       final String? pillar =
           pillarRegExp.firstMatch(additional)?.group(2)?.trim();
@@ -107,8 +111,8 @@ class JsonDocumentFactory implements DocumentFactory {
       phone = data['phone'];
     }
 
-    if (data['c_point'] != null) {
-      connectionPoint = _createConnectionPoint(data['c_point']);
+    if (data['connectionPoint'] != null) {
+      connectionPoint = _createConnectionPoint(data['connectionPoint']);
     }
 
     editor.addRequest(

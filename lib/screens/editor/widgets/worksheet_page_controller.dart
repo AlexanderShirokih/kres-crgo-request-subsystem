@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/bloc/editor/worksheet_master_bloc.dart';
+import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
@@ -36,7 +36,7 @@ class WorksheetsPageController extends StatelessWidget {
                   return index == worksheets.length
                       ? AddNewWorkSheetTabView(
                           (worksheetCreationMode) =>
-                              context.read<WorksheetMasterBloc>().add(
+                              context.read<DocumentMasterBloc>().add(
                                     WorksheetMasterAddNewWorksheetEvent(
                                         worksheetCreationMode),
                                   ),
@@ -68,7 +68,7 @@ class WorksheetsPageController extends StatelessWidget {
           //     ? state.filteredItems[current]?.length ?? 0:
           0,
       isActive: current == active,
-      onSelect: () => context.read<WorksheetMasterBloc>().add(
+      onSelect: () => context.read<DocumentMasterBloc>().add(
           WorksheetMasterWorksheetActionEvent(
               current, WorksheetAction.makeActive)),
       onRemove: canRemove
@@ -83,12 +83,12 @@ class WorksheetsPageController extends StatelessWidget {
                   ),
                 ).then((result) {
                   if (result)
-                    context.read<WorksheetMasterBloc>().add(
+                    context.read<DocumentMasterBloc>().add(
                         WorksheetMasterWorksheetActionEvent(
                             current, WorksheetAction.remove));
                 });
               } else {
-                context.read<WorksheetMasterBloc>().add(
+                context.read<DocumentMasterBloc>().add(
                     WorksheetMasterWorksheetActionEvent(
                         current, WorksheetAction.remove));
               }

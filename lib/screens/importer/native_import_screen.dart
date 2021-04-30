@@ -1,48 +1,20 @@
-import 'dart:io';
-
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
-import 'package:kres_requests2/repo/worksheet_importer_service.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/importer/base_importer_screen.dart';
 
+/// TODO: To be refactored
 /// The page responsible for opening native file formats
-class NativeImporterScreen extends BaseImporterScreen {
-  final NativeImporterService importerRepository;
-  final String? initialDirectory;
-  final Document? targetDocument;
-
-  NativeImporterScreen({
-    required this.importerRepository,
-    this.targetDocument,
-    this.initialDirectory,
-    File? openPath,
-  }) : super(
+class NativeImporterScreen extends ImporterScreen {
+  NativeImporterScreen()
+      : super(
           title: 'Импорт файла',
-          importerRepository: importerRepository,
-          targetDocument: targetDocument,
-          mainWidgetBuilder: (_) => LoadingView('Ожидание открытия файла...'),
-          openPath: openPath,
         );
 
   @override
-  Future<String?> showOpenDialog(BuildContext context) async {
-    final res = await openFile(
-      initialDirectory: initialDirectory,
-      confirmButtonText: 'Открыть',
-      acceptedTypeGroups: [
-        XTypeGroup(
-          label: "Документ заявок",
-          extensions: ["json"],
-        )
-      ],
-    );
-
-    return res?.path;
-  }
+  Widget buildIdleView(BuildContext context) =>
+      LoadingView('Ожидание открытия файла...');
 }
 
 class SelectWorksheetsDialog extends StatefulWidget {

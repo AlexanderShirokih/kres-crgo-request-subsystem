@@ -1,13 +1,13 @@
-part of 'worksheet_master_bloc.dart';
+part of 'document_master_bloc.dart';
 
-/// Base abstract event for [WorksheetMasterBloc]
+/// Base abstract event for [DocumentMasterBloc]
 @sealed
-abstract class WorksheetMasterEvent extends Equatable {
-  const WorksheetMasterEvent._();
+abstract class DocumentMasterEvent extends Equatable {
+  const DocumentMasterEvent._();
 }
 
 /// Event that used when user wants to save current document.
-class WorksheetMasterSaveEvent extends WorksheetMasterEvent {
+class WorksheetMasterSaveEvent extends DocumentMasterEvent {
   /// If `true` 'Save as' behaviour will be used.
   final bool changePath;
 
@@ -24,7 +24,7 @@ class WorksheetMasterSaveEvent extends WorksheetMasterEvent {
 }
 
 /// Used to add a page (worksheet) and optionally open importer wizard
-class WorksheetMasterAddNewWorksheetEvent extends WorksheetMasterEvent {
+class WorksheetMasterAddNewWorksheetEvent extends DocumentMasterEvent {
   final WorksheetCreationMode mode;
 
   const WorksheetMasterAddNewWorksheetEvent(this.mode) : super._();
@@ -35,7 +35,7 @@ class WorksheetMasterAddNewWorksheetEvent extends WorksheetMasterEvent {
 
 /// Event used to toggle searching mode with some searching text
 /// If [searchText] is `null` search mode will be disabled
-class WorksheetMasterSearchEvent extends WorksheetMasterEvent {
+class WorksheetMasterSearchEvent extends DocumentMasterEvent {
   final String? searchText;
 
   const WorksheetMasterSearchEvent([this.searchText]) : super._();
@@ -54,7 +54,7 @@ enum WorksheetAction {
 }
 
 /// Initiates an action on the target worksheet
-class WorksheetMasterWorksheetActionEvent extends WorksheetMasterEvent {
+class WorksheetMasterWorksheetActionEvent extends DocumentMasterEvent {
   /// Selected worksheet
   final Worksheet targetWorksheet;
 

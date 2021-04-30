@@ -52,7 +52,8 @@ class JavaPathChooserScreen extends StatelessWidget {
     );
   }
 
-  Widget _updateJavaButton(BuildContext context, String directory) => ElevatedButton(
+  Widget _updateJavaButton(BuildContext context, String directory) =>
+      ElevatedButton(
         onPressed: () => _showJavaPathSelector(directory).then((newPath) {
           if (newPath != null) {
             context.read<JavaPathChooserBloc>().add(UpdateJavaPath(newPath));
