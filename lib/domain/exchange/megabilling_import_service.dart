@@ -1,7 +1,7 @@
 import 'package:kres_requests2/data/request_processor.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 
-import 'document_importer_service.dart';
+import 'document_import_service.dart';
 
 /// Exception class used when request processor module is missing
 class ImporterProcessorMissingException implements Exception {}

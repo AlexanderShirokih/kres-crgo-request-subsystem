@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:kres_requests2/domain/exchange/document_importer_service.dart';
+import 'package:kres_requests2/domain/exchange/document_import_service.dart';
 import 'package:kres_requests2/domain/exchange/file_chooser.dart';
 import 'package:kres_requests2/domain/exchange/megabilling_import_service.dart';
 import 'package:kres_requests2/domain/models/document.dart';
@@ -11,6 +11,7 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 part 'importer_event.dart';
+
 part 'importer_state.dart';
 
 /// BLoС that controls importing worksheets to the existing or a new document
@@ -30,8 +31,11 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
     required this.importerService,
     required this.fileChooser,
     File? filePath,
+    bool startWithPicker = false,
   }) : super(ImporterInitialState()) {
-    add(ImportEvent(filePath: filePath));
+    if (startWithPicker || filePath != null) {
+      add(ImportEvent(filePath: filePath));
+    }
   }
 
   @override

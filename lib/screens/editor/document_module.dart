@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-import 'package:kres_requests2/domain/counters_importer.dart';
-import 'package:kres_requests2/domain/exchange/document_importer_service.dart';
+import 'package:kres_requests2/domain/exchange/counters_import_service.dart';
 import 'package:kres_requests2/domain/exchange/file_chooser.dart';
 import 'package:kres_requests2/domain/exchange/megabilling_import_service.dart';
+import 'package:kres_requests2/domain/exchange/native_import_service.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/screens/editor/editor_module.dart';
 import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
+import 'package:kres_requests2/screens/importer/dialogs/table_chooser_dialog.dart';
+import 'package:kres_requests2/screens/importer/dialogs/worksheets_chooser_dialog.dart';
 import 'package:kres_requests2/screens/importer/native_import_screen.dart';
 import 'package:kres_requests2/screens/importer/requests_importer_screen.dart';
 
@@ -23,18 +25,16 @@ class DocumentModule extends Module {
         final Map<String, dynamic> data = args.data ?? {};
         return BlocProvider(
           create: (context) => ImporterBloc(
+            startWithPicker: true,
             filePath: data['filePath'],
             targetDocument: data['document'],
             importerService: NativeImporterService(
               Modular.get(),
-              tableChooser: (args.params['pickPages'] ?? false)
-                  ? (tables) async {
-                      final worksheets = await showDialog<List<Worksheet>>(
+              tableChooser: ((args.queryParams['pickPages'] == 'true'))
+                  ? (tables) => showDialog<List<Worksheet>>(
                         context: context,
-                        builder: (_) => SelectWorksheetsDialog(tables),
-                      );
-                      return worksheets!;
-                    }
+                        builder: (_) => WorksheetsChooserDialog(tables),
+                      ).then((worksheets) => worksheets ?? <Worksheet>[])
                   : null,
             ),
             fileChooser: FileChooser.forType(
@@ -70,11 +70,10 @@ class DocumentModule extends Module {
         return BlocProvider(
           create: (context) => ImporterBloc(
             targetDocument: data['document'],
-            importerService: CountersImporterService(
-              importer: CountersImporter(),
+            importerService: CountersImportService(
               tableChooser: (tables) => showDialog<String>(
                 context: context,
-                builder: (_) => TableSelectionDialog(tables),
+                builder: (_) => TableChooserDialog(tables),
               ),
             ),
             fileChooser: FileChooser.forType(
@@ -82,7 +81,7 @@ class DocumentModule extends Module {
               data['workingDirectory'],
             ),
           ),
-          child: CountersImporterScreen(),
+          child: CountersImportScreen(),
         );
       },
     ),

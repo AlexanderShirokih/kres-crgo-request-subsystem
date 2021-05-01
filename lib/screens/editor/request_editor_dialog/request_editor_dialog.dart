@@ -7,8 +7,8 @@ import 'package:kres_requests2/bloc/editor/request_editor_dialog/request_editor_
 import 'package:kres_requests2/data/validators.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/domain.dart';
-import 'package:kres_requests2/domain/utils.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/domain/utils.dart';
 
 /// Dialog for editing [RequestEntity].
 class RequestEditorDialog extends StatelessWidget {
@@ -110,10 +110,10 @@ class _RequestEditorView extends HookWidget {
             children: [
               _createMainRow(id, requestType),
               const SizedBox(height: 8.0),
-              _createInputField("ФИО", "Поле ФИО не должно быть пустым", name),
+              _createInputField("ФИО", "ФИО не должно быть пустым", name),
               const SizedBox(height: 8.0),
               _createInputField(
-                  "Адрес", "Поле адреса не должно быть пустым", address),
+                  "Адрес", "Адрес не должен быть пустым", address),
               const SizedBox(height: 8.0),
               _createPhoneAndConnectionPointRow(phone, tp, line, pillar),
               const SizedBox(height: 28),

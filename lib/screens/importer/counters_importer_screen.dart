@@ -5,8 +5,8 @@ import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
 
 import 'base_importer_screen.dart';
 
-class CountersImporterScreen extends ImporterScreen {
-  CountersImporterScreen()
+class CountersImportScreen extends ImporterScreen {
+  CountersImportScreen()
       : super(
           title: 'Импорт списка счетчиков на замену',
         );
@@ -19,7 +19,7 @@ class CountersImporterScreen extends ImporterScreen {
           children: [
             Text(
               '1. Подготовьте отчёт со списком счётчиков в формате XLSX (Excel 2007-365).\n'
-              '2. Расположение данных в колонках должно соответствовать примеру\n'
+              '2. Расположите данных в колонках согласно примеру\n'
               '3. Нажмите Открыть отчёт и выберите сохранённый файл',
               style: Theme.of(context).textTheme.headline4,
             ),
@@ -28,9 +28,7 @@ class CountersImporterScreen extends ImporterScreen {
             const SizedBox(height: 42.0),
             ElevatedButton.icon(
               icon: FaIcon(FontAwesomeIcons.fileExcel),
-              label: Text(
-                'Открыть отчёт',
-              ),
+              label: Text('Открыть отчёт'),
               onPressed: () => context.read<ImporterBloc>().add(ImportEvent()),
             )
           ],
@@ -38,30 +36,4 @@ class CountersImporterScreen extends ImporterScreen {
       );
 }
 
-class TableSelectionDialog extends StatelessWidget {
-  final List<String> choices;
 
-  const TableSelectionDialog(this.choices);
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Выберите таблицу для импорта'),
-      content: SizedBox(
-        width: 300.0,
-        height: 440.0,
-        child: ListView(
-          children: choices
-              .map(
-                (e) => ListTile(
-                  leading: FaIcon(FontAwesomeIcons.table),
-                  title: Text(e),
-                  onTap: () => Navigator.pop(context, e),
-                ),
-              )
-              .toList(),
-        ),
-      ),
-    );
-  }
-}

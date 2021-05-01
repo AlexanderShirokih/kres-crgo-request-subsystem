@@ -1,24 +1,38 @@
 import 'dart:io';
 
-import 'package:kres_requests2/domain/importer_exception.dart';
-import 'package:kres_requests2/domain/models/request_type.dart';
-import 'package:kres_requests2/domain/models/counter_info.dart';
-import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
-import 'controller/worksheet_editor.dart';
+import '../models.dart';
+import 'document_import_service.dart';
+import 'import_exception.dart';
 
 typedef TableChooser = Future<String?> Function(List<String>);
 
-class CountersImporter {
-  const CountersImporter();
+/// Service responsible for importing requests from XLSX data
+class CountersImportService implements DocumentImporterService {
+  /// Function for choosing the table from tables list
+  final TableChooser tableChooser;
 
-  Future<void> importAsRequestsList(
-    String filePath,
-    Document targetDocument,
-    TableChooser chooser,
-  ) async {
+  const CountersImportService({
+    required this.tableChooser,
+  });
+
+  @override
+  Future<Document?> importDocument(String filePath) async {
+    final document = await _importAsRequestsList(filePath, tableChooser);
+
+    if (document == null || document.currentIsEmpty) {
+      return null;
+    }
+
+    return document;
+  }
+
+  Future<Document?> _importAsRequestsList(
+      String filePath, TableChooser chooser) async {
+    final document = Document(updateDate: DateTime.now());
+
     final bytes = await File(filePath).readAsBytes();
     final excel = SpreadsheetDecoder.decodeBytes(bytes);
 
@@ -26,7 +40,7 @@ class CountersImporter {
         await chooser(excel.tables.keys.toList(growable: false));
 
     if (chosenTableName == null) {
-      return;
+      return null;
     }
 
     final table = excel.tables[chosenTableName];
@@ -35,9 +49,11 @@ class CountersImporter {
       throw 'No table found!';
     }
 
-    final worksheet = targetDocument.addWorksheet(name: table.name);
+    final worksheet = document.addWorksheet(name: table.name);
 
     _processRows(worksheet, table.rows);
+
+    return document;
   }
 
   List<RequestEntity> _processRows(
@@ -69,7 +85,7 @@ class CountersImporter {
 
         return targetWorksheet.addRequest(
           requestType: _kDefaultRequestType,
-          accountId: row[1] as int,
+          accountId: row[1],
           phoneNumber: phoneMarker < 0 ? null : rawName.substring(phoneMarker),
           name: phoneMarker < 0 ? rawName : rawName.substring(0, phoneMarker),
           address: row[3].toString(),
@@ -77,7 +93,7 @@ class CountersImporter {
           additionalInfo: additional,
         );
       } catch (e) {
-        throw ImporterException('Error in the line: $row', e);
+        throw ImportException('Error in the line: $row', e);
       }
     }).toList();
   }

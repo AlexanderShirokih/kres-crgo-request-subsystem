@@ -2,47 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:kres_requests2/data/editor/json_document_factory.dart';
-import 'package:kres_requests2/domain/counters_importer.dart';
 import 'package:kres_requests2/domain/domain.dart';
-import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/domain/models/worksheet.dart';
+import 'package:kres_requests2/domain/models.dart';
 
-/// Service used to import document from external formats
-abstract class DocumentImporterService {
-  const DocumentImporterService();
-
-  /// Runs parser program and returns document containing parsing result
-  Future<Document?> importDocument(String filePath);
-}
-
-class CountersImporterService extends DocumentImporterService {
-  final CountersImporter importer;
-
-  final TableChooser tableChooser;
-
-  const CountersImporterService({
-    required this.importer,
-    required this.tableChooser,
-  });
-
-  @override
-  Future<Document?> importDocument(String filePath) async {
-    final document = Document(updateDate: DateTime.now());
-
-    await importer.importAsRequestsList(filePath, document, tableChooser);
-
-    if (document.currentIsEmpty) {
-      return null;
-    }
-
-    return document;
-  }
-}
+import 'document_import_service.dart';
 
 typedef MultiTableChooser = Future<List<Worksheet>> Function(List<Worksheet>);
 
-/// Create documents from native file format
-class NativeImporterService extends DocumentImporterService {
+/// Loads documents from native file format
+class NativeImporterService implements DocumentImporterService {
   final MultiTableChooser? tableChooser;
   final StreamedRepositoryController<RecentDocumentInfo> _repositoryController;
 
@@ -80,7 +48,7 @@ class NativeImporterService extends DocumentImporterService {
 
   Future<List<Worksheet>> _chooseWorksheets0(
       Document document, MultiTableChooser tableChooser) async {
-    final worksheets = await document.worksheets.first;
+    final worksheets = document.currentWorksheets;
     return worksheets.length == 1
         ? Future.value(worksheets)
         : tableChooser(worksheets);
