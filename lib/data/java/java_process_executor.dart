@@ -6,12 +6,15 @@ import 'package:kres_requests2/repo/settings_repository.dart';
 
 import 'java_info.dart';
 
+/// Implements executor module as Java program
 class JavaProcessExecutor extends ProcessExecutor {
-  static final Directory _javaProcessHome = Directory('requests/lib');
-
   final SettingsRepository settingsRepository;
+  final Directory javaProcessHome;
 
-  const JavaProcessExecutor({required this.settingsRepository});
+  const JavaProcessExecutor({
+    required this.settingsRepository,
+    required this.javaProcessHome,
+  });
 
   @override
   Future<ProcessResult> runProcess(List<String> args) async {
@@ -21,13 +24,13 @@ class JavaProcessExecutor extends ProcessExecutor {
       throw ('Java executable does not exists!');
     }
 
-    if (!await _javaProcessHome.exists()) {
+    if (!await javaProcessHome.exists()) {
       throw ('Requests processor module does not exists!');
     }
 
     final res = await Process.run(javaBin.absolute.path, [
       '-classpath',
-      '${_javaProcessHome.path}/*',
+      '${javaProcessHome.path}/*',
       'ru.aleshi.requests.AppKt',
       ...args,
     ]);

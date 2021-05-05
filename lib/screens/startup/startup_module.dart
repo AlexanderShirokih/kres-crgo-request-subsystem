@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/data/daos.dart';
 import 'package:kres_requests2/data/editor/json_document_saver.dart';
@@ -19,7 +21,10 @@ class StartupModule extends Module {
   @override
   List<Bind<Object>> get binds => [
         Bind.factory<ProcessExecutor>(
-          (i) => JavaProcessExecutor(settingsRepository: i()),
+          (i) => JavaProcessExecutor(
+            settingsRepository: i(),
+            javaProcessHome: Directory('requests/lib'),
+          ),
         ),
         Bind.factory<AbstractRequestProcessor>(
           (i) => RequestProcessorImpl(

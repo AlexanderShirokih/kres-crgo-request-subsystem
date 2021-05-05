@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -22,11 +24,7 @@ class DocumentEditorScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final document = context.watch<DocumentMasterBloc>().state.currentDocument;
-    // final worksheetsSnap =
-    //     useStream(document.worksheets, initialData: <Worksheet>[]);
-    //
-    final worksheets = document.currentWorksheets; //worksheetsSnap.requireData;
-
+    final worksheets = document.currentWorksheets;
     if (worksheets.isEmpty) {
       return Material(
         child: Column(
@@ -38,11 +36,19 @@ class DocumentEditorScreen extends HookWidget {
       );
     }
 
-    final active = useState(worksheets.first);
+    if(sub == null)
+   sub= document.active.listen((event) {
+     print("ON EVENT: ${event}");
+   });
+
+    final active = worksheets.first;
+        // useStream(document.active.distinct(), initialData: worksheets.first);
+
+    print("rebuild!");
 
     return Scaffold(
       key: _scaffoldKey,
-      endDrawer: _buildEndDrawer(active),
+      endDrawer: _buildEndDrawer(active),//.requireData),
       appBar: _buildAppBar(),
       body: BlocConsumer<DocumentMasterBloc, DocumentMasterState>(
         listener: (context, state) {
@@ -107,14 +113,14 @@ class DocumentEditorScreen extends HookWidget {
     );
   }
 
-  Widget _buildEndDrawer(ValueNotifier<Worksheet> active) =>
+  Widget _buildEndDrawer(Worksheet active) =>
       BlocBuilder<DocumentMasterBloc, DocumentMasterState>(
         builder: (context, state) => Container(
           width: 420.0,
           child: Drawer(
             child: WorksheetConfigView(
               Modular.get(),
-              state.currentDocument.edit(active.value),
+              state.currentDocument.edit(active),
             ),
           ),
         ),
@@ -219,7 +225,7 @@ class DocumentEditorScreen extends HookWidget {
   Widget _buildEditor(
     BuildContext context,
     DocumentMasterState state,
-    ValueNotifier<Worksheet> active,
+    Worksheet active,
     List<Worksheet> worksheets,
   ) {
     return WillPopScope(
@@ -237,7 +243,7 @@ class DocumentEditorScreen extends HookWidget {
               color: Color(0xFFE5E5E5),
               height: double.maxFinite,
               child: IndexedStack(
-                index: worksheets.indexOf(active.value),
+                index: worksheets.indexOf(active),
                 children: worksheets
                     .map((e) => BlocProvider(
                           key: ObjectKey(e),
