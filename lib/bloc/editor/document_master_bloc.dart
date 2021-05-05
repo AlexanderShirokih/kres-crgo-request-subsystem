@@ -65,7 +65,7 @@ class DocumentMasterBloc
       }
 
       if (popAfterSave) {
-        yield WorksheetMasterPopState(state.currentDocument);
+        Modular.to.pop();
       } else {
         yield WorksheetMasterIdleState(state.currentDocument);
       }

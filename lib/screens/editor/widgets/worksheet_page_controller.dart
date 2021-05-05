@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
-import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
-import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 
@@ -10,14 +8,12 @@ import 'worksheet_tab_view.dart';
 
 /// Show a tabs for worksheets that currently exists in the document
 class WorksheetsPageController extends StatelessWidget {
-  /// Currently opened document
-  final Document document;
-
-  const WorksheetsPageController({Key? key, required this.document})
-      : super(key: key);
+  const WorksheetsPageController({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final document = context.watch<DocumentMasterBloc>().state.currentDocument;
+
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: StreamBuilder<List<Worksheet>>(
@@ -45,7 +41,7 @@ class WorksheetsPageController extends StatelessWidget {
                           context,
                           canRemove: worksheets.length == 1,
                           active: active,
-                          currentEditor: document.edit(worksheets[index]),
+                          current: worksheets[index],
                         );
                 });
           }),
@@ -54,14 +50,13 @@ class WorksheetsPageController extends StatelessWidget {
 
   Widget _buildTabView(
     BuildContext context, {
-    required WorksheetEditor currentEditor,
+    required Worksheet current,
     required Worksheet active,
     required bool canRemove,
   }) {
-    final current = currentEditor.current;
     return WorksheetTabView(
-      key: ObjectKey(currentEditor.current),
-      worksheetEditor: currentEditor,
+      key: ObjectKey(current),
+      worksheet: current,
       filteredItemsCount:
           // TODO: Broken code
           // state is WorksheetMasterSearchingState

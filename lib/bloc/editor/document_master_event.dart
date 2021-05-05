@@ -11,8 +11,7 @@ class WorksheetMasterSaveEvent extends DocumentMasterEvent {
   /// If `true` 'Save as' behaviour will be used.
   final bool changePath;
 
-  /// If [popAfterSave] is `true` that [WorksheetMasterPopState] will be
-  /// triggered after file have saved.
+  /// If [popAfterSave] is `true` that the page will popped after file have saved.
   final bool popAfterSave;
 
   const WorksheetMasterSaveEvent(

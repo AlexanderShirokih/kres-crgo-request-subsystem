@@ -1,143 +1,121 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
-import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/bloc/editor/editor_view/worksheet_editor_bloc.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
-import 'package:kres_requests2/screens/editor/widgets/worksheet_editor_view.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view/worksheet_config_view.dart';
 
+import 'widgets/worksheet_editor_view.dart';
 import 'widgets/worksheet_page_controller.dart';
 
 /// Screen that manages whole document state
 /// Requires [DocumentMasterBloc] to be injected in the widget ancestor.
-class DocumentEditorScreen extends StatelessWidget {
+class DocumentEditorScreen extends HookWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        key: _scaffoldKey,
-        endDrawer: _buildEndDrawer(),
-        appBar: _buildAppBar(),
-        body: BlocConsumer<DocumentMasterBloc, DocumentMasterState>(
-          listener: (context, state) {
-            if (state is WorksheetMasterPopState) {
-              Navigator.pop(context);
-            } else if (state is WorksheetMasterSavingState) {
-              _handleSavingState(context, state);
-            }
-          },
-          builder: (context, state) {
-            // FIXME: BROKEN
-            // if (state is WorksheetMasterSearchingState) {
-            //   return Stack(children: [
-            //     Positioned.fill(child: _buildBody(context, state)),
-            //     Align(
-            //       alignment: Alignment.topRight,
-            //       child: Padding(
-            //         padding: const EdgeInsets.only(top: 12.0, right: 12.0),
-            //         child: SearchBox(
-            //           textWatcher: (String searchText) => context
-            //               .read<WorksheetMasterBloc>()
-            //               .add(WorksheetMasterSearchEvent(searchText)),
-            //         ),
-            //       ),
-            //     ),
-            //   ]);
-            // } else {
-            return Stack(children: [
-              Positioned.fill(child: _buildBody(context, state)),
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 36.0),
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(8.0),
-                        bottomLeft: Radius.circular(8.0),
-                      ),
-                      color: Colors.white,
-                    ),
-                    child: IconButton(
-                      icon: Icon(Icons.menu_open),
-                      onPressed: () {
-                        _scaffoldKey.currentState!.openEndDrawer();
-                      },
-                    ),
-                  ),
-                ),
-              )
-            ]);
-            // }
-          },
+  Widget build(BuildContext context) {
+    final document = context.watch<DocumentMasterBloc>().state.currentDocument;
+    // final worksheetsSnap =
+    //     useStream(document.worksheets, initialData: <Worksheet>[]);
+    //
+    final worksheets = document.currentWorksheets; //worksheetsSnap.requireData;
+
+    if (worksheets.isEmpty) {
+      return Material(
+        child: Column(
+          children: [
+            Text('Документ пуст!'),
+            BackButton(),
+          ],
         ),
       );
+    }
 
-  Widget _buildBody(BuildContext context, DocumentMasterState state) {
-    final document = state.currentDocument;
-    return WillPopScope(
-      onWillPop: () => _showExitConfirmationDialog(document, context),
-      child: Row(
-        children: [
-          Container(
-            width: 285.0,
-            height: double.maxFinite,
-            child: WorksheetsPageController(document: document),
-          ),
-          Expanded(
-            child: Container(
-              color: Color(0xFFE5E5E5),
-              height: double.maxFinite,
-              child: _buildEditor(document),
+    final active = useState(worksheets.first);
+
+    return Scaffold(
+      key: _scaffoldKey,
+      endDrawer: _buildEndDrawer(active),
+      appBar: _buildAppBar(),
+      body: BlocConsumer<DocumentMasterBloc, DocumentMasterState>(
+        listener: (context, state) {
+          if (state is WorksheetMasterSavingState) {
+            _handleSavingState(context, state);
+          }
+        },
+        builder: (context, state) {
+          // FIXME: BROKEN
+          // if (state is WorksheetMasterSearchingState) {
+          //   return Stack(children: [
+          //     Positioned.fill(child: _buildBody(context, state)),
+          //     Align(
+          //       alignment: Alignment.topRight,
+          //       child: Padding(
+          //         padding: const EdgeInsets.only(top: 12.0, right: 12.0),
+          //         child: SearchBox(
+          //           textWatcher: (String searchText) => context
+          //               .read<WorksheetMasterBloc>()
+          //               .add(WorksheetMasterSearchEvent(searchText)),
+          //         ),
+          //       ),
+          //     ),
+          //   ]);
+          // } else {
+          return Stack(children: [
+            Positioned.fill(
+              child: _buildEditor(
+                context,
+                state,
+                active,
+                worksheets,
+              ),
             ),
-          ),
-        ],
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 80.0),
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8.0),
+                      bottomLeft: Radius.circular(8.0),
+                    ),
+                    color: Colors.white,
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.menu_open),
+                    onPressed: () {
+                      _scaffoldKey.currentState!.openEndDrawer();
+                    },
+                  ),
+                ),
+              ),
+            )
+          ]);
+          // }
+        },
       ),
     );
   }
 
-  Widget _buildEditor(Document document) {
-    return StreamBuilder<Worksheet>(
-        stream: document.active,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Text('Пока здесь нет данных');
-          }
-
-          final currentWorksheet = snapshot.requireData;
-          return WorksheetEditorView(
-            key: ObjectKey(currentWorksheet),
-            worksheetEditor: document.edit(currentWorksheet),
-            document: document,
-            highlighted: Stream.empty(),
-            // TODO: Broken
-            // highlighted: state is WorksheetMasterSearchingState
-            //     ? state.filteredItems[state.currentDocument.active]
-            //     : null,
-          );
-        });
-  }
-
-  Widget _buildEndDrawer() =>
+  Widget _buildEndDrawer(ValueNotifier<Worksheet> active) =>
       BlocBuilder<DocumentMasterBloc, DocumentMasterState>(
         builder: (context, state) => Container(
           width: 420.0,
           child: Drawer(
-            child: StreamBuilder<Worksheet>(
-                stream: state.currentDocument.active,
-                builder: (context, snap) {
-                  return snap.hasData
-                      ? WorksheetConfigView(
-                          Modular.get(),
-                          state.currentDocument.edit(snap.requireData),
-                        )
-                      : Container();
-                }),
+            child: WorksheetConfigView(
+              Modular.get(),
+              state.currentDocument.edit(active.value),
+            ),
           ),
         ),
       );
@@ -238,9 +216,48 @@ class DocumentEditorScreen extends StatelessWidget {
     }
   }
 
+  Widget _buildEditor(
+    BuildContext context,
+    DocumentMasterState state,
+    ValueNotifier<Worksheet> active,
+    List<Worksheet> worksheets,
+  ) {
+    return WillPopScope(
+      onWillPop: () =>
+          _showExitConfirmationDialog(state.currentDocument, context),
+      child: Row(
+        children: [
+          Container(
+            width: 285.0,
+            height: double.maxFinite,
+            child: WorksheetsPageController(),
+          ),
+          Expanded(
+            child: Container(
+              color: Color(0xFFE5E5E5),
+              height: double.maxFinite,
+              child: IndexedStack(
+                index: worksheets.indexOf(active.value),
+                children: worksheets
+                    .map((e) => BlocProvider(
+                          key: ObjectKey(e),
+                          create: (_) => WorksheetEditorBloc(
+                            worksheet: state.currentDocument.edit(e),
+                          ),
+                          child: WorksheetEditorView(),
+                        ))
+                    .toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<bool> _showExitConfirmationDialog(
       Document document, BuildContext context) async {
-    if (await document.isEmpty.first) return true;
+    if (document.currentIsEmpty) return true;
     return true;
     // TODO: Stub
     // return await showDialog<bool>(

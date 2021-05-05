@@ -210,7 +210,7 @@ class Document extends Equatable {
     // Close internal streams
     await curr.close();
 
-    // Fetch updates
+    // Notify updates
     _worksheets.add(currentWorksheets);
 
     // Shift active worksheet index if needed (end of list case)
@@ -251,7 +251,6 @@ class Document extends Equatable {
   Future<void> close() async {
     await _updateDate.close();
     await _savePath.close();
-    await _activeWorksheet.close();
 
     await for (final wsEditor in _worksheets.stream) {
       for (final ws in wsEditor) {

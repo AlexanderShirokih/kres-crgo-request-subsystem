@@ -1,74 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
-import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
+import 'package:kres_requests2/bloc/editor/editor_view/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/screens/editor/request_editor_dialog/request_editor_dialog.dart';
+import 'package:kres_requests2/screens/editor/requests_move_dialog/requests_move_dialog.dart';
 import 'package:kres_requests2/screens/editor/widgets/request_item_view.dart';
 
 import '../../confirmation_dialog.dart';
-import '../../../bloc/editor/editor_view/worksheet_editor_bloc.dart';
-import '../request_editor_dialog/request_editor_dialog.dart';
-import '../requests_move_dialog/requests_move_dialog.dart';
 
-/// Show the list of requests for target [worksheetEditor] of the [document]
-class WorksheetEditorView extends StatefulWidget {
-  /// Currently opened document
-  final Document document;
-
-  /// Target worksheet
-  final WorksheetEditor worksheetEditor;
-
+/// Show the list of requests for target worksheet.
+/// Requires [WorksheetEditorBloc] to be injected.
+class WorksheetEditorView extends HookWidget {
   /// A list of currently highlighted requests
-  final Stream<List<RequestEntity>> highlighted;
-
-  const WorksheetEditorView({
-    Key? key,
-    required this.document,
-    required this.worksheetEditor,
-    required this.highlighted,
-  }) : super(key: key);
-
-  @override
-  _WorksheetEditorViewState createState() => _WorksheetEditorViewState();
-}
-
-class _WorksheetEditorViewState extends State<WorksheetEditorView> {
-  final _controller = ScrollController();
-
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
-  }
+  /// TODO: FIX
+  // final Stream<List<RequestEntity>> highlighted;
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => WorksheetEditorBloc(worksheet: widget.worksheetEditor),
-      child: BlocBuilder<WorksheetEditorBloc, WorksheetEditorState>(
-        builder: (context, state) {
-          if (state is WorksheetInitialState) {
-            return Center(
-              child: Text(
-                'Загрузка...',
-                style: Theme.of(context).textTheme.headline6,
-              ),
-            );
-          }
+    final scroll = useScrollController();
+    return BlocBuilder<WorksheetEditorBloc, WorksheetEditorState>(
+      builder: (context, state) {
+        if (state is WorksheetInitialState) {
+          return Center(
+            child: Text(
+              'Загрузка...',
+              style: Theme.of(context).textTheme.headline6,
+            ),
+          );
+        }
 
-          if (state is WorksheetDataState) {
-            return _buildWorksheetList(context, state);
-          }
+        if (state is WorksheetDataState) {
+          return _buildWorksheetList(context, state, scroll);
+        }
 
-          throw 'Unexpected state: $state';
-        },
-      ),
+        throw 'Unexpected state: $state';
+      },
     );
   }
 
-  Widget _showPlaceholder() => Center(
+  Widget _showPlaceholder(BuildContext context) => Center(
         child: Text(
           'Список пуст',
           style: Theme.of(context)
@@ -79,24 +53,22 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
       );
 
   // Builds the worksheet list
-  Widget _buildWorksheetList(BuildContext context, WorksheetDataState state) {
+  Widget _buildWorksheetList(
+    BuildContext context,
+    WorksheetDataState state,
+    ScrollController scroll,
+  ) {
     final isSelected = state is WorksheetSelectionState;
 
     return Stack(
       children: [
         if (state.isEmpty)
-          _showPlaceholder()
+          _showPlaceholder(context)
         else
           Center(
             child: SizedBox(
               width: 895.0,
-              child: Scrollbar(
-                child: _buildContent(
-                  context,
-                  state,
-                  isSelected,
-                ),
-              ),
+              child: _buildContent(context, state, scroll, isSelected),
             ),
           ),
         Align(
@@ -142,6 +114,7 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
   Widget _buildContent(
     BuildContext context,
     WorksheetDataState state,
+    ScrollController controller,
     bool isInSelectionMode,
   ) {
     final requests = state.requests;
@@ -179,7 +152,7 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
           ),
         );
       },
-      scrollController: _controller,
+      scrollController: controller,
       padding:
           isInSelectionMode ? EdgeInsets.only(top: 64) : EdgeInsets.all(10.0),
       onReorder: (int oldIndex, int newIndex) {
@@ -202,7 +175,7 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
         context: ctx,
         barrierDismissible: false,
         builder: (_) => RequestEditorDialog(
-          worksheetEditor: widget.worksheetEditor,
+          worksheetEditor: ctx.read<WorksheetEditorBloc>().worksheet,
           validator: Modular.get(),
           initial: initial,
         ),
@@ -301,22 +274,24 @@ class _WorksheetEditorViewState extends State<WorksheetEditorView> {
     BuildContext context,
     MoveMethod moveMethod,
     WorksheetSelectionState state,
-  ) =>
-      showDialog(
-        context: context,
-        builder: (_) => RequestsMoveDialog(
-          document: widget.document,
-          sourceWorksheet: widget.worksheetEditor.current,
-          movingRequests: state.selectionList.toList(growable: false),
-          moveMethod: moveMethod,
-        ),
-      ).then((wasChanged) {
-        if (wasChanged ?? false) {
-          context
-              .read<WorksheetEditorBloc>()
-              .add(RequestSelectionEvent(SelectionAction.cancel));
-        }
-      });
+  ) {
+    final doc = context.read<DocumentMasterBloc>().state.currentDocument;
+    final bloc = context.read<WorksheetEditorBloc>();
+
+    showDialog(
+      context: context,
+      builder: (_) => RequestsMoveDialog(
+        document: doc,
+        sourceWorksheet: bloc.worksheet.current,
+        movingRequests: state.selectionList.toList(growable: false),
+        moveMethod: moveMethod,
+      ),
+    ).then((wasChanged) {
+      if (wasChanged ?? false) {
+        bloc.add(RequestSelectionEvent(SelectionAction.cancel));
+      }
+    });
+  }
 
   final _groupNames = [
     'белый',

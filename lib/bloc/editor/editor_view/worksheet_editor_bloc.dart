@@ -21,36 +21,22 @@ class WorksheetEditorBloc
   WorksheetEditorBloc({
     required this.worksheet,
   }) : super(const WorksheetInitialState()) {
-    _worksheetSubscription = worksheet.actualState.listen((state) {
-      add(_UpdateWorksheetStateEvent(state));
-    });
+    // _worksheetSubscription = worksheet.actualState.listen((state) {
+    //   add(_UpdateWorksheetStateEvent(state));
+    // });
   }
 
   @override
   Stream<WorksheetEditorState> mapEventToState(
     WorksheetEditorEvent event,
   ) async* {
-    if (event is _UpdateWorksheetStateEvent) {
-      yield* _keepSelectionState(_handleWorksheetUpdate(event.worksheet));
-    } else if (event is SwapRequestsEvent) {
+   if (event is SwapRequestsEvent) {
       worksheet.swapRequests(event.from, event.to);
     } else if (event is RequestSelectionEvent) {
       yield* _handleSelectionEvent(event.target, event.action);
     } else if (event is ChangeGroupEvent) {
       yield* _keepSelectionState(
           _handleGroupUpdate(event.target, event.newGroup));
-    }
-  }
-
-  Stream<WorksheetEditorState> _handleWorksheetUpdate(
-      Worksheet worksheet) async* {
-    final currentState = state;
-    if (currentState is WorksheetDataState) {
-      // Update an existing data
-      yield currentState.copy(requests: worksheet.requests);
-    } else {
-      // First time emitting
-      yield WorksheetDataState(requests: worksheet.requests);
     }
   }
 

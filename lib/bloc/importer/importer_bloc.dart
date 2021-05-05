@@ -76,7 +76,7 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
         target.setSavePath(File(p.withoutExtension(filePath) + ".json"));
       }
 
-      return target..addWorksheets(await source.worksheets.first);
+      return target..addWorksheets(source.currentWorksheets);
     }
 
     yield ImporterLoadingState(filePath);
