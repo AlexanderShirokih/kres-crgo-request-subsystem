@@ -78,7 +78,7 @@ class WorksheetEditorView extends HookWidget {
             child: FloatingActionButton(
               child: FaIcon(FontAwesomeIcons.plus),
               tooltip: "Добавить заявку",
-              onPressed: () => _showRequestEditorDialog(context),
+              onPressed: () => _showRequestEditorDialog(context, state),
             ),
           ),
         ),
@@ -132,7 +132,7 @@ class WorksheetEditorView extends HookWidget {
           onLongPress: () => context
               .read<WorksheetEditorBloc>()
               .add(RequestSelectionEvent(SelectionAction.begin, request)),
-          onDoubleTap: () => _showRequestEditorDialog(context, request),
+          onDoubleTap: () => _showRequestEditorDialog(context, state, request),
           child: RequestItemView(
             request: request,
             position: index + 1,
@@ -170,12 +170,17 @@ class WorksheetEditorView extends HookWidget {
     );
   }
 
-  void _showRequestEditorDialog(BuildContext ctx, [RequestEntity? initial]) =>
+  void _showRequestEditorDialog(
+    BuildContext ctx,
+    WorksheetDataState state, [
+    RequestEntity? initial,
+  ]) =>
       showDialog(
         context: ctx,
         barrierDismissible: false,
         builder: (_) => RequestEditorDialog(
-          worksheetEditor: ctx.read<WorksheetEditorBloc>().worksheet,
+          worksheet: state.worksheet,
+          document: state.document,
           validator: Modular.get(),
           initial: initial,
         ),
@@ -276,19 +281,19 @@ class WorksheetEditorView extends HookWidget {
     WorksheetSelectionState state,
   ) {
     final doc = context.read<DocumentMasterBloc>().state.currentDocument;
-    final bloc = context.read<WorksheetEditorBloc>();
-
     showDialog(
       context: context,
       builder: (_) => RequestsMoveDialog(
         document: doc,
-        sourceWorksheet: bloc.worksheet.current,
+        sourceWorksheet: state.worksheet,
         movingRequests: state.selectionList.toList(growable: false),
         moveMethod: moveMethod,
       ),
     ).then((wasChanged) {
       if (wasChanged ?? false) {
-        bloc.add(RequestSelectionEvent(SelectionAction.cancel));
+        context
+            .read<WorksheetEditorBloc>()
+            .add(RequestSelectionEvent(SelectionAction.cancel));
       }
     });
   }

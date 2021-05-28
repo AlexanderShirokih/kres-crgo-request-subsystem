@@ -11,4 +11,7 @@ abstract class Repository<T> {
 
   /// Gets all objects from the storage as list
   Future<List<T>> getAll();
+
+  /// Called when controller commits changes that was previously made
+  Future<void> onCommit() => Future.value();
 }

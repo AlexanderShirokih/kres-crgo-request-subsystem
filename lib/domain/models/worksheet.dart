@@ -33,7 +33,7 @@ class Worksheet extends Equatable {
   /// Chosen worksheets work types
   final Set<String> workTypes;
 
-  const Worksheet({
+  Worksheet({
     Set<String>? workTypes,
     required this.worksheetId,
     required this.name,
@@ -42,20 +42,19 @@ class Worksheet extends Equatable {
     this.mainEmployee,
     this.chiefEmployee,
     this.membersEmployee = const {},
-  }) : this.workTypes = workTypes == null ? const {} : workTypes;
+  }) : this.workTypes = workTypes == null
+            ? _getDefaultWorkTypes(requests)
+            : workTypes.union(_getDefaultWorkTypes(requests));
 
   /// Returns `true` if worksheet list is empty
   bool get isEmpty => requests.isEmpty;
 
-  /// Creates new worksheet with pushed default work types (Based on requests)
-  void insertDefaultWorkTypes() {
-    workTypes.addAll(
-      requests
-          .where((e) => e.requestType != null)
-          .map((e) => e.requestType!.fullName)
-          .cast<String>(),
-    );
-  }
+  // Inserts default request types based on requests list
+  static _getDefaultWorkTypes(Iterable<RequestEntity> requests) => requests
+      .where((e) => e.requestType != null)
+      .map((e) => e.requestType!.fullName)
+      .cast<String>()
+      .toSet();
 
   static int _lastRequestId = 0;
 
@@ -89,8 +88,7 @@ class Worksheet extends Equatable {
   }
 
   /// Creates a copy with customizing any parameters
-  Worksheet copy({
-    int? worksheetId,
+  Worksheet copyWith({
     String? name,
     Set<String>? workTypes,
     List<RequestEntity>? requests,
@@ -98,6 +96,7 @@ class Worksheet extends Equatable {
     Employee? mainEmployee,
     Employee? chiefEmployee,
     Set<Employee>? membersEmployee,
+    int? worksheetId,
   }) =>
       Worksheet(
         worksheetId: worksheetId ?? this.worksheetId,

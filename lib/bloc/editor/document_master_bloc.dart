@@ -127,7 +127,7 @@ class DocumentMasterBloc
         );
         return;
       case WorksheetCreationMode.empty:
-        _document.makeActive(_document.addWorksheet().current);
+        _document.worksheets.add(activate: true);
         yield WorksheetMasterIdleState(_document);
     }
   }
@@ -136,10 +136,10 @@ class DocumentMasterBloc
       Worksheet targetWorksheet, WorksheetAction action) async* {
     switch (action) {
       case WorksheetAction.remove:
-        await _document.removeWorksheet(targetWorksheet);
+        await _document.worksheets.remove(targetWorksheet);
         break;
       case WorksheetAction.makeActive:
-        _document.makeActive(targetWorksheet);
+        _document.worksheets.makeActive(targetWorksheet);
         break;
     }
 

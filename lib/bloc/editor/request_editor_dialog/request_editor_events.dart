@@ -6,16 +6,33 @@ abstract class RequestEditorEvent extends Equatable {
   const RequestEditorEvent._();
 }
 
-/// Event used internally to fetch request types from repository
-class _FetchRequestTypesEvent extends RequestEditorEvent {
-  const _FetchRequestTypesEvent() : super._();
+/// Sets request for editing
+class SetRequestEvent extends RequestEditorEvent {
+  /// Request to be edited. `null` if new request should be created
+  final RequestEntity? request;
+
+  /// Target document
+  final Document document;
+
+  /// Target worksheet
+  final Worksheet worksheet;
+
+  const SetRequestEvent({
+    required this.document,
+    required this.worksheet,
+    required this.request,
+  }) : super._();
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [
+        request,
+        worksheet,
+        document,
+      ];
 }
 
-/// Triggers updating request entity with new values
-class UpdateRequestFieldsEvent extends RequestEditorEvent {
+/// Used to commit changes with the request
+class SaveRequestEvent extends RequestEditorEvent {
   /// Request type
   final RequestType? requestType;
 
@@ -55,7 +72,7 @@ class UpdateRequestFieldsEvent extends RequestEditorEvent {
   /// Check quarter
   final int? checkQuarter;
 
-  const UpdateRequestFieldsEvent({
+  const SaveRequestEvent({
     required this.requestType,
     required this.name,
     required this.phone,

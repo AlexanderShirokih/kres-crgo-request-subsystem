@@ -26,8 +26,10 @@ class CounterInfo extends Equatable {
     required this.type,
     required this.number,
     this.checkQuarter,
-    this.checkYear,
-  });
+    int? checkYear,
+  }) : checkYear = checkYear != null && checkYear > 0 && checkYear < 100
+            ? 2000 + checkYear
+            : checkYear;
 
   /// Returns formatted number and type
   String get mainInfo => '№$number $type';
@@ -39,14 +41,7 @@ class CounterInfo extends Equatable {
       return '';
     }
 
-    try {
-      return 'п. ${checkQuarter?.romanGroup ?? '?'}-${checkYear?.toString().substring(2) ?? '?'}';
-    } catch (e) {
-      // Possible situation:
-      // checkYear = '9'; instead of checkYear = '2009';
-      // checkYear.substring(2) will cause an error
-      return '[ERR]';
-    }
+    return 'п. ${checkQuarter?.romanGroup ?? '?'}-${checkYear?.toString().substring(2) ?? '?'}';
   }
 
   /// Returns full printable string representation

@@ -10,7 +10,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/bloc/editor/editor_view/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view/worksheet_config_view.dart';
 
 import 'widgets/worksheet_editor_view.dart';
@@ -23,32 +22,9 @@ class DocumentEditorScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final document = context.watch<DocumentMasterBloc>().state.currentDocument;
-    final worksheets = document.currentWorksheets;
-    if (worksheets.isEmpty) {
-      return Material(
-        child: Column(
-          children: [
-            Text('Документ пуст!'),
-            BackButton(),
-          ],
-        ),
-      );
-    }
-
-    if(sub == null)
-   sub= document.active.listen((event) {
-     print("ON EVENT: ${event}");
-   });
-
-    final active = worksheets.first;
-        // useStream(document.active.distinct(), initialData: worksheets.first);
-
-    print("rebuild!");
-
     return Scaffold(
       key: _scaffoldKey,
-      endDrawer: _buildEndDrawer(active),//.requireData),
+      endDrawer: _buildEndDrawer(),
       appBar: _buildAppBar(),
       body: BlocConsumer<DocumentMasterBloc, DocumentMasterState>(
         listener: (context, state) {
@@ -79,8 +55,6 @@ class DocumentEditorScreen extends HookWidget {
               child: _buildEditor(
                 context,
                 state,
-                active,
-                worksheets,
               ),
             ),
             Align(
@@ -113,14 +87,14 @@ class DocumentEditorScreen extends HookWidget {
     );
   }
 
-  Widget _buildEndDrawer(Worksheet active) =>
+  Widget _buildEndDrawer() =>
       BlocBuilder<DocumentMasterBloc, DocumentMasterState>(
         builder: (context, state) => Container(
           width: 420.0,
           child: Drawer(
             child: WorksheetConfigView(
               Modular.get(),
-              state.currentDocument.edit(active),
+              state.currentDocument.worksheets,
             ),
           ),
         ),
@@ -222,12 +196,9 @@ class DocumentEditorScreen extends HookWidget {
     }
   }
 
-  Widget _buildEditor(
-    BuildContext context,
-    DocumentMasterState state,
-    Worksheet active,
-    List<Worksheet> worksheets,
-  ) {
+  Widget _buildEditor(BuildContext context, DocumentMasterState state) {
+    final worksheets = state.currentDocument.worksheets;
+
     return WillPopScope(
       onWillPop: () =>
           _showExitConfirmationDialog(state.currentDocument, context),
@@ -243,13 +214,13 @@ class DocumentEditorScreen extends HookWidget {
               color: Color(0xFFE5E5E5),
               height: double.maxFinite,
               child: IndexedStack(
-                index: worksheets.indexOf(active),
-                children: worksheets
+                index: worksheets.activePosition,
+                children: worksheets.list
                     .map((e) => BlocProvider(
                           key: ObjectKey(e),
                           create: (_) => WorksheetEditorBloc(
-                            worksheet: state.currentDocument.edit(e),
-                          ),
+                              document: state.currentDocument)
+                            ..add(SetCurrentWorksheetEvent(e)),
                           child: WorksheetEditorView(),
                         ))
                     .toList(),
@@ -263,7 +234,7 @@ class DocumentEditorScreen extends HookWidget {
 
   Future<bool> _showExitConfirmationDialog(
       Document document, BuildContext context) async {
-    if (document.currentIsEmpty) return true;
+    if (document.worksheets.isEmpty) return true;
     return true;
     // TODO: Stub
     // return await showDialog<bool>(

@@ -4,7 +4,6 @@ import 'package:kres_requests2/domain/models.dart';
 import 'package:meta/meta.dart';
 
 part 'preview_events.dart';
-
 part 'preview_states.dart';
 
 /// BLoC for preparing document worksheets for printing or
@@ -27,7 +26,7 @@ class PreviewBloc extends Bloc<PreviewEvent, PreviewState> {
   }
 
   Stream<PreviewState> _checkDocumentInfo() async* {
-    final worksheets = document.currentWorksheets;
+    final worksheets = document.worksheets.list;
 
     final nonEmptyWorksheets = worksheets
         .where((worksheet) => !worksheet.isEmpty)

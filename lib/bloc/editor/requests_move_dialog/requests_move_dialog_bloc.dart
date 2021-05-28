@@ -27,7 +27,7 @@ class RequestsMoveDialogBloc extends Bloc<RequestMoveEvent, BaseState> {
     this._sourceWorksheet,
   ) : super(
           DataState(
-            _document.currentWorksheets.where(
+            _document.worksheets.list.where(
               (worksheet) => worksheet != _sourceWorksheet,
             ),
           ),
@@ -36,14 +36,10 @@ class RequestsMoveDialogBloc extends Bloc<RequestMoveEvent, BaseState> {
   @override
   Stream<BaseState> mapEventToState(RequestMoveEvent event) async* {
     if (event is MoveRequestsEvent) {
-      final WorksheetEditor target;
-
-      if (event.target == null) {
-        target = _document.addWorksheet(name: _sourceWorksheet.name);
-        _document.makeActive(target.current);
-      } else {
-        target = _document.edit(event.target!);
-      }
+      final target = event.target == null
+          ? _document.worksheets
+              .add(name: _sourceWorksheet.name, activate: true)
+          : _document.worksheets.edit(event.target!);
 
       _moveRequests(
         targetWorksheetEditor: target,
@@ -63,7 +59,10 @@ class RequestsMoveDialogBloc extends Bloc<RequestMoveEvent, BaseState> {
     targetWorksheetEditor.addAll(requests);
 
     if (removeFromSource) {
-      _document.edit(_sourceWorksheet).removeRequests(requests);
+      _document.worksheets
+          .edit(_sourceWorksheet)
+          .removeRequests(requests)
+          .commit();
     }
   }
 }

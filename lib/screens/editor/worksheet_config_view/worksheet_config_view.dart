@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
-import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
+import 'package:kres_requests2/domain/models/worksheets_list.dart';
 import 'package:kres_requests2/domain/repository/employee_repository.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 
@@ -16,14 +16,14 @@ class WorksheetConfigView extends StatelessWidget {
   /// Repository for accessing employees list
   final EmployeeRepository employeeRepository;
 
-  /// Current worksheet editor
-  final WorksheetEditor worksheetEditor;
+  /// Current worksheets list
+  final WorksheetsList worksheetsList;
 
-  const WorksheetConfigView(this.employeeRepository, this.worksheetEditor);
+  const WorksheetConfigView(this.employeeRepository, this.worksheetsList);
 
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => WorksheetConfigBloc(employeeRepository, worksheetEditor),
+      create: (_) => WorksheetConfigBloc(employeeRepository, worksheetsList),
       child: BlocBuilder<WorksheetConfigBloc, BaseState>(
         builder: (context, state) {
           if (state is! DataState<WorksheetConfigInfo>) {
@@ -49,7 +49,7 @@ class WorksheetConfigView extends StatelessWidget {
                       const SizedBox(height: 18.0),
                       DropdownEmployeeField(
                         checkForDuplicates:
-                            worksheetEditor.current.isUsedElseWhere,
+                        info.isUsedElseWhere,
                         positionLabel: 'Выберите выдающего распоряжения',
                         current: info.chiefEmployee,
                         employees: info.chiefEmployees,
@@ -68,7 +68,7 @@ class WorksheetConfigView extends StatelessWidget {
                         membersEmployee: info.membersEmployee,
                         canHaveMoreMembers: info.canHaveMoreMembers,
                         checkForDuplicates:
-                            worksheetEditor.current.isUsedElseWhere,
+                            info.isUsedElseWhere,
                       ),
                       const SizedBox(height: 24.0),
                       DatePicker(
@@ -96,7 +96,7 @@ class WorksheetConfigView extends StatelessWidget {
     yield* _header(ctx, 4.0, 'Производитель работ:');
     yield const SizedBox(height: 4.0);
     yield DropdownEmployeeField(
-      checkForDuplicates: worksheetEditor.current.isUsedElseWhere,
+      checkForDuplicates: info.isUsedElseWhere,
       positionLabel: 'Выберите производителя работ',
       current: info.mainEmployee,
       employees: info.mainEmployees,

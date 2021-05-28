@@ -4,11 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/editor/request_editor_dialog/request_editor_bloc.dart';
-import 'package:kres_requests2/data/validators.dart';
-import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
-import 'package:kres_requests2/domain/domain.dart';
-import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/data/validators/mapped_validator.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/utils.dart';
+import 'package:kres_requests2/screens/bloc.dart';
+import 'package:kres_requests2/screens/common.dart';
 
 /// Dialog for editing [RequestEntity].
 class RequestEditorDialog extends StatelessWidget {
@@ -16,13 +16,19 @@ class RequestEditorDialog extends StatelessWidget {
   /// will be created
   final RequestEntity? initial;
 
-  final WorksheetEditor worksheetEditor;
+  /// Target worksheet
+  final Worksheet worksheet;
+
+  /// Target document
+  final Document document;
+
   final MappedValidator<RequestEntity> validator;
 
   const RequestEditorDialog({
     Key? key,
     this.initial,
-    required this.worksheetEditor,
+    required this.worksheet,
+    required this.document,
     required this.validator,
   }) : super(key: key);
 
@@ -30,26 +36,29 @@ class RequestEditorDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<RequestEditorBloc>(
       create: (_) => RequestEditorBloc(
-        initial: initial,
         requestValidator: validator,
-        worksheetEditor: worksheetEditor,
         requestTypeRepository: Modular.get(),
-      ),
-      child: BlocConsumer<RequestEditorBloc, RequestEditorState>(
-        buildWhen: (_, curr) => curr is RequestEditorShowDataState,
+      )..add(SetRequestEvent(
+          document: document,
+          worksheet: worksheet,
+          request: initial,
+        )),
+      child: BlocConsumer<RequestEditorBloc, BaseState>(
+        buildWhen: (_, curr) => curr is DataState<RequestEditorData>,
         builder: (context, state) {
-          if (state is RequestEditorShowDataState) {
+          if (state is InitialState) {
+            return LoadingView('No data...');
+          } else if (state is DataState<RequestEditorData>) {
             return _RequestEditorView(state, validator);
           }
-
           throw 'Unsupported state: $state';
         },
         listener: (context, state) {
-          if (state is RequestValidationErrorState) {
+          if (state is ErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text('Ошибка сохранения заявки: ${state.error}'),
             ));
-          } else if (state is RequestEditingCompletedState) {
+          } else if (state is CompletedState) {
             Navigator.pop(context);
           }
         },
@@ -59,14 +68,14 @@ class RequestEditorDialog extends StatelessWidget {
 }
 
 class _RequestEditorView extends HookWidget {
-  final RequestEditorShowDataState dataState;
+  final DataState<RequestEditorData> dataState;
   final MappedValidator<RequestEntity> validator;
 
   const _RequestEditorView(this.dataState, this.validator);
 
   @override
   Widget build(BuildContext context) {
-    final request = dataState.current;
+    final request = dataState.data.current;
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final isValid = useState(false);
     final requestType = useState(request.requestType);
@@ -142,7 +151,7 @@ class _RequestEditorView extends HookWidget {
         if (isValid.value)
           ElevatedButton(
             onPressed: () {
-              context.read<RequestEditorBloc>().add(UpdateRequestFieldsEvent(
+              context.read<RequestEditorBloc>().add(SaveRequestEvent(
                     name: name.text,
                     additionalInfo: additional.text,
                     address: address.text,
@@ -206,7 +215,7 @@ class _RequestEditorView extends HookWidget {
               autovalidateMode: AutovalidateMode.always,
               validator: (value) => value == null ? "Тип не выбран" : null,
               value: requestType.value,
-              items: dataState.availableRequestTypes
+              items: dataState.data.availableRequestTypes
                   .map((e) =>
                       DropdownMenuItem(value: e, child: Text(e.shortName)))
                   .toList(),
@@ -328,7 +337,7 @@ class _RequestEditorView extends HookWidget {
                     ? ""
                     : null,
             value: checkQuarter.value,
-            items: dataState.availableCheckQuarters
+            items: dataState.data.availableCheckQuarters
                 .map((q) => DropdownMenuItem(
                     value: q, child: Text(q?.romanGroup ?? '--')))
                 .toList(),

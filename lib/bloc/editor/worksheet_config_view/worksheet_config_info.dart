@@ -2,6 +2,8 @@ part of 'worksheet_config_bloc.dart';
 
 /// Data structure that holds info for worksheet config view
 class WorksheetConfigInfo extends Equatable {
+  final Worksheet _worksheet;
+
   /// All available employees in the database
   final Set<Employee> allEmployees;
 
@@ -15,19 +17,19 @@ class WorksheetConfigInfo extends Equatable {
   final Set<Employee> chiefEmployees;
 
   /// Current main employee
-  final Employee? mainEmployee;
+  Employee? get mainEmployee => _worksheet.mainEmployee;
 
   /// Current chief employee
-  final Employee? chiefEmployee;
+  Employee? get chiefEmployee => _worksheet.chiefEmployee;
 
   /// Current set of members employee
-  final Set<Employee> membersEmployee;
+  Set<Employee> get membersEmployee => _worksheet.membersEmployee;
 
   /// Current set of work types
-  final Set<String> workTypes;
+  Set<String> get workTypes => _worksheet.workTypes;
 
   /// Current worksheet targeting date
-  final DateTime? targetDate;
+  DateTime? get targetDate => _worksheet.targetDate;
 
   /// Returns `true if more team members can be added to the current worksheet
   bool get canHaveMoreMembers => membersEmployee.length < 6;
@@ -35,18 +37,18 @@ class WorksheetConfigInfo extends Equatable {
   /// If `true` then there is an additional field for teams members
   final bool hasExpandedTeamField;
 
+  /// Returns `true` if [employee] used more than once at any positions
+  bool isUsedElseWhere(Employee employee) =>
+      _worksheet.isUsedElseWhere(employee);
+
   const WorksheetConfigInfo({
     required this.allEmployees,
     required this.mainEmployees,
-    required this.teamMembersEmployees,
     required this.chiefEmployees,
-    required this.mainEmployee,
-    required this.chiefEmployee,
-    required this.membersEmployee,
-    required this.workTypes,
-    required this.targetDate,
+    required this.teamMembersEmployees,
+    required Worksheet worksheet,
     this.hasExpandedTeamField = false,
-  });
+  }) : _worksheet = worksheet;
 
   @override
   List<Object?> get props => [

@@ -14,18 +14,19 @@ class WorksheetsPageController extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final document = context.watch<DocumentMasterBloc>().state.currentDocument;
+    final worksheetsList = document.worksheets;
 
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: StreamBuilder<List<Worksheet>>(
-          stream: document.worksheets,
+          stream: worksheetsList.stream,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return Container();
             }
 
             final worksheets = snapshot.requireData;
-            final active = document.currentActive;
+            final active = worksheetsList.active;
 
             return ListView.builder(
                 itemCount: worksheets.length + 1,

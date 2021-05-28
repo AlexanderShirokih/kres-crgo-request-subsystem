@@ -22,7 +22,7 @@ class CountersImportService implements DocumentImporterService {
   Future<Document?> importDocument(String filePath) async {
     final document = await _importAsRequestsList(filePath, tableChooser);
 
-    if (document == null || document.currentIsEmpty) {
+    if (document == null || document.worksheets.isEmpty) {
       return null;
     }
 
@@ -49,14 +49,16 @@ class CountersImportService implements DocumentImporterService {
       throw 'No table found!';
     }
 
-    final worksheet = document.addWorksheet(name: table.name);
+    final worksheetList = document.worksheets;
+    final worksheet = worksheetList.add(name: table.name);
 
     _processRows(worksheet, table.rows);
+    worksheet.commit();
 
     return document;
   }
 
-  List<RequestEntity> _processRows(
+  _processRows(
     WorksheetEditor targetWorksheet,
     List<List<dynamic>> rows,
   ) {
@@ -83,7 +85,7 @@ class CountersImportService implements DocumentImporterService {
           number: row[4],
         );
 
-        return targetWorksheet.addRequest(
+        targetWorksheet.addRequest(
           requestType: _kDefaultRequestType,
           accountId: row[1],
           phoneNumber: phoneMarker < 0 ? null : rawName.substring(phoneMarker),

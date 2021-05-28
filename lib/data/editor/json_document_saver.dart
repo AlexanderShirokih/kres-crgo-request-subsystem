@@ -32,11 +32,11 @@ class JsonDocumentSaver implements DocumentSaver {
   }
 
   Map<String, dynamic> _storeDocument(Document document) {
-    final worksheets = document.currentWorksheets;
+    final worksheets = document.worksheets.list;
     return {
       'version': documentFormatVersion,
       'updateDate': document.currentUpdateDate.millisecondsSinceEpoch,
-      'activeWorksheet': worksheets.indexOf(document.currentActive),
+      'activeWorksheet': worksheets.indexOf(document.worksheets.active),
       'worksheets': worksheets.map(_storeWorksheet).toList()
     };
   }

@@ -1,28 +1,8 @@
 import 'package:kres_requests2/data/repository/persisted_object.dart';
-import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/models/connection_point.dart';
 import 'package:kres_requests2/domain/models/counter_info.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
-
-/// Adapter to [PersistedObjectBuilder] for [RequestEntity].
-/// Builds persisted entities based on any default [RequestEntity]
-class RequestEntityPersistedBuilder
-    implements PersistedObjectBuilder<RequestEntity> {
-  @override
-  RequestEntity build(key, RequestEntity entity) => RequestEntityImpl(
-        id: key,
-        name: entity.name,
-        address: entity.address,
-        additionalInfo: entity.additionalInfo,
-        counter: entity.counter,
-        phoneNumber: entity.phoneNumber,
-        connectionPoint: entity.connectionPoint,
-        accountId: entity.accountId,
-        reason: entity.reason,
-        requestType: entity.requestType,
-      );
-}
 
 /// Request entity implementation that uses internal ID as [PersistedObject]
 class RequestEntityImpl extends RequestEntity implements PersistedObject<int> {
@@ -53,24 +33,21 @@ class RequestEntityImpl extends RequestEntity implements PersistedObject<int> {
         );
 
   @override
-  RequestEntityBuilder rebuild() => _RequestEntityBuilderImpl(this);
-
-  @override
-  List<Object?> get props => [id, ...super.props];
-}
-
-class _RequestEntityBuilderImpl extends RequestEntityBuilder {
-  final int id;
-
-  _RequestEntityBuilderImpl(RequestEntityImpl request)
-      : id = request.id,
-        super.from(request);
-
-  @override
-  RequestEntity build() => RequestEntityImpl(
+  RequestEntity rebuild({
+    required int? accountId,
+    required String name,
+    required ConnectionPoint? connectionPoint,
+    required String? additionalInfo,
+    required RequestType? requestType,
+    required String? phoneNumber,
+    required CounterInfo? counter,
+    required String address,
+    required String? reason,
+  }) =>
+      RequestEntityImpl(
         id: this.id,
-        name: name ?? '',
-        address: address ?? '',
+        name: name,
+        address: address,
         reason: reason,
         counter: counter,
         accountId: accountId,
@@ -79,4 +56,7 @@ class _RequestEntityBuilderImpl extends RequestEntityBuilder {
         additionalInfo: additionalInfo,
         connectionPoint: connectionPoint,
       );
+
+  @override
+  List<Object?> get props => [id, ...super.props];
 }

@@ -76,7 +76,8 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
         target.setSavePath(File(p.withoutExtension(filePath) + ".json"));
       }
 
-      return target..addWorksheets(source.currentWorksheets);
+      target.worksheets.addWorksheets(source.worksheets.list);
+      return target;
     }
 
     yield ImporterLoadingState(filePath);
@@ -89,7 +90,8 @@ class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
         return;
       }
 
-      final isEmpty = document.currentIsEmpty;
+      final isEmpty = document.worksheets.isEmpty;
+
       if (isEmpty) {
         yield ImporterDoneState(importResult: ImportResult.documentEmpty);
         return;

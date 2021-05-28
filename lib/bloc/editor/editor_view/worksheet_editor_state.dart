@@ -27,8 +27,16 @@ class WorksheetDataState extends WorksheetEditorState {
   /// Returns `true` if worksheet has no requests
   bool get isEmpty => requests.isEmpty;
 
+  /// Current worksheet
+  final Worksheet worksheet;
+
+  /// Current document
+  final Document document;
+
   const WorksheetDataState({
+    required this.document,
     required this.requests,
+    required this.worksheet,
     this.groupList = const {},
     this.lastGroupIndex = 0,
   }) : super._();
@@ -44,7 +52,7 @@ class WorksheetDataState extends WorksheetEditorState {
   }
 
   @override
-  List<Object?> get props => [groupList];
+  List<Object?> get props => [groupList, requests, worksheet, document];
 
   /// Returns index of group associated with the [request]
   int getGroup(RequestEntity request) {
@@ -60,12 +68,16 @@ class WorksheetDataState extends WorksheetEditorState {
   }
 
   /// Creates a deep copy with customizable params
-  WorksheetDataState copy({
+  WorksheetDataState copyWith({
     List<RequestEntity>? requests,
     Map<RequestEntity, int>? groupList,
     int? lastGroupIndex,
+    Worksheet? worksheet,
+    Document? document,
   }) =>
       WorksheetDataState(
+        document: document ?? this.document,
+        worksheet: worksheet ?? this.worksheet,
         requests: requests ?? this.requests,
         groupList: groupList ?? this.groupList,
         lastGroupIndex: lastGroupIndex ?? this.lastGroupIndex,
@@ -101,6 +113,8 @@ class WorksheetSelectionState extends WorksheetDataState {
           requests: baseState.requests,
           groupList: baseState.groupList,
           lastGroupIndex: baseState.lastGroupIndex,
+          worksheet: baseState.worksheet,
+          document: baseState.document,
         );
 
   @override

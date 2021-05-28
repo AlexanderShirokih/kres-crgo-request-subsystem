@@ -4,6 +4,7 @@ import 'package:kres_requests2/data/models.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/editor/document_factory.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/models/worksheets_list.dart';
 
 /// Builds [Document] instances from JSON data
 class JsonDocumentFactory implements DocumentFactory {
@@ -22,23 +23,24 @@ class JsonDocumentFactory implements DocumentFactory {
     );
 
     for (final worksheet in (_data['worksheets'] as List<dynamic>)) {
-      _createWorksheet(document, worksheet);
+      _createWorksheet(document.worksheets, worksheet);
     }
 
     var activeWorksheetIdx = _data['activeWorksheet'] ?? 0;
 
-    final worksheets = document.currentWorksheets;
+    final worksheets = document.worksheets.list;
     final worksheetsCount = worksheets.length;
 
     if (activeWorksheetIdx >= worksheetsCount) {
       activeWorksheetIdx = 0;
     }
 
-    return document..makeActive(worksheets[activeWorksheetIdx]);
+    document.worksheets.makeActive(worksheets[activeWorksheetIdx]);
+    return document;
   }
 
-  void _createWorksheet(Document document, Map<String, dynamic> ws) {
-    final worksheetEditor = document.addWorksheet(
+  void _createWorksheet(WorksheetsList worksheets, Map<String, dynamic> ws) {
+    final worksheet = worksheets.add(
       name: ws['name'],
       mainEmployee: ws['mainEmployee'] == null
           ? null
@@ -60,8 +62,10 @@ class JsonDocumentFactory implements DocumentFactory {
     );
 
     for (final request in (ws['requests'] as List<dynamic>)) {
-      _createRequestEntity(worksheetEditor, request);
+      _createRequestEntity(worksheet, request);
     }
+
+    worksheet.commit();
   }
 
   void _createRequestEntity(WorksheetEditor editor, Map<String, dynamic> data) {

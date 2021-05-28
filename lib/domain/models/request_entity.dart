@@ -58,8 +58,18 @@ abstract class RequestEntity extends Equatable {
   String get printableAccountId =>
       accountId?.toString().padLeft(6, '0') ?? "--";
 
-  /// Creates a builder to create a deep copy of the object
-  RequestEntityBuilder rebuild();
+  /// Creates a new object by replacing all fields
+  RequestEntity rebuild({
+    required int? accountId,
+    required String name,
+    required ConnectionPoint? connectionPoint,
+    required String? additionalInfo,
+    required RequestType? requestType,
+    required String? phoneNumber,
+    required CounterInfo? counter,
+    required String address,
+    required String? reason,
+  });
 
   @override
   List<Object?> get props => [
@@ -73,48 +83,4 @@ abstract class RequestEntity extends Equatable {
         counter,
         reason,
       ];
-}
-
-abstract class RequestEntityBuilder {
-  /// An account number (up to 6 digit)
-  int? accountId;
-
-  /// Requester name
-  String? name;
-
-  /// Requester address
-  String? address;
-
-  /// A request type
-  RequestType? requestType;
-
-  /// Phone number
-  String? phoneNumber;
-
-  /// Additional info to request (comments)
-  String? additionalInfo;
-
-  /// Connection point
-  ConnectionPoint? connectionPoint;
-
-  /// Electrical counter info
-  CounterInfo? counter;
-
-  /// Request reason
-  String? reason;
-
-  RequestEntityBuilder.from(RequestEntity entity) {
-    this
-      ..address = entity.address
-      ..accountId = entity.accountId
-      ..additionalInfo = entity.additionalInfo
-      ..connectionPoint = entity.connectionPoint
-      ..counter = entity.counter
-      ..name = entity.name
-      ..phoneNumber = entity.phoneNumber
-      ..reason = entity.reason
-      ..requestType = entity.requestType;
-  }
-
-  RequestEntity build();
 }

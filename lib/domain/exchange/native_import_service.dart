@@ -43,12 +43,20 @@ class NativeImporterService implements DocumentImporterService {
   Future<Document?> _chooseWorksheets(
       Document document, MultiTableChooser tableChooser) async {
     final worksheets = await _chooseWorksheets0(document, tableChooser);
-    return worksheets.isEmpty ? null : (document..setWorksheets(worksheets));
+
+    if (worksheets.isEmpty) {
+      return null;
+    }
+
+    document.worksheets
+      ..removeAll()
+      ..addWorksheets(worksheets);
+    return document;
   }
 
   Future<List<Worksheet>> _chooseWorksheets0(
       Document document, MultiTableChooser tableChooser) async {
-    final worksheets = document.currentWorksheets;
+    final worksheets = document.worksheets.list;
     return worksheets.length == 1
         ? Future.value(worksheets)
         : tableChooser(worksheets);

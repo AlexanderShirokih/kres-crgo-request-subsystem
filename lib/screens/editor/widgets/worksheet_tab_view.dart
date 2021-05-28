@@ -121,7 +121,7 @@ class WorksheetTabView extends HookWidget {
     void _onEditingDone() {
       isEditable.value = false;
       final doc = context.read<DocumentMasterBloc>().state.currentDocument;
-      doc.edit(worksheet).setName(controller.text);
+      doc.worksheets.edit(worksheet).setName(controller.text).commit();
     }
 
     void _onCancelEditing() {

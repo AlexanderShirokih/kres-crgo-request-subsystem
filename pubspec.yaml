@@ -34,6 +34,7 @@ dev_dependencies:
   test: ^1.16.5
   flutter_test:
     sdk: flutter
+  bloc_test: ^8.0.1
 
 # The following section is specific to Flutter.
 flutter:

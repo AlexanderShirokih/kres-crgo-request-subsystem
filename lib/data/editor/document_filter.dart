@@ -19,7 +19,7 @@ class DocumentFilter {
   Stream<Map<Worksheet, List<RequestEntity>>> get filteredRequests =>
       Rx.combineLatest2(
         _searchingText,
-        _document.worksheets,
+        _document.worksheets.stream,
         _filterRequests,
       );
 

@@ -23,7 +23,9 @@ class MappedValidator<E> extends Validator<E> {
   @override
   Iterable<String> validate(E entity) sync* {
     for (final entry in _validators) {
-      yield* entry.validator.validate(entry.fieldSelector(entity));
+      yield* entry.validator
+          .validate(entry.fieldSelector(entity))
+          .map((e) => entry.name + ": " + e);
     }
   }
 

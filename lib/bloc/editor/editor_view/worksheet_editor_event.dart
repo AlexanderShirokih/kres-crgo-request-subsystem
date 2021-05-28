@@ -67,3 +67,13 @@ class ChangeGroupEvent extends WorksheetEditorEvent {
   @override
   List<Object?> get props => [newGroup, target];
 }
+
+/// Used to trigger state update when worksheet changes
+class SetCurrentWorksheetEvent extends WorksheetEditorEvent {
+  final Worksheet worksheet;
+
+  const SetCurrentWorksheetEvent(this.worksheet) : super._();
+
+  @override
+  List<Object?> get props => [worksheet];
+}

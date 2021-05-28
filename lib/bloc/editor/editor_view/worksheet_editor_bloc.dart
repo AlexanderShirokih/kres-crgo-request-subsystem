@@ -2,42 +2,75 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
-import 'package:kres_requests2/domain/models/request_entity.dart';
-import 'package:kres_requests2/domain/models/worksheet.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:meta/meta.dart';
 
 part 'worksheet_editor_event.dart';
+
 part 'worksheet_editor_state.dart';
 
 /// BLoC responsible for control worksheet state.
 class WorksheetEditorBloc
     extends Bloc<WorksheetEditorEvent, WorksheetEditorState> {
-  /// The currently editing worksheet
-  final WorksheetEditor worksheet;
+  final Document document;
 
-  StreamSubscription<Worksheet>? _worksheetSubscription;
+  StreamSubscription<Worksheet>? _targetSubscription;
 
   WorksheetEditorBloc({
-    required this.worksheet,
-  }) : super(const WorksheetInitialState()) {
-    // _worksheetSubscription = worksheet.actualState.listen((state) {
-    //   add(_UpdateWorksheetStateEvent(state));
-    // });
-  }
+    required this.document,
+  }) : super(const WorksheetInitialState());
 
   @override
   Stream<WorksheetEditorState> mapEventToState(
     WorksheetEditorEvent event,
   ) async* {
-   if (event is SwapRequestsEvent) {
-      worksheet.swapRequests(event.from, event.to);
+    if (event is SetCurrentWorksheetEvent) {
+      yield* _keepSelectionState(_handleWorksheetUpdate(event.worksheet));
+    } else if (event is SwapRequestsEvent) {
+      yield* _swapRequests(event.from, event.to);
     } else if (event is RequestSelectionEvent) {
       yield* _handleSelectionEvent(event.target, event.action);
     } else if (event is ChangeGroupEvent) {
       yield* _keepSelectionState(
           _handleGroupUpdate(event.target, event.newGroup));
     }
+  }
+
+  Stream<WorksheetEditorState> _swapRequests(
+      RequestEntity from, RequestEntity to) async* {
+    final currentState = state;
+    if (currentState is WorksheetDataState) {
+      document.worksheets
+          .edit(currentState.worksheet)
+          .swapRequests(from, to)
+          .commit();
+    }
+  }
+
+  Stream<WorksheetEditorState> _handleWorksheetUpdate(
+      Worksheet worksheet) async* {
+    final currentState = state;
+    if (currentState is WorksheetDataState) {
+      // Update an existing data
+      yield currentState.copyWith(
+        requests: worksheet.requests,
+        worksheet: worksheet,
+      );
+    } else {
+      // First time emitting
+      yield WorksheetDataState(
+        document: document,
+        requests: worksheet.requests,
+        worksheet: worksheet,
+      );
+    }
+
+    // Subscribe to worksheet updates
+    await _targetSubscription?.cancel();
+    _targetSubscription =
+        document.worksheets.streamFor(worksheet).listen((updatedWorksheet) {
+      add(SetCurrentWorksheetEvent(updatedWorksheet));
+    });
   }
 
   // TODO: Remember selection list should be updated after WorksheetMoveDialog
@@ -59,6 +92,8 @@ class WorksheetEditorBloc
     }
 
     if (currentState is WorksheetSelectionState) {
+      final worksheet = currentState.worksheet;
+
       // We are already in the selection state
       WorksheetDataState handleSelectionAction() {
         switch (action) {
@@ -75,7 +110,7 @@ class WorksheetEditorBloc
 
           case SelectionAction.selectAll:
             return WorksheetSelectionState(
-              worksheet.current.requests.toSet(),
+              worksheet.requests.toSet(),
               currentState,
             );
           case SelectionAction.selectSingleGroup:
@@ -84,10 +119,13 @@ class WorksheetEditorBloc
               currentState,
             );
           case SelectionAction.dropSelected:
-            worksheet.removeRequests(currentState.selectionList.toList());
-            return currentState.copy();
+            document.worksheets
+                .edit(worksheet)
+                .removeRequests(currentState.selectionList.toList())
+                .commit();
+            return currentState.copyWith();
           case SelectionAction.cancel:
-            return currentState.copy();
+            return currentState.copyWith();
           case SelectionAction.begin:
             return WorksheetSelectionState({target!}, currentState);
         }
@@ -96,7 +134,7 @@ class WorksheetEditorBloc
       final newState = handleSelectionAction();
       if (newState is WorksheetSelectionState && newState.selectedCount == 0) {
         // If selection list becomes empty then disable the selection mode
-        yield newState.copy();
+        yield newState.copyWith();
       } else {
         yield newState;
       }
@@ -126,7 +164,7 @@ class WorksheetEditorBloc
       newGroupList[target] = newGroup;
     }
 
-    yield currentState.copy(
+    yield currentState.copyWith(
       groupList: Map.unmodifiable(newGroupList),
       lastGroupIndex: newGroup,
     );
@@ -149,7 +187,7 @@ class WorksheetEditorBloc
 
   @override
   Future<void> close() async {
-    await _worksheetSubscription?.cancel();
-    await super.close();
+    await _targetSubscription?.cancel();
+    return await super.close();
   }
 }

@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/models/worksheets_list.dart';
 import 'package:kres_requests2/domain/repositories.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 import 'package:meta/meta.dart';
@@ -15,14 +17,28 @@ class WorksheetConfigBloc extends Bloc<WorksheetConfigEvent, BaseState> {
   /// Repository for accessing employees list
   final Repository<Employee> employeeRepository;
 
-  /// Current worksheet
-  final WorksheetEditor worksheetEditor;
+  /// Current worksheets list
+  final WorksheetsList worksheetsList;
+
+  StreamSubscription<Worksheet>? _activeSubscription;
 
   WorksheetConfigBloc(
     this.employeeRepository,
-    this.worksheetEditor,
+    this.worksheetsList,
   ) : super(const InitialState()) {
+    _activeSubscription = worksheetsList.activeStream.listen((_) {
+      add(const _WorksheetConfigLoadData());
+    });
+
     add(const _WorksheetConfigLoadData());
+  }
+
+  @override
+  Future<void> close() async {
+    await _activeSubscription?.cancel();
+    _activeSubscription = null;
+
+    return await super.close();
   }
 
   @override
@@ -55,18 +71,18 @@ class WorksheetConfigBloc extends Bloc<WorksheetConfigEvent, BaseState> {
       return;
     }
 
+    final editor = worksheetsList.edit(worksheetsList.active);
     // Update employee assignment
     switch (type) {
       case SingleEmployeeType.main:
-        worksheetEditor.setMainEmployee(employee);
+        editor.setMainEmployee(employee);
         break;
       case SingleEmployeeType.chief:
-        worksheetEditor.setChiefEmployee(employee);
+        editor.setChiefEmployee(employee);
         break;
     }
 
-    // Rebuild worksheet config info
-    yield DataState(_buildConfigInfo(currentState.data.allEmployees));
+    editor.commit();
   }
 
   Stream<BaseState> _updateTargetDate(DateTime targetDate) async* {
@@ -75,10 +91,10 @@ class WorksheetConfigBloc extends Bloc<WorksheetConfigEvent, BaseState> {
       return;
     }
 
-    worksheetEditor.setTargetDate(targetDate);
-
-    // Rebuild worksheet config info
-    yield DataState(_buildConfigInfo(currentState.data.allEmployees));
+    worksheetsList
+        .edit(worksheetsList.active)
+        .setTargetDate(targetDate)
+        .commit();
   }
 
   Stream<BaseState> _updateTeamMembers(Set<Employee> employee) async* {
@@ -87,10 +103,10 @@ class WorksheetConfigBloc extends Bloc<WorksheetConfigEvent, BaseState> {
       return;
     }
 
-    worksheetEditor.setTeamMembers(employee);
-
-    // Rebuild worksheet config info
-    yield DataState(_buildConfigInfo(currentState.data.allEmployees));
+    worksheetsList
+        .edit(worksheetsList.active)
+        .setTeamMembers(employee)
+        .commit();
   }
 
   Stream<BaseState> _updateWorkTypes(Set<String> workTypes) async* {
@@ -99,14 +115,12 @@ class WorksheetConfigBloc extends Bloc<WorksheetConfigEvent, BaseState> {
       return;
     }
 
-    worksheetEditor.setWorkTypes(workTypes);
-
-    // Rebuild worksheet config info
-    yield DataState(_buildConfigInfo(currentState.data.allEmployees));
+    worksheetsList.edit(worksheetsList.active).setWorkTypes(workTypes).commit();
   }
 
   WorksheetConfigInfo _buildConfigInfo(Set<Employee> employees) {
-    final worksheet = worksheetEditor.current;
+    final worksheet = worksheetsList.active;
+
     final used = Set<Employee>.from(worksheet.getUsedEmployee());
 
     final unusedEmployees = employees.difference(used);
@@ -129,11 +143,7 @@ class WorksheetConfigBloc extends Bloc<WorksheetConfigEvent, BaseState> {
       mainEmployees: mainEmployees,
       teamMembersEmployees: teamMembersEmployees,
       chiefEmployees: chiefEmployees,
-      chiefEmployee: worksheet.chiefEmployee,
-      mainEmployee: worksheet.mainEmployee,
-      membersEmployee: worksheet.membersEmployee,
-      targetDate: worksheet.targetDate,
-      workTypes: worksheet.workTypes,
+      worksheet: worksheet,
     );
   }
 }

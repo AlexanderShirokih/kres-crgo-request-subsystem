@@ -1,9 +1,10 @@
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
-import 'package:kres_requests2/domain/repository/repository.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/domain/repository/repository.dart';
 
 /// Repository implementation for managing [RequestEntity]'s in locale paged
 /// scope
+/// TODO: REMOVE!
 class DocumentRequestEntityRepository extends Repository<RequestEntity> {
   final WorksheetEditor _worksheetEditor;
 
@@ -30,5 +31,10 @@ class DocumentRequestEntityRepository extends Repository<RequestEntity> {
   @override
   Future<void> update(RequestEntity entity) {
     return Future.sync(() => _worksheetEditor.update(entity));
+  }
+
+  @override
+  Future<void> onCommit() {
+    return Future.sync(() => _worksheetEditor.commit());
   }
 }
