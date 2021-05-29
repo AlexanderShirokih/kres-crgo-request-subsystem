@@ -5,7 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/request_processor.dart';
 import 'package:kres_requests2/domain/exchange/requests_export_service.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/repo/settings_repository.dart';
+import 'package:kres_requests2/domain/repository/settings_repository.dart';
 
 part 'exporter_event.dart';
 

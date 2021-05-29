@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/data/java/java_process_executor.dart';
-import 'package:kres_requests2/repo/settings_repository.dart';
+import 'package:kres_requests2/domain/repository/settings_repository.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 import 'package:meta/meta.dart';
 

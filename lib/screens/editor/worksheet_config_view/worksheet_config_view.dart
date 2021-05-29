@@ -48,8 +48,7 @@ class WorksheetConfigView extends StatelessWidget {
                       ..._header(context, 8.0, 'Выдающий распоряжение:'),
                       const SizedBox(height: 18.0),
                       DropdownEmployeeField(
-                        checkForDuplicates:
-                        info.isUsedElseWhere,
+                        checkForDuplicates: info.isUsedElseWhere,
                         positionLabel: 'Выберите выдающего распоряжения',
                         current: info.chiefEmployee,
                         employees: info.chiefEmployees,
@@ -67,8 +66,7 @@ class WorksheetConfigView extends StatelessWidget {
                         availableEmployees: info.teamMembersEmployees,
                         membersEmployee: info.membersEmployee,
                         canHaveMoreMembers: info.canHaveMoreMembers,
-                        checkForDuplicates:
-                            info.isUsedElseWhere,
+                        checkForDuplicates: info.isUsedElseWhere,
                       ),
                       const SizedBox(height: 24.0),
                       DatePicker(

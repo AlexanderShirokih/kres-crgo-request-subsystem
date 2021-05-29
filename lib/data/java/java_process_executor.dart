@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:kres_requests2/data/process_executor.dart';
-import 'package:kres_requests2/repo/settings_repository.dart';
+import 'package:kres_requests2/domain/repository/settings_repository.dart';
 
 import 'java_info.dart';
 
