@@ -1,4 +1,4 @@
-import 'package:kres_requests2/data/request_processor.dart';
+import 'package:kres_requests2/domain/request_processor.dart';
 import 'package:kres_requests2/domain/models.dart';
 
 /// A class responsible for exporting and printing documents

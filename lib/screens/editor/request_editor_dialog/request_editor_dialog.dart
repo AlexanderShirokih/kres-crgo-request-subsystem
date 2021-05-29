@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/editor/request_editor_dialog/request_editor_bloc.dart';
-import 'package:kres_requests2/data/validators/mapped_validator.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/utils.dart';
+import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 import 'package:kres_requests2/screens/common.dart';
 

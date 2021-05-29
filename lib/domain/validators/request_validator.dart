@@ -1,10 +1,6 @@
-import 'package:kres_requests2/data/validators.dart';
-import 'package:kres_requests2/data/validators/integer_validator.dart';
-import 'package:kres_requests2/data/validators/mapped_validator.dart';
-import 'package:kres_requests2/data/validators/string_validator.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
-import 'package:kres_requests2/domain/validator.dart';
+import 'package:kres_requests2/domain/validators.dart';
 
 /// [Validator] implementation that validates request instances
 class RequestValidator extends MappedValidator<RequestEntity> {

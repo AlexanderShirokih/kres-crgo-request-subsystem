@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/data/validators/string_validator.dart';
+import 'package:kres_requests2/domain/validators.dart';
 
 /// Text field which is editable only when edit button has pressed.
 /// [onChanged] callback called when user clicks done button or hits enter.

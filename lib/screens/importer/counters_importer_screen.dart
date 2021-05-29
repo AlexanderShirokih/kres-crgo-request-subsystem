@@ -35,5 +35,3 @@ class CountersImportScreen extends ImporterScreen {
         ),
       );
 }
-
-

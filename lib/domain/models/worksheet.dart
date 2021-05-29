@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:kres_requests2/data/editor/request_entity.dart';
+import 'package:kres_requests2/data/models/request_entity.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/models/counter_info.dart';
 import 'package:kres_requests2/domain/models/employee.dart';

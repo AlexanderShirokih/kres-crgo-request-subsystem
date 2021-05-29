@@ -1,6 +1,5 @@
-import 'package:kres_requests2/data/validators/string_validator.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
-import 'package:kres_requests2/domain/validator.dart';
+import 'package:kres_requests2/domain/validators.dart';
 
 import 'mapped_validator.dart';
 

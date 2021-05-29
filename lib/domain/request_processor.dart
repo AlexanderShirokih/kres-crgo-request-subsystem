@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/editor/json_document_factory.dart';
 import 'package:kres_requests2/data/editor/json_document_saver.dart';
-import 'package:kres_requests2/data/process_executor.dart';
+import 'package:kres_requests2/domain/process_executor.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';

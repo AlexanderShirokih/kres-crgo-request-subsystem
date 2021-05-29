@@ -3,7 +3,7 @@ import 'package:kres_requests2/data/repository/encoder.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:meta/meta.dart';
 
-/// Data access object for [Employee] objects
+/// Base data access object
 abstract class Dao<E, PE extends PersistedObject<int>> {
   /// Finds the last item by ordering by [id]
   Future<PE?> findLast();
