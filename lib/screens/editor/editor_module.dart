@@ -5,6 +5,7 @@ import 'package:kres_requests2/data/editor/json_document_saver.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/domain/service/request_editor_service.dart';
 import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/preview/preview_module.dart';
@@ -16,8 +17,11 @@ class EditorModule extends Module {
   @override
   List<Bind<Object>> get binds => [
         // Request entity related binds
-        Bind.factory<MappedValidator<RequestEntity>>((i) => RequestValidator()),
+        Bind.factory<MappedValidator<Request>>((i) => RequestValidator()),
         Bind.instance<DocumentSaver>(JsonDocumentSaver(saveLegacyInfo: false)),
+        Bind.factory<RequestEditorService>(
+          (i) => RequestEditorService(i(), i(), i.args!.data as Document),
+        ),
       ];
 
   @override

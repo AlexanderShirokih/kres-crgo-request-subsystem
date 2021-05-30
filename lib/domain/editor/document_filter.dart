@@ -16,24 +16,24 @@ class DocumentFilter {
     _searchingText.add(searchingText);
   }
 
-  Stream<Map<Worksheet, List<RequestEntity>>> get filteredRequests =>
+  Stream<Map<Worksheet, List<Request>>> get filteredRequests =>
       Rx.combineLatest2(
         _searchingText,
         _document.worksheets.stream,
         _filterRequests,
       );
 
-  Map<Worksheet, List<RequestEntity>> _filterRequests(
+  Map<Worksheet, List<Request>> _filterRequests(
       String searchText, List<Worksheet> ws) {
     if (searchText.isEmpty) {
-      return <Worksheet, List<RequestEntity>>{};
+      return <Worksheet, List<Request>>{};
     }
 
     searchText = searchText.toLowerCase();
 
     return Map.fromIterable(ws,
         key: (worksheet) => worksheet,
-        value: (worksheet) => worksheet.requests.where((RequestEntity request) {
+        value: (worksheet) => worksheet.requests.where((Request request) {
               return (request.printableAccountId.contains(searchText) ||
                   request.name.toLowerCase().contains(searchText) ||
                   request.address.toLowerCase().contains(searchText) ||

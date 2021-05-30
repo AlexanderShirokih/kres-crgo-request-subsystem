@@ -3,7 +3,7 @@ import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/domain/validators.dart';
 
 /// [Validator] implementation that validates request instances
-class RequestValidator extends MappedValidator<RequestEntity> {
+class RequestValidator extends MappedValidator<Request> {
   static const account = 'accountId';
   static const requestType = 'requestType';
   static const name = 'name';

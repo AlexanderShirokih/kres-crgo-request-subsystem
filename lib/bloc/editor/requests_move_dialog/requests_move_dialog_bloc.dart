@@ -1,68 +1,50 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
-import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/domain/models/request_entity.dart';
-import 'package:kres_requests2/domain/models/worksheet.dart';
+import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/service/request_editor_service.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 import 'package:meta/meta.dart';
 
 part 'requests_move_dialog_events.dart';
 
-/// Signals to close the dialog
-class ClosingState extends BaseState {
-  const ClosingState();
+/// Data holder class
+class RequestsMoveDialogData extends Equatable {
+  final Worksheet source;
+  final Iterable<Worksheet> targets;
+
+  RequestsMoveDialogData(this.source, this.targets);
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [source, targets];
 }
 
 /// BLoC responsible for moving requests among worksheets
 class RequestsMoveDialogBloc extends Bloc<RequestMoveEvent, BaseState> {
-  final Document _document;
-  final Worksheet _sourceWorksheet;
+  final RequestEditorService _service;
 
-  RequestsMoveDialogBloc(
-    this._document,
-    this._sourceWorksheet,
-  ) : super(
-          DataState(
-            _document.worksheets.list.where(
-              (worksheet) => worksheet != _sourceWorksheet,
-            ),
-          ),
-        );
+  RequestsMoveDialogBloc(this._service) : super(InitialState());
 
   @override
   Stream<BaseState> mapEventToState(RequestMoveEvent event) async* {
-    if (event is MoveRequestsEvent) {
-      final target = event.target == null
-          ? _document.worksheets
-              .add(name: _sourceWorksheet.name, activate: true)
-          : _document.worksheets.edit(event.target!);
+    final currentState = state;
 
-      _moveRequests(
-        targetWorksheetEditor: target,
+    if (event is FetchDataEvent) {
+      yield DataState<RequestsMoveDialogData>(
+        RequestsMoveDialogData(
+          event.sourceWorksheet,
+          _service.getTargetWorksheets(event.sourceWorksheet),
+        ),
+      );
+    } else if (event is MoveRequestsEvent &&
+        currentState is DataState<RequestsMoveDialogData>) {
+      _service.moveRequests(
+        source: currentState.data.source,
+        target: event.target,
         removeFromSource: event.removeFromSource,
         requests: event.requests,
       );
 
-      yield ClosingState();
-    }
-  }
-
-  void _moveRequests({
-    required List<RequestEntity> requests,
-    required WorksheetEditor targetWorksheetEditor,
-    required bool removeFromSource,
-  }) {
-    targetWorksheetEditor.addAll(requests);
-
-    if (removeFromSource) {
-      _document.worksheets
-          .edit(_sourceWorksheet)
-          .removeRequests(requests)
-          .commit();
+      yield CompletedState();
     }
   }
 }

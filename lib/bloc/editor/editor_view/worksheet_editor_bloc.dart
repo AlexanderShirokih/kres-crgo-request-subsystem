@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/service/worksheet_editor_service.dart';
 import 'package:meta/meta.dart';
 
 part 'worksheet_editor_event.dart';
@@ -12,12 +13,12 @@ part 'worksheet_editor_state.dart';
 /// BLoC responsible for control worksheet state.
 class WorksheetEditorBloc
     extends Bloc<WorksheetEditorEvent, WorksheetEditorState> {
-  final Document document;
+  final WorksheetEditorService service;
 
   StreamSubscription<Worksheet>? _targetSubscription;
 
   WorksheetEditorBloc({
-    required this.document,
+    required this.service,
   }) : super(const WorksheetInitialState());
 
   @override
@@ -36,14 +37,10 @@ class WorksheetEditorBloc
     }
   }
 
-  Stream<WorksheetEditorState> _swapRequests(
-      RequestEntity from, RequestEntity to) async* {
+  Stream<WorksheetEditorState> _swapRequests(Request from, Request to) async* {
     final currentState = state;
     if (currentState is WorksheetDataState) {
-      document.worksheets
-          .edit(currentState.worksheet)
-          .swapRequests(from, to)
-          .commit();
+      service.swapRequest(currentState.worksheet, from, to);
     }
   }
 
@@ -59,16 +56,17 @@ class WorksheetEditorBloc
     } else {
       // First time emitting
       yield WorksheetDataState(
-        document: document,
+        document: service.document,
         requests: worksheet.requests,
         worksheet: worksheet,
       );
     }
 
-    // Subscribe to worksheet updates
     await _targetSubscription?.cancel();
+
+    // Subscribe to worksheet updates
     _targetSubscription =
-        document.worksheets.streamFor(worksheet).listen((updatedWorksheet) {
+        service.listenOn(worksheet).listen((updatedWorksheet) {
       add(SetCurrentWorksheetEvent(updatedWorksheet));
     });
   }
@@ -83,7 +81,7 @@ class WorksheetEditorBloc
 
   /// Deals some action with the selection list
   Stream<WorksheetEditorState> _handleSelectionEvent(
-    RequestEntity? target,
+    Request? target,
     SelectionAction action,
   ) async* {
     final currentState = state;
@@ -119,10 +117,8 @@ class WorksheetEditorBloc
               currentState,
             );
           case SelectionAction.dropSelected:
-            document.worksheets
-                .edit(worksheet)
-                .removeRequests(currentState.selectionList.toList())
-                .commit();
+            service.removeRequests(
+                worksheet, currentState.selectionList.toList());
             return currentState.copyWith();
           case SelectionAction.cancel:
             return currentState.copyWith();
@@ -145,7 +141,7 @@ class WorksheetEditorBloc
 
   /// Handles changes on the request group
   Stream<WorksheetEditorState> _handleGroupUpdate(
-    RequestEntity target,
+    Request target,
     int newGroup,
   ) async* {
     final currentState = state;
@@ -154,8 +150,7 @@ class WorksheetEditorBloc
     }
 
     // Create new modifiable map
-    final Map<RequestEntity, int> newGroupList =
-        Map.from(currentState.groupList);
+    final Map<Request, int> newGroupList = Map.from(currentState.groupList);
 
     // `0` group means `no group`, else update the group
     if (newGroup == 0) {

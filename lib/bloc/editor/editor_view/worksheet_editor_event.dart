@@ -8,8 +8,8 @@ abstract class WorksheetEditorEvent extends Equatable {
 
 /// Sends signal to swap two requests in the list
 class SwapRequestsEvent extends WorksheetEditorEvent {
-  final RequestEntity from;
-  final RequestEntity to;
+  final Request from;
+  final Request to;
 
   const SwapRequestsEvent({required this.from, required this.to}) : super._();
 
@@ -46,7 +46,7 @@ class RequestSelectionEvent extends WorksheetEditorEvent {
   /// Target request to do action on it.
   /// Required for [SelectionAction.begin], [SelectionAction.add] and
   /// [SelectionAction.remove] actions
-  final RequestEntity? target;
+  final Request? target;
 
   /// Specified what we should do with the current selection
   final SelectionAction action;
@@ -59,7 +59,7 @@ class RequestSelectionEvent extends WorksheetEditorEvent {
 
 /// Updates group associated with the request
 class ChangeGroupEvent extends WorksheetEditorEvent {
-  final RequestEntity target;
+  final Request target;
   final int newGroup;
 
   const ChangeGroupEvent(this.target, this.newGroup) : super._();

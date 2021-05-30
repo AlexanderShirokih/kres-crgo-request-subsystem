@@ -4,7 +4,7 @@ import 'package:kres_requests2/domain/models/counter_info.dart';
 import 'package:kres_requests2/domain/models/request_type.dart';
 
 /// Describes information about work request
-abstract class RequestEntity extends Equatable {
+abstract class Request extends Equatable {
   /// An account number (up to 6 digit)
   final int? accountId;
 
@@ -32,7 +32,7 @@ abstract class RequestEntity extends Equatable {
   /// Request reason
   final String? reason;
 
-  const RequestEntity({
+  const Request({
     required this.name,
     required this.address,
     required this.counter,
@@ -59,7 +59,7 @@ abstract class RequestEntity extends Equatable {
       accountId?.toString().padLeft(6, '0') ?? "--";
 
   /// Creates a new object by replacing all fields
-  RequestEntity rebuild({
+  Request rebuild({
     required int? accountId,
     required String name,
     required ConnectionPoint? connectionPoint,

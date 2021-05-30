@@ -6,10 +6,21 @@ abstract class RequestMoveEvent extends Equatable {
   const RequestMoveEvent._();
 }
 
+/// Used to trigger initial data fetching
+class FetchDataEvent extends RequestMoveEvent {
+  /// Current source worksheet from which request will copying
+  final Worksheet sourceWorksheet;
+
+  const FetchDataEvent(this.sourceWorksheet) : super._();
+
+  @override
+  List<Object?> get props => [sourceWorksheet];
+}
+
 /// Triggers moving requests
 class MoveRequestsEvent extends RequestMoveEvent {
   /// Target requests to be moved or copied
-  final List<RequestEntity> requests;
+  final List<Request> requests;
 
   /// If `true` then moving requests will be removed from the source worksheet
   final bool removeFromSource;

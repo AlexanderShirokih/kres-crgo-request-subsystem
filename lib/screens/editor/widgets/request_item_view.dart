@@ -6,7 +6,7 @@ import 'package:kres_requests2/domain/models/request_entity.dart';
 /// Describes single item of request entity
 class RequestItemView extends StatelessWidget {
   final int position;
-  final RequestEntity request;
+  final Request request;
 
   final bool isHighlighted;
 
@@ -315,7 +315,7 @@ class _ChooseColorDialog extends StatelessWidget {
                     decoration: BoxDecoration(
                       border: initialGroup == index
                           ? Border.all(
-                              color: Theme.of(context).accentColor,
+                              color: Theme.of(context).colorScheme.secondary,
                               width: 4.0,
                             )
                           : Border.all(

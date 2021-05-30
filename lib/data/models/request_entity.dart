@@ -5,7 +5,7 @@ import 'package:kres_requests2/domain/models/counter_info.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
 
 /// Request entity implementation that uses internal ID as [PersistedObject]
-class RequestEntityImpl extends RequestEntity implements PersistedObject<int> {
+class RequestEntityImpl extends Request implements PersistedObject<int> {
   @override
   final int id;
 
@@ -33,7 +33,7 @@ class RequestEntityImpl extends RequestEntity implements PersistedObject<int> {
         );
 
   @override
-  RequestEntity rebuild({
+  Request rebuild({
     required int? accountId,
     required String name,
     required ConnectionPoint? connectionPoint,

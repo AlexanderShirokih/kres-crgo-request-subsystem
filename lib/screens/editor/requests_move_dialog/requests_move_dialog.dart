@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/bloc/editor/requests_move_dialog/requests_move_dialog_bloc.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/screens/bloc.dart';
-import 'package:kres_requests2/bloc/editor/requests_move_dialog/requests_move_dialog_bloc.dart';
 
 /// Defines worksheet movement strategy
 enum MoveMethod {
@@ -17,11 +17,8 @@ enum MoveMethod {
 }
 
 class RequestsMoveDialog extends StatelessWidget {
-  /// Editing document
-  final Document document;
-
   /// Requests to be moved
-  final List<RequestEntity> movingRequests;
+  final List<Request> movingRequests;
 
   /// The donor worksheet
   final Worksheet sourceWorksheet;
@@ -30,7 +27,6 @@ class RequestsMoveDialog extends StatelessWidget {
   final MoveMethod moveMethod;
 
   const RequestsMoveDialog({
-    required this.document,
     required this.movingRequests,
     required this.sourceWorksheet,
     required this.moveMethod,
@@ -55,23 +51,21 @@ class RequestsMoveDialog extends StatelessWidget {
         width: 400,
         height: 300,
         child: BlocProvider(
-          create: (_) => RequestsMoveDialogBloc(
-            document,
-            sourceWorksheet,
-          ),
+          create: (_) => RequestsMoveDialogBloc(Modular.get())
+            ..add(FetchDataEvent(sourceWorksheet)),
           child: BlocConsumer<RequestsMoveDialogBloc, BaseState>(
               listener: (context, state) {
-            if (state is ClosingState) {
+            if (state is CompletedState) {
               Navigator.pop(context, true);
             }
           }, builder: (context, state) {
-            if (state is! DataState<Iterable<Worksheet>>) {
+            if (state is! DataState<RequestsMoveDialogData>) {
               return Text('Нет данных :(');
             }
 
             return ListView(
               children: [
-                ...state.data.map(
+                ...state.data.targets.map(
                   (e) => _createListTile(FontAwesomeIcons.file, e.name, () {
                     context
                         .read<RequestsMoveDialogBloc>()

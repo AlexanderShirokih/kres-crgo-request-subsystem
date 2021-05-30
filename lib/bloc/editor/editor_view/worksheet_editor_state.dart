@@ -17,9 +17,9 @@ class WorksheetInitialState extends WorksheetEditorState {
 /// State used to show the worksheet data
 class WorksheetDataState extends WorksheetEditorState {
   /// A list of request entities
-  final List<RequestEntity> requests;
+  final List<Request> requests;
 
-  final Map<RequestEntity, int> groupList;
+  final Map<Request, int> groupList;
 
   /// Index of the last used group
   final int lastGroupIndex;
@@ -42,7 +42,7 @@ class WorksheetDataState extends WorksheetEditorState {
   }) : super._();
 
   /// Filers requests related to a one group
-  Set<RequestEntity> getAllByGroup(int group) {
+  Set<Request> getAllByGroup(int group) {
     if (groupList.isEmpty) return {};
 
     return groupList.entries
@@ -55,12 +55,12 @@ class WorksheetDataState extends WorksheetEditorState {
   List<Object?> get props => [groupList, requests, worksheet, document];
 
   /// Returns index of group associated with the [request]
-  int getGroup(RequestEntity request) {
+  int getGroup(Request request) {
     return groupList.isNotEmpty ? groupList[request] ?? 0 : 0;
   }
 
   /// Returns `true` if [request] is highlighted
-  bool getIsHighlighted(RequestEntity request) {
+  bool getIsHighlighted(Request request) {
     // TODO: Implement highlighting
     // highlighted != null &&
     //     highlighted!.contains(request),
@@ -69,8 +69,8 @@ class WorksheetDataState extends WorksheetEditorState {
 
   /// Creates a deep copy with customizable params
   WorksheetDataState copyWith({
-    List<RequestEntity>? requests,
-    Map<RequestEntity, int>? groupList,
+    List<Request>? requests,
+    Map<Request, int>? groupList,
     int? lastGroupIndex,
     Worksheet? worksheet,
     Document? document,
@@ -87,7 +87,7 @@ class WorksheetDataState extends WorksheetEditorState {
 /// State used when selection mode is on
 class WorksheetSelectionState extends WorksheetDataState {
   /// Set of the all checked requests
-  final Set<RequestEntity> selectionList;
+  final Set<Request> selectionList;
 
   /// Returns count of selected requests
   int get selectedCount => selectionList.fold(0, (prev, val) => prev + 1);
@@ -121,5 +121,5 @@ class WorksheetSelectionState extends WorksheetDataState {
   List<Object?> get props => [selectionList, ...super.props];
 
   /// Returns `true` if the [request] is in selection
-  bool getIsSelected(RequestEntity request) => selectionList.contains(request);
+  bool getIsSelected(Request request) => selectionList.contains(request);
 }

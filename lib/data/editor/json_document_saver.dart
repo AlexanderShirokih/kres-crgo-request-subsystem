@@ -68,7 +68,7 @@ class JsonDocumentSaver implements DocumentSaver {
         'name': position.name,
       };
 
-  Map<String, dynamic> _storeRequest(RequestEntity request) => {
+  Map<String, dynamic> _storeRequest(Request request) => {
         'accountId': request.accountId,
         'name': request.name,
         'address': request.address,

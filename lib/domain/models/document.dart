@@ -17,10 +17,10 @@ class Document extends Equatable {
 
   /// Current document save path.
   /// `null` values means document save path is not defined
-  Stream<File?> get savePath => _savePath;
+  Stream<File?> get savePathStream => _savePath;
 
   /// Last save date
-  Stream<DateTime> get updateDate => _updateDate;
+  Stream<DateTime> get updateDateStream => _updateDate;
 
   /// Last save date
   DateTime get currentUpdateDate => _updateDate.requireValue;
@@ -57,7 +57,7 @@ class Document extends Equatable {
   }
 
   /// Stores document in [DocumentSaver].
-  /// Before calling this function. Document should have [savePath] set.
+  /// Before calling this function. Document should have [savePathStream] set.
   Future<void> save(DocumentSaver saver) async {
     if (!_savePath.hasValue) {
       throw ('savePath == null!');

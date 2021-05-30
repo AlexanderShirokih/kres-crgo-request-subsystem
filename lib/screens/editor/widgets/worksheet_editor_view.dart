@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/bloc/editor/editor_view/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/screens/editor/request_editor_dialog/request_editor_dialog.dart';
@@ -173,7 +172,7 @@ class WorksheetEditorView extends HookWidget {
   void _showRequestEditorDialog(
     BuildContext ctx,
     WorksheetDataState state, [
-    RequestEntity? initial,
+    Request? initial,
   ]) =>
       showDialog(
         context: ctx,
@@ -280,11 +279,9 @@ class WorksheetEditorView extends HookWidget {
     MoveMethod moveMethod,
     WorksheetSelectionState state,
   ) {
-    final doc = context.read<DocumentMasterBloc>().state.currentDocument;
     showDialog(
       context: context,
       builder: (_) => RequestsMoveDialog(
-        document: doc,
         sourceWorksheet: state.worksheet,
         movingRequests: state.selectionList.toList(growable: false),
         moveMethod: moveMethod,

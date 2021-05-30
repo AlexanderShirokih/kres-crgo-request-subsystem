@@ -26,7 +26,7 @@ class _TemporaryWorksheet {
   Set<Employee> membersEmployee;
 
   /// All requests related with the worksheet
-  List<RequestEntity> requests;
+  List<Request> requests;
 
   /// The worksheet targeting date
   DateTime? targetDate;
@@ -94,7 +94,7 @@ class WorksheetEditor {
 
   /// Swaps request positions in the worksheet
   /// Both requests should already be present in the worksheet
-  WorksheetEditor swapRequests(RequestEntity from, RequestEntity to) {
+  WorksheetEditor swapRequests(Request from, Request to) {
     if (from != to) {
       final requests = _current.requests;
       final idx = requests.indexOf(to);
@@ -112,7 +112,7 @@ class WorksheetEditor {
   }
 
   /// Updates currently existing request
-  WorksheetEditor update(RequestEntity entity) {
+  WorksheetEditor update(Request entity) {
     final persisted = entity as PersistedObject;
 
     final oldEntityId = _current.requests
@@ -128,7 +128,7 @@ class WorksheetEditor {
   }
 
   /// Removes requests from the worksheet
-  WorksheetEditor removeRequests(List<RequestEntity> requests) {
+  WorksheetEditor removeRequests(List<Request> requests) {
     final currentRequests = _current.requests;
 
     for (final toRemove in requests) {
@@ -138,7 +138,7 @@ class WorksheetEditor {
   }
 
   /// Adds all requests to the worksheet
-  WorksheetEditor addAll(List<RequestEntity> requests) {
+  WorksheetEditor addAll(List<Request> requests) {
     _current.requests.addAll(requests);
     _current.workTypes = _current.workTypes.union(
       _getDefaultWorkTypes(),

@@ -20,8 +20,10 @@ class MyApp extends StatelessWidget {
         ],
         title: 'Заявки КРЭС 2.0',
         theme: ThemeData(
-          primaryColor: Colors.blue,
-          accentColor: Colors.deepOrange,
+          colorScheme: ColorScheme.fromSwatch(
+            accentColor: Colors.deepOrange,
+            primarySwatch: Colors.blue,
+          ),
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
       ).modular();

@@ -25,7 +25,7 @@ class Worksheet extends Equatable {
   final Set<Employee> membersEmployee;
 
   /// All requests related with the worksheet
-  final List<RequestEntity> requests;
+  final List<Request> requests;
 
   /// The worksheet targeting date
   final DateTime? targetDate;
@@ -50,7 +50,7 @@ class Worksheet extends Equatable {
   bool get isEmpty => requests.isEmpty;
 
   // Inserts default request types based on requests list
-  static _getDefaultWorkTypes(Iterable<RequestEntity> requests) => requests
+  static _getDefaultWorkTypes(Iterable<Request> requests) => requests
       .where((e) => e.requestType != null)
       .map((e) => e.requestType!.fullName)
       .cast<String>()
@@ -62,7 +62,7 @@ class Worksheet extends Equatable {
   int _nextRequestId() => ++_lastRequestId;
 
   /// Creates new empty request entity
-  RequestEntity createRequestEntity({
+  Request createRequestEntity({
     int? accountId,
     String? name,
     String? reason,
@@ -91,7 +91,7 @@ class Worksheet extends Equatable {
   Worksheet copyWith({
     String? name,
     Set<String>? workTypes,
-    List<RequestEntity>? requests,
+    List<Request>? requests,
     DateTime? targetDate,
     Employee? mainEmployee,
     Employee? chiefEmployee,

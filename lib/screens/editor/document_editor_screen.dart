@@ -10,6 +10,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/bloc/editor/editor_view/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/service/worksheet_editor_service.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view/worksheet_config_view.dart';
 
 import 'widgets/worksheet_editor_view.dart';
@@ -219,8 +220,9 @@ class DocumentEditorScreen extends HookWidget {
                     .map((e) => BlocProvider(
                           key: ObjectKey(e),
                           create: (_) => WorksheetEditorBloc(
-                              document: state.currentDocument)
-                            ..add(SetCurrentWorksheetEvent(e)),
+                            service:
+                                WorksheetEditorService(state.currentDocument),
+                          )..add(SetCurrentWorksheetEvent(e)),
                           child: WorksheetEditorView(),
                         ))
                     .toList(),

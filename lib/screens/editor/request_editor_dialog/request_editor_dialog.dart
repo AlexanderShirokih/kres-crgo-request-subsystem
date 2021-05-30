@@ -10,11 +10,11 @@ import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 import 'package:kres_requests2/screens/common.dart';
 
-/// Dialog for editing [RequestEntity].
+/// Dialog for editing [Request].
 class RequestEditorDialog extends StatelessWidget {
-  /// Current [RequestEntity] to be edited. If `null` then new request entity
+  /// Current [Request] to be edited. If `null` then new request entity
   /// will be created
-  final RequestEntity? initial;
+  final Request? initial;
 
   /// Target worksheet
   final Worksheet worksheet;
@@ -22,7 +22,7 @@ class RequestEditorDialog extends StatelessWidget {
   /// Target document
   final Document document;
 
-  final MappedValidator<RequestEntity> validator;
+  final MappedValidator<Request> validator;
 
   const RequestEditorDialog({
     Key? key,
@@ -35,10 +35,8 @@ class RequestEditorDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<RequestEditorBloc>(
-      create: (_) => RequestEditorBloc(
-        requestValidator: validator,
-        requestTypeRepository: Modular.get(),
-      )..add(SetRequestEvent(
+      create: (_) => RequestEditorBloc(service: Modular.get())
+        ..add(SetRequestEvent(
           document: document,
           worksheet: worksheet,
           request: initial,
@@ -69,7 +67,7 @@ class RequestEditorDialog extends StatelessWidget {
 
 class _RequestEditorView extends HookWidget {
   final DataState<RequestEditorData> dataState;
-  final MappedValidator<RequestEntity> validator;
+  final MappedValidator<Request> validator;
 
   const _RequestEditorView(this.dataState, this.validator);
 
