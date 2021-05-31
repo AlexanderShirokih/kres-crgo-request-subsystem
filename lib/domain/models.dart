@@ -7,3 +7,4 @@ export 'models/recent_document_info.dart';
 export 'models/request_entity.dart';
 export 'models/request_type.dart';
 export 'models/worksheet.dart';
+export 'models/worksheet_config_info.dart';

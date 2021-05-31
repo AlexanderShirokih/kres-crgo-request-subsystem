@@ -2,9 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/models/request_entity.dart';
-import 'package:kres_requests2/domain/models/request_type.dart';
-import 'package:kres_requests2/domain/service/request_editor_service.dart';
+import 'package:kres_requests2/domain/service/request_service.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -47,7 +45,7 @@ class RequestEditorData extends Equatable {
 /// BLoC for editing [Request]
 class RequestEditorBloc extends Bloc<RequestEditorEvent, BaseState> {
   /// Service for handling actions on [Request]
-  final RequestEditorService service;
+  final RequestService service;
 
   /// Creates new [RequestEditorBloc]
   RequestEditorBloc({required this.service}) : super(InitialState());

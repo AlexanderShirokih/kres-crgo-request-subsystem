@@ -10,7 +10,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/bloc/editor/editor_view/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/service/worksheet_editor_service.dart';
 import 'package:kres_requests2/screens/editor/worksheet_config_view/worksheet_config_view.dart';
 
 import 'widgets/worksheet_editor_view.dart';
@@ -93,10 +92,7 @@ class DocumentEditorScreen extends HookWidget {
         builder: (context, state) => Container(
           width: 420.0,
           child: Drawer(
-            child: WorksheetConfigView(
-              Modular.get(),
-              state.currentDocument.worksheets,
-            ),
+            child: WorksheetConfigView(Modular.get()),
           ),
         ),
       );
@@ -127,9 +123,8 @@ class DocumentEditorScreen extends HookWidget {
           _createActionButton(
             icon: FaIcon(FontAwesomeIcons.save),
             tooltip: 'Сохранить',
-            onPressed: (context) => context
-                .read<DocumentMasterBloc>()
-                .add(WorksheetMasterSaveEvent()),
+            onPressed: (context) =>
+                context.read<DocumentMasterBloc>().add(SaveEvent()),
           ),
           const SizedBox(width: 24.0),
           _createActionButton(
@@ -137,7 +132,7 @@ class DocumentEditorScreen extends HookWidget {
             tooltip: 'Сохранить как (копия)',
             onPressed: (context) => context
                 .read<DocumentMasterBloc>()
-                .add(WorksheetMasterSaveEvent(changePath: true)),
+                .add(SaveEvent(changePath: true)),
           ),
           const SizedBox(width: 24.0),
           Builder(
@@ -219,10 +214,11 @@ class DocumentEditorScreen extends HookWidget {
                 children: worksheets.list
                     .map((e) => BlocProvider(
                           key: ObjectKey(e),
-                          create: (_) => WorksheetEditorBloc(
-                            service:
-                                WorksheetEditorService(state.currentDocument),
-                          )..add(SetCurrentWorksheetEvent(e)),
+                          create: (_) =>
+
+                              /// TODO: Create in Module with factory bind
+                              WorksheetEditorBloc(service: Modular.get())
+                                ..add(SetCurrentWorksheetEvent(e)),
                           child: WorksheetEditorView(),
                         ))
                     .toList(),

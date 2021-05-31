@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/service/request_editor_service.dart';
+import 'package:kres_requests2/domain/service/request_service.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -20,7 +20,7 @@ class RequestsMoveDialogData extends Equatable {
 
 /// BLoC responsible for moving requests among worksheets
 class RequestsMoveDialogBloc extends Bloc<RequestMoveEvent, BaseState> {
-  final RequestEditorService _service;
+  final RequestService _service;
 
   RequestsMoveDialogBloc(this._service) : super(InitialState());
 

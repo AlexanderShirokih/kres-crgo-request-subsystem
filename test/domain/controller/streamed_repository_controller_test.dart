@@ -1,9 +1,8 @@
-//@dart=2.9
+import 'package:mocktail/mocktail.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
-import 'package:mockito/mockito.dart';
 import 'package:test/test.dart';
 
 class _TestEntity extends Equatable {
@@ -29,44 +28,46 @@ class _MockRepositoryController extends Mock
     implements AbstractRepositoryController<_TestEntity> {}
 
 void main() {
-  AbstractRepositoryController<_TestEntity> mockController;
-  StreamedRepositoryController<_TestEntity> streamedController;
+  late AbstractRepositoryController<_TestEntity> mockController;
+  late StreamedRepositoryController<_TestEntity> streamedController;
 
   setUp(() {
     mockController = _MockRepositoryController();
+
     streamedController = StreamedRepositoryController(mockController);
 
-    when(mockController.getAll()).thenAnswer(
-          (_) async =>
-      [
+    when(() => mockController.hasUncommittedChanges).thenReturn(true);
+    when(() => mockController.commit()).thenAnswer((_) async => true);
+    when(() => mockController.getAll()).thenAnswer(
+      (_) async => [
         _PersistedTestEntity(1, 'A'),
       ],
     );
   });
 
-  test('all method calls proxies', () {
+  test('all methods call their proxies', () {
     final testEntity = _TestEntity('test');
     final testEntity2 = _TestEntity('test2');
 
     streamedController.add(testEntity);
-    verify(mockController.add(testEntity)).called(1);
+    verify(() => mockController.add(testEntity)).called(1);
 
     streamedController.update(testEntity, testEntity2);
-    verify(mockController.update(testEntity, testEntity2)).called(1);
+    verify(() => mockController.update(testEntity, testEntity2)).called(1);
 
     streamedController.delete(testEntity2);
-    verify(mockController.delete(testEntity2)).called(1);
+    verify(() => mockController.delete(testEntity2)).called(1);
 
     streamedController.undo();
-    verify(mockController.undo()).called(1);
+    verify(() => mockController.undo()).called(1);
 
     streamedController.commit();
-    verify(mockController.commit()).called(1);
+    verify(() => mockController.commit()).called(1);
 
     streamedController.hasUncommittedChanges;
-    verify(mockController.hasUncommittedChanges).called(1);
+    verify(() => mockController.hasUncommittedChanges).called(1);
 
     streamedController.getAll();
-    verify(mockController.getAll()).called(greaterThan(1));
+    verify(() => mockController.getAll()).called(greaterThan(1));
   });
 }

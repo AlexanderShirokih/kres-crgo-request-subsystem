@@ -3,48 +3,31 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/models/worksheets_list.dart';
-import 'package:kres_requests2/domain/repositories.dart';
+import 'package:kres_requests2/domain/service/worksheet_service.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 import 'package:meta/meta.dart';
 
 part 'worksheet_config_events.dart';
 
-part 'worksheet_config_info.dart';
-
 /// BLoC responsible for managing employees, target date, and work types
 class WorksheetConfigBloc extends Bloc<WorksheetConfigEvent, BaseState> {
-  /// Repository for accessing employees list
-  final Repository<Employee> employeeRepository;
-
-  /// Current worksheets list
-  final WorksheetsList worksheetsList;
+  /// Service for handling worksheet related operations
+  final WorksheetService _service;
 
   StreamSubscription<Worksheet>? _activeSubscription;
 
   WorksheetConfigBloc(
-    this.employeeRepository,
-    this.worksheetsList,
+    this._service,
   ) : super(const InitialState()) {
-    _activeSubscription = worksheetsList.activeStream.listen((_) {
-      add(const _WorksheetConfigLoadData());
+    _activeSubscription = _service.listenOnActive().listen((active) {
+      add(FetchDataEvent(active));
     });
-
-    add(const _WorksheetConfigLoadData());
-  }
-
-  @override
-  Future<void> close() async {
-    await _activeSubscription?.cancel();
-    _activeSubscription = null;
-
-    return await super.close();
   }
 
   @override
   Stream<BaseState> mapEventToState(WorksheetConfigEvent event) async* {
-    if (event is _WorksheetConfigLoadData) {
-      yield* _loadData();
+    if (event is FetchDataEvent) {
+      yield* _loadData(event.target);
     } else if (event is UpdateSingleEmployeeEvent) {
       yield* _updateSingleEmployeeEvent(event.employee, event.type);
     } else if (event is UpdateTargetDateEvent) {
@@ -56,94 +39,61 @@ class WorksheetConfigBloc extends Bloc<WorksheetConfigEvent, BaseState> {
     }
   }
 
-  Stream<BaseState> _loadData() async* {
-    final employees = Set<Employee>.from(await employeeRepository.getAll());
+  @override
+  Future<void> close() async {
+    await _activeSubscription?.cancel();
+    _activeSubscription = null;
 
-    yield DataState(_buildConfigInfo(employees));
+    return await super.close();
+  }
+
+  Stream<BaseState> _loadData(Worksheet target) async* {
+    final info = await _service.getWorksheetInfo(target);
+    yield DataState(info);
   }
 
   Stream<BaseState> _updateSingleEmployeeEvent(
     Employee? employee,
     SingleEmployeeType type,
   ) async* {
-    final currentState = state;
-    if (currentState is! DataState<WorksheetConfigInfo>) {
-      return;
-    }
+    final ws = _findTargetWorksheet();
+    if (ws == null) return;
 
-    final editor = worksheetsList.edit(worksheetsList.active);
     // Update employee assignment
     switch (type) {
       case SingleEmployeeType.main:
-        editor.setMainEmployee(employee);
+        _service.updateMainEmployee(ws, employee);
         break;
       case SingleEmployeeType.chief:
-        editor.setChiefEmployee(employee);
+        _service.updateChiefEmployee(ws, employee);
         break;
     }
-
-    editor.commit();
   }
 
   Stream<BaseState> _updateTargetDate(DateTime targetDate) async* {
-    final currentState = state;
-    if (currentState is! DataState<WorksheetConfigInfo>) {
-      return;
-    }
-
-    worksheetsList
-        .edit(worksheetsList.active)
-        .setTargetDate(targetDate)
-        .commit();
+    final ws = _findTargetWorksheet();
+    if (ws == null) return;
+    _service.updateTargetDate(ws, targetDate);
   }
 
   Stream<BaseState> _updateTeamMembers(Set<Employee> employee) async* {
-    final currentState = state;
-    if (currentState is! DataState<WorksheetConfigInfo>) {
-      return;
-    }
+    final ws = _findTargetWorksheet();
+    if (ws == null) return;
 
-    worksheetsList
-        .edit(worksheetsList.active)
-        .setTeamMembers(employee)
-        .commit();
+    _service.updateTeamMembers(ws, employee);
   }
 
   Stream<BaseState> _updateWorkTypes(Set<String> workTypes) async* {
-    final currentState = state;
-    if (currentState is! DataState<WorksheetConfigInfo>) {
-      return;
-    }
+    final ws = _findTargetWorksheet();
+    if (ws == null) return;
 
-    worksheetsList.edit(worksheetsList.active).setWorkTypes(workTypes).commit();
+    _service.updateWorkTypes(ws, workTypes);
   }
 
-  WorksheetConfigInfo _buildConfigInfo(Set<Employee> employees) {
-    final worksheet = worksheetsList.active;
-
-    final used = Set<Employee>.from(worksheet.getUsedEmployee());
-
-    final unusedEmployees = employees.difference(used);
-
-    final mainEmployees = [
-      ...unusedEmployees,
-      if (worksheet.mainEmployee != null) worksheet.mainEmployee!
-    ].toSet();
-
-    final teamMembersEmployees =
-        unusedEmployees.union(worksheet.membersEmployee);
-
-    final chiefEmployees = [
-      ...unusedEmployees.where((e) => e.accessGroup >= 4),
-      if (worksheet.chiefEmployee != null) worksheet.chiefEmployee!
-    ].toSet();
-
-    return WorksheetConfigInfo(
-      allEmployees: employees,
-      mainEmployees: mainEmployees,
-      teamMembersEmployees: teamMembersEmployees,
-      chiefEmployees: chiefEmployees,
-      worksheet: worksheet,
-    );
+  Worksheet? _findTargetWorksheet() {
+    final current = state;
+    if (current is DataState<WorksheetConfigInfo>) {
+      return current.data.worksheet;
+    }
   }
 }

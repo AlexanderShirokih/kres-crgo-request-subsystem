@@ -6,12 +6,15 @@ abstract class WorksheetConfigEvent extends Equatable {
   const WorksheetConfigEvent._();
 }
 
-/// Used internally to trigger data loading
-class _WorksheetConfigLoadData extends WorksheetConfigEvent {
-  const _WorksheetConfigLoadData() : super._();
+/// Used to trigger data loading
+class FetchDataEvent extends WorksheetConfigEvent {
+  /// Target worksheet for listening to
+  final Worksheet target;
+
+  const FetchDataEvent(this.target) : super._();
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [target];
 }
 
 /// Describes employee types with single assignment

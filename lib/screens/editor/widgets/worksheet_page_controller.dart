@@ -35,8 +35,7 @@ class WorksheetsPageController extends StatelessWidget {
                       ? AddNewWorkSheetTabView(
                           (worksheetCreationMode) =>
                               context.read<DocumentMasterBloc>().add(
-                                    WorksheetMasterAddNewWorksheetEvent(
-                                        worksheetCreationMode),
+                                    AddNewWorksheetEvent(worksheetCreationMode),
                                   ),
                         )
                       : _buildTabView(
@@ -65,9 +64,9 @@ class WorksheetsPageController extends StatelessWidget {
           //     ? state.filteredItems[current]?.length ?? 0:
           0,
       isActive: current == active,
-      onSelect: () => context.read<DocumentMasterBloc>().add(
-          WorksheetMasterWorksheetActionEvent(
-              current, WorksheetAction.makeActive)),
+      onSelect: () => context
+          .read<DocumentMasterBloc>()
+          .add(WorksheetActionEvent(current, WorksheetAction.makeActive)),
       onRemove: canRemove
           ? null
           : () {
@@ -81,13 +80,12 @@ class WorksheetsPageController extends StatelessWidget {
                 ).then((result) {
                   if (result)
                     context.read<DocumentMasterBloc>().add(
-                        WorksheetMasterWorksheetActionEvent(
-                            current, WorksheetAction.remove));
+                        WorksheetActionEvent(current, WorksheetAction.remove));
                 });
               } else {
-                context.read<DocumentMasterBloc>().add(
-                    WorksheetMasterWorksheetActionEvent(
-                        current, WorksheetAction.remove));
+                context
+                    .read<DocumentMasterBloc>()
+                    .add(WorksheetActionEvent(current, WorksheetAction.remove));
               }
             },
     );

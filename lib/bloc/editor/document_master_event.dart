@@ -7,15 +7,14 @@ abstract class DocumentMasterEvent extends Equatable {
 }
 
 /// Event that used when user wants to save current document.
-class WorksheetMasterSaveEvent extends DocumentMasterEvent {
+class SaveEvent extends DocumentMasterEvent {
   /// If `true` 'Save as' behaviour will be used.
   final bool changePath;
 
   /// If [popAfterSave] is `true` that the page will popped after file have saved.
   final bool popAfterSave;
 
-  const WorksheetMasterSaveEvent(
-      {this.changePath = false, this.popAfterSave = false})
+  const SaveEvent({this.changePath = false, this.popAfterSave = false})
       : super._();
 
   @override
@@ -23,10 +22,10 @@ class WorksheetMasterSaveEvent extends DocumentMasterEvent {
 }
 
 /// Used to add a page (worksheet) and optionally open importer wizard
-class WorksheetMasterAddNewWorksheetEvent extends DocumentMasterEvent {
+class AddNewWorksheetEvent extends DocumentMasterEvent {
   final WorksheetCreationMode mode;
 
-  const WorksheetMasterAddNewWorksheetEvent(this.mode) : super._();
+  const AddNewWorksheetEvent(this.mode) : super._();
 
   @override
   List<Object> get props => [mode];
@@ -53,15 +52,14 @@ enum WorksheetAction {
 }
 
 /// Initiates an action on the target worksheet
-class WorksheetMasterWorksheetActionEvent extends DocumentMasterEvent {
+class WorksheetActionEvent extends DocumentMasterEvent {
   /// Selected worksheet
   final Worksheet targetWorksheet;
 
   ///  Action to be done on selected worksheet
   final WorksheetAction action;
 
-  const WorksheetMasterWorksheetActionEvent(this.targetWorksheet, this.action)
-      : super._();
+  const WorksheetActionEvent(this.targetWorksheet, this.action) : super._();
 
   @override
   List<Object> get props => [targetWorksheet, action];

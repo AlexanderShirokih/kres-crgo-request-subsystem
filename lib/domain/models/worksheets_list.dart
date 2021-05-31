@@ -173,7 +173,7 @@ class WorksheetsList extends Equatable implements WorksheetChangeListener {
   }
 
   /// Removes [worksheet] from the document
-  Future<void> remove(Worksheet worksheet) async {
+  void remove(Worksheet worksheet) {
     // Get the current worksheets
     final currentWorksheets = _editors.requireValue;
 

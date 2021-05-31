@@ -4,7 +4,7 @@ import '../repositories.dart';
 import '../validator.dart';
 
 /// Service for handling actions on [Request]
-class RequestEditorService {
+class RequestService {
   /// Repository for fetching request types list
   final Repository<RequestType> _requestTypeRepository;
 
@@ -13,7 +13,7 @@ class RequestEditorService {
 
   final Document _document;
 
-  const RequestEditorService(
+  const RequestService(
     this._requestTypeRepository,
     this._requestValidator,
     this._document,

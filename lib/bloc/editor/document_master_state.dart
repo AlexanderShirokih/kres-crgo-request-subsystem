@@ -9,7 +9,8 @@ abstract class DocumentMasterState extends Equatable {
   final Document currentDocument;
 
   /// Document title. Contains current document save path
-  Stream<String> get documentTitle => currentDocument.savePathStream.map((savePath) {
+  Stream<String> get documentTitle =>
+      currentDocument.savePathStream.map((savePath) {
         if (savePath == null) return "Несохранённый документ [sP=null]";
         return savePath.path;
       });

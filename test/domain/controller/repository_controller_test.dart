@@ -1,9 +1,8 @@
-//@dart=2.9
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/repository/repository.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 class _TestEntity extends Equatable {
@@ -40,21 +39,29 @@ void main() {
     _PersistedTestEntity(3, 'C'),
   ];
 
-  Repository<_TestEntity> repository;
-  RepositoryController<_TestEntity> controller;
+  late Repository<_TestEntity> repository;
+  late RepositoryController<_TestEntity> controller;
 
   setUp(() {
     repository = _MockRepository();
     controller = RepositoryController(_TestObjectBuilder(), repository);
-    when(repository.getAll()).thenAnswer((_) async => testEntities);
+    registerFallbackValue(_TestEntity("test"));
+    when(() => repository.getAll()).thenAnswer((_) async => testEntities);
+    when(() => repository.update(any()))
+        .thenAnswer((_) async => Future.value());
+    when(() => repository.delete(any()))
+        .thenAnswer((_) async => Future.value());
+    when(() => repository.add(any())).thenAnswer(
+      (inv) async => inv.positionalArguments[0],
+    );
   });
 
   test('getAll() fetches data from repository when no changes', () async {
     expect(await controller.getAll(), equals(testEntities));
-    verify(repository.getAll()).called(1);
+    verify(() => repository.getAll()).called(1);
 
     expect(await controller.getAll(), equals(testEntities));
-    verify(repository.getAll()).called(1);
+    verify(() => repository.getAll()).called(1);
     verifyNoMoreInteractions(repository);
   });
 
@@ -73,7 +80,7 @@ void main() {
   test(
     'Adding item on empty repository will cause add() on repository after commit',
     () async {
-      when(repository.getAll()).thenAnswer(
+      when(() => repository.getAll()).thenAnswer(
         (_) async => <_PersistedTestEntity>[],
       );
 
@@ -81,8 +88,8 @@ void main() {
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(repository.add(_TestEntity('A')));
-      verify(repository.getAll()).called(lessThanOrEqualTo(1));
+      verify(() => repository.add(_TestEntity('A')));
+      verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
   );
@@ -90,7 +97,7 @@ void main() {
   test(
     'Deleting item on empty repository will not cause action',
     () async {
-      when(repository.getAll()).thenAnswer(
+      when(() => repository.getAll()).thenAnswer(
         (_) async => <_PersistedTestEntity>[],
       );
 
@@ -98,7 +105,7 @@ void main() {
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(repository.getAll()).called(lessThanOrEqualTo(1));
+      verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
   );
@@ -106,7 +113,7 @@ void main() {
   test(
     'Adding and then deleting the same item will not cause action',
     () async {
-      when(repository.getAll()).thenAnswer(
+      when(() => repository.getAll()).thenAnswer(
         (_) async => <_PersistedTestEntity>[],
       );
 
@@ -115,7 +122,7 @@ void main() {
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(repository.getAll()).called(lessThanOrEqualTo(1));
+      verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
   );
@@ -123,7 +130,7 @@ void main() {
   test(
     'Updating item on empty repository will not cause action',
     () async {
-      when(repository.getAll()).thenAnswer(
+      when(() => repository.getAll()).thenAnswer(
         (_) async => <_PersistedTestEntity>[],
       );
 
@@ -131,7 +138,7 @@ void main() {
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(repository.getAll()).called(lessThanOrEqualTo(1));
+      verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
   );
@@ -139,7 +146,7 @@ void main() {
   test(
     'Adding and then updating item on empty repository will cause insertion',
     () async {
-      when(repository.getAll()).thenAnswer(
+      when(() => repository.getAll()).thenAnswer(
         (_) async => <_PersistedTestEntity>[],
       );
 
@@ -148,8 +155,8 @@ void main() {
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(repository.add(_TestEntity('B')));
-      verify(repository.getAll()).called(lessThanOrEqualTo(1));
+      verify(() => repository.add(_TestEntity('B')));
+      verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
   );
@@ -162,8 +169,8 @@ void main() {
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(repository.add(_TestEntity('E')));
-      verify(repository.getAll()).called(lessThanOrEqualTo(1));
+      verify(() => repository.add(_TestEntity('E')));
+      verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
   );
@@ -178,10 +185,10 @@ void main() {
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(repository.add(_TestEntity('F')));
-      verify(repository.update(_PersistedTestEntity(1, 'E')));
-      verify(repository.delete(_PersistedTestEntity(2, 'B')));
-      verify(repository.getAll()).called(lessThanOrEqualTo(1));
+      verify(() => repository.add(_TestEntity('F')));
+      verify(() => repository.update(_PersistedTestEntity(1, 'E')));
+      verify(() => repository.delete(_PersistedTestEntity(2, 'B')));
+      verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
   );
@@ -196,9 +203,9 @@ void main() {
     verifyZeroInteractions(repository);
 
     await expectLater(controller.commit(), completes);
-    verify(repository.add(_TestEntity('F')));
-    verify(repository.update(_PersistedTestEntity(1, 'D')));
-    verify(repository.getAll()).called(lessThanOrEqualTo(1));
+    verify(() => repository.add(_TestEntity('F')));
+    verify(() => repository.update(_PersistedTestEntity(1, 'D')));
+    verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
     verifyNoMoreInteractions(repository);
   });
 
@@ -214,8 +221,7 @@ void main() {
 
     await controller.commit();
 
-    verify(repository.getAll()).called(lessThanOrEqualTo(1));
+    verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
     verifyNoMoreInteractions(repository);
-
   });
 }

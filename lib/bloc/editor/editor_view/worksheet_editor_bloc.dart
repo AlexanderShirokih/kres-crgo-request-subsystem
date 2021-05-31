@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/service/worksheet_editor_service.dart';
+import 'package:kres_requests2/domain/service/worksheet_service.dart';
 import 'package:meta/meta.dart';
 
 part 'worksheet_editor_event.dart';
@@ -13,7 +13,7 @@ part 'worksheet_editor_state.dart';
 /// BLoC responsible for control worksheet state.
 class WorksheetEditorBloc
     extends Bloc<WorksheetEditorEvent, WorksheetEditorState> {
-  final WorksheetEditorService service;
+  final WorksheetService service;
 
   StreamSubscription<Worksheet>? _targetSubscription;
 

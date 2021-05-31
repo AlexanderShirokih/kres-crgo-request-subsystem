@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
-import 'package:kres_requests2/domain/models/employee.dart';
-import 'package:kres_requests2/domain/models/worksheets_list.dart';
-import 'package:kres_requests2/domain/repository/employee_repository.dart';
+import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/service/worksheet_service.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 
 import 'widgets/date_picker.dart';
@@ -13,24 +12,23 @@ import 'widgets/work_types_list.dart';
 
 /// Bottom side view used to manage employees, target date, and work types
 class WorksheetConfigView extends StatelessWidget {
-  /// Repository for accessing employees list
-  final EmployeeRepository employeeRepository;
+  /// Service for handling actions on worksheet
+  final WorksheetService service;
 
-  /// Current worksheets list
-  final WorksheetsList worksheetsList;
-
-  const WorksheetConfigView(this.employeeRepository, this.worksheetsList);
+  const WorksheetConfigView(this.service);
 
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => WorksheetConfigBloc(employeeRepository, worksheetsList),
+      create: (_) => WorksheetConfigBloc(service),
       child: BlocBuilder<WorksheetConfigBloc, BaseState>(
         builder: (context, state) {
           if (state is! DataState<WorksheetConfigInfo>) {
-            return SizedBox(
-              width: 12.0,
-              height: 12.0,
-              child: CircularProgressIndicator(),
+            return Center(
+              child: SizedBox(
+                width: 12.0,
+                height: 12.0,
+                child: CircularProgressIndicator(),
+              ),
             );
           }
 

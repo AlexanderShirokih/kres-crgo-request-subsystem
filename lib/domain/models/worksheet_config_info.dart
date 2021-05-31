@@ -1,8 +1,10 @@
-part of 'worksheet_config_bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:kres_requests2/domain/models.dart';
 
 /// Data structure that holds info for worksheet config view
 class WorksheetConfigInfo extends Equatable {
-  final Worksheet _worksheet;
+  /// Target worksheet
+  final Worksheet worksheet;
 
   /// All available employees in the database
   final Set<Employee> allEmployees;
@@ -17,19 +19,19 @@ class WorksheetConfigInfo extends Equatable {
   final Set<Employee> chiefEmployees;
 
   /// Current main employee
-  Employee? get mainEmployee => _worksheet.mainEmployee;
+  Employee? get mainEmployee => worksheet.mainEmployee;
 
   /// Current chief employee
-  Employee? get chiefEmployee => _worksheet.chiefEmployee;
+  Employee? get chiefEmployee => worksheet.chiefEmployee;
 
   /// Current set of members employee
-  Set<Employee> get membersEmployee => _worksheet.membersEmployee;
+  Set<Employee> get membersEmployee => worksheet.membersEmployee;
 
   /// Current set of work types
-  Set<String> get workTypes => _worksheet.workTypes;
+  Set<String> get workTypes => worksheet.workTypes;
 
   /// Current worksheet targeting date
-  DateTime? get targetDate => _worksheet.targetDate;
+  DateTime? get targetDate => worksheet.targetDate;
 
   /// Returns `true if more team members can be added to the current worksheet
   bool get canHaveMoreMembers => membersEmployee.length < 6;
@@ -39,7 +41,7 @@ class WorksheetConfigInfo extends Equatable {
 
   /// Returns `true` if [employee] used more than once at any positions
   bool isUsedElseWhere(Employee employee) =>
-      _worksheet.isUsedElseWhere(employee);
+      worksheet.isUsedElseWhere(employee);
 
   const WorksheetConfigInfo({
     required this.allEmployees,
@@ -48,7 +50,7 @@ class WorksheetConfigInfo extends Equatable {
     required this.teamMembersEmployees,
     required Worksheet worksheet,
     this.hasExpandedTeamField = false,
-  }) : _worksheet = worksheet;
+  }) : worksheet = worksheet;
 
   @override
   List<Object?> get props => [
