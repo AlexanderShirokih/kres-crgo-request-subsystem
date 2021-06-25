@@ -1,24 +1,24 @@
 import 'package:kres_requests2/domain/request_processor.dart';
-import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/domain/service/document_manager.dart';
 
 import 'document_import_service.dart';
 
-/// Exception class used when request processor module is missing
-class ImporterProcessorMissingException implements Exception {}
-
 /// A class responsible for importing requests stored as mega-billing XLS
 /// document
-class MegaBillingImportService implements DocumentImporterService {
+class MegaBillingImportService implements DocumentImporter {
   final AbstractRequestProcessor _requestProcessor;
 
   MegaBillingImportService(this._requestProcessor);
 
   /// Imports document previously exported to XLS by Mega-billing app
   @override
-  Future<Document?> importDocument(String filePath) async {
+  Future<bool> importDocument(String filePath, DocumentManager manager) async {
     final isExists = await _requestProcessor.isAvailable();
-    if (!isExists) throw ImporterProcessorMissingException();
+    if (!isExists) throw ImporterModuleMissingException();
 
-    return await _requestProcessor.importRequests(filePath);
+    final result = await _requestProcessor.importRequests(filePath);
+    manager.addDocument(result);
+
+    return true;
   }
 }

@@ -57,7 +57,10 @@ class StartupScreen extends StatelessWidget {
         crossAxisCount: 3,
         children: [
           StartupScreenButtonContainer(
-            onPressed: () => _runWorksheetEditorScreen(Document.empty()),
+            onPressed: () {
+              // TODO: Move to BLoC
+              Modular.to.pushNamed('/document/edit?start=blank');
+            },
             child: TextStartupTile(
               title: 'Новый документ',
               description: 'Создать новый пустой документ заявок',
@@ -66,13 +69,8 @@ class StartupScreen extends StatelessWidget {
           ),
           StartupScreenButtonContainer(
             onPressed: () {
-              Modular.to
-                  .pushNamed<Document>('/document/open')
-                  .then((resultDocument) {
-                if (resultDocument != null) {
-                  return _runWorksheetEditorScreen(resultDocument);
-                }
-              });
+              // TODO: Move to BLoC
+              Modular.to.pushNamed('/document/open');
             },
             child: TextStartupTile(
               title: 'Открыть документ',
@@ -82,12 +80,8 @@ class StartupScreen extends StatelessWidget {
           ),
           StartupScreenButtonContainer(
             onPressed: () {
-              Modular.to
-                  .pushNamed<Document>('/document/import/requests')
-                  .then((resultDocument) {
-                if (resultDocument != null)
-                  return _runWorksheetEditorScreen(resultDocument);
-              });
+              // TODO: Move to BLoC
+              Modular.to.pushNamed('/document/import/requests');
             },
             child: TextStartupTile(
               title: 'Импорт заявок',
@@ -100,9 +94,6 @@ class StartupScreen extends StatelessWidget {
       ),
     );
   }
-
-  Future _runWorksheetEditorScreen(Document targetDocument) =>
-      Modular.to.pushNamed('/document/edit', arguments: targetDocument);
 
   Widget _createRecentlyOpenedItems() {
     return BlocProvider(
@@ -135,14 +126,11 @@ class StartupScreen extends StatelessWidget {
                 .map(
                   (e) => StartupScreenButtonContainer(
                     onPressed: () {
+                      // TODO: Move to BLoC
                       Modular.to.pushNamed<Document>(
                         '/document/open',
                         arguments: {'filePath': e.path},
-                      ).then((resultDocument) {
-                        if (resultDocument != null) {
-                          return _runWorksheetEditorScreen(resultDocument);
-                        }
-                      });
+                      );
                     },
                     child: RecentDocumentTile(
                       name: e.name,

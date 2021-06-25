@@ -1,8 +1,9 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/bloc/preview/preview_bloc.dart';
-import 'package:kres_requests2/domain/exchange/requests_export_service.dart';
-import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/domain/service/export_file_chooser.dart';
+import 'package:kres_requests2/domain/service/export_service.dart';
+import 'package:kres_requests2/domain/service/requests_export_service.dart';
 import 'package:kres_requests2/screens/preview/document_preview_screen.dart';
 
 /// Module that contains pages to work with document preview and exporting
@@ -10,16 +11,21 @@ class PreviewModule extends Module {
   @override
   List<Bind<Object>> get binds => [
         Bind.factory((i) => RequestsExportService(i())),
+        Bind.singleton<ExportFileChooser>((i) => ExportFileChooserImpl()),
+        Bind.factory<ExportService>((i) => ExportService(i(), i(), i())),
+        Bind.factory<ExporterBloc>(
+          (i) => ExporterBloc(service: i()),
+        ),
+        Bind.factory<PreviewBloc>(
+          (i) => PreviewBloc(i()),
+        ),
       ];
 
   @override
   final List<ModularRoute> routes = [
     ChildRoute(
       '/',
-      child: (_, args) => BlocProvider(
-        create: (_) => PreviewBloc(args.data as Document),
-        child: DocumentPreviewScreen(),
-      ),
+      child: (_, args) => DocumentPreviewScreen(),
     ),
   ];
 }

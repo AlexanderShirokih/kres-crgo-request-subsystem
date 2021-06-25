@@ -1,18 +1,20 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:meta/meta.dart';
 
 part 'preview_events.dart';
+
 part 'preview_states.dart';
 
 /// BLoC for preparing document worksheets for printing or
 /// exporting to external formats
 class PreviewBloc extends Bloc<PreviewEvent, PreviewState> {
-  /// Currently opened document
-  final Document document;
+  /// Document manager instance
+  final DocumentManager manager;
 
-  PreviewBloc(this.document) : super(PreviewInitialState()) {
+  PreviewBloc(this.manager) : super(PreviewInitialState()) {
     add(_CheckDocumentEvent());
   }
 
@@ -26,7 +28,14 @@ class PreviewBloc extends Bloc<PreviewEvent, PreviewState> {
   }
 
   Stream<PreviewState> _checkDocumentInfo() async* {
-    final worksheets = document.worksheets.list;
+    final selected = manager.selected;
+
+    if (selected == null) {
+      yield EmptyDocumentState();
+      return;
+    }
+
+    final worksheets = selected.worksheets.list;
 
     final nonEmptyWorksheets = worksheets
         .where((worksheet) => !worksheet.isEmpty)
@@ -42,7 +51,7 @@ class PreviewBloc extends Bloc<PreviewEvent, PreviewState> {
         .toList();
 
     yield ShowDocumentState(
-      document,
+      selected,
       allWorksheet: nonEmptyWorksheets,
       selectedWorksheets: validWorksheets,
     );

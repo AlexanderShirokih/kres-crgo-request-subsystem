@@ -16,33 +16,46 @@ class _ExporterErrorEvent extends ExporterEvent {
   List<Object> get props => [error, this.stackTrace];
 }
 
-/// Used internally to open save dialog
-class _ExporterShowSaveDialogEvent extends ExporterEvent {
-  @override
-  List<Object> get props => [];
-}
+
 
 /// Common class for starting events
-abstract class _ExporterInitialEvent extends ExporterEvent {
-  const _ExporterInitialEvent() : super();
+abstract class _ExporterStartEvent extends ExporterEvent {
+  const _ExporterStartEvent() : super();
+}
+
+/// Used to open save dialog and export document in appropriate format
+class ExportEvent extends _ExporterStartEvent {
+  /// Target export format
+  final ExportFormat exportFormat;
+
+  /// Document to be exported
+  final Document document;
+
+  const ExportEvent(this.exportFormat, this.document);
+
+  @override
+  List<Object> get props => [exportFormat, document];
 }
 
 /// Used to fetch printers list
-class ExporterShowPrintersListEvent extends _ExporterInitialEvent {
+class ShowPrintersListEvent extends _ExporterStartEvent {
   @override
   List<Object> get props => [];
 }
 
 /// Signals to print target document on [printerName]
-class ExporterPrintDocumentEvent extends _ExporterInitialEvent {
+class PrintDocumentEvent extends _ExporterStartEvent {
+  /// Document to be printed
+  final Document document;
+
   /// Chosen printer
   final String printerName;
 
   /// Skip printing working lists
   final bool noLists;
 
-  const ExporterPrintDocumentEvent(this.printerName, this.noLists);
+  const PrintDocumentEvent(this.document, this.printerName, this.noLists);
 
   @override
-  List<Object> get props => [printerName, noLists];
+  List<Object> get props => [document, printerName, noLists];
 }

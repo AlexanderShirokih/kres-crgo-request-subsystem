@@ -3,6 +3,7 @@ import 'package:kres_requests2/bloc/editor/worksheet_config_view/worksheet_confi
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/worksheet_service.dart';
 import 'package:kres_requests2/screens/bloc.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../../common_mocks.dart';

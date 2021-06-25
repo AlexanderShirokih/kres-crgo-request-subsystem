@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
+import 'package:kres_requests2/screens/bloc.dart';
 import 'package:kres_requests2/screens/common.dart';
 
 /// Page used to show document import wizard
@@ -22,27 +23,24 @@ abstract class ImporterScreen extends StatelessWidget {
           title: Text(title),
         ),
         body: Builder(
-          builder: (ctx) => BlocConsumer<ImporterBloc, ImporterState>(
+          builder: (ctx) => BlocConsumer<ImporterBloc, BaseState>(
             bloc: ctx.read<ImporterBloc>(),
             builder: (_, state) {
-              if (state is ImporterLoadingState) {
-                return LoadingView("Загрузка файла ${state.path}");
-              } else if (state is ImportErrorState) {
+              if (state is PickingFileState) {
+                return LoadingView('Ожидание выбора файла');
+              } else if (state is LoadingState) {
+                return LoadingView('Загрузка файла');
+              } else if (state is ErrorState) {
                 return ErrorView(
-                  errorDescription: state.error,
+                  errorDescription: state.error.toString(),
                   stackTrace: state.stackTrace,
                 );
-              } else if (state is ImporterDoneState &&
-                  state.importResult == ImportResult.documentEmpty) {
-                return _EmptyStateView();
               } else {
                 return buildIdleView(context);
               }
             },
             listener: (context, state) {
-              if (state is ImporterDoneState) {
-                Navigator.pop(context, state.document);
-              } else if (state is ImporterModuleMissingState) {
+              if (state is ImporterModuleMissingState) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     duration: Duration(seconds: 6),
@@ -54,26 +52,4 @@ abstract class ImporterScreen extends StatelessWidget {
           ),
         ),
       );
-}
-
-class _EmptyStateView extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'Полученный документ оказался пуст',
-            style: Theme.of(context).textTheme.headline4,
-          ),
-          const SizedBox(height: 28.0),
-          ElevatedButton(
-            child: Text('НАЗАД'),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
-    );
-  }
 }

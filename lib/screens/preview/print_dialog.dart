@@ -22,17 +22,15 @@ class PrintDialog extends StatelessWidget {
         width: 340.0,
         height: 380.0,
         child: BlocProvider(
-          create: (_) => ExporterBloc(
-            requestsService: Modular.get(),
-            settingsRepository: Modular.get(),
-            document: document,
-          ),
+          create: (_) =>
+              Modular.get<ExporterBloc>()..add(ShowPrintersListEvent()),
           child: Builder(
             builder: (context) => BlocConsumer(
               bloc: context.read<ExporterBloc>(),
               builder: (context, state) {
                 if (state is ExporterListPrintersState) {
                   return _ListPrintersView(
+                    document,
                     state.preferredPrinter,
                     state.availablePrinters,
                   );
@@ -75,10 +73,12 @@ class PrintDialog extends StatelessWidget {
 }
 
 class _ListPrintersView extends HookWidget {
+  final Document document;
   final String? preferredPrinter;
   final List<String> availablePrinters;
 
   const _ListPrintersView(
+    this.document,
     this.preferredPrinter,
     this.availablePrinters,
   );
@@ -96,9 +96,8 @@ class _ListPrintersView extends HookWidget {
           OutlinedButton.icon(
             icon: FaIcon(FontAwesomeIcons.sync),
             label: Text('Обновить'),
-            onPressed: () => context
-                .read<ExporterBloc>()
-                .add(ExporterShowPrintersListEvent()),
+            onPressed: () =>
+                context.read<ExporterBloc>().add(ShowPrintersListEvent()),
           ),
           const SizedBox(height: 12.0),
           BackButton(),
@@ -176,10 +175,10 @@ class _ListPrintersView extends HookWidget {
       ListTile(
         leading: FaIcon(FontAwesomeIcons.print),
         title: Text(printerName),
-        onTap: () =>
-            context.read<ExporterBloc>().add(ExporterPrintDocumentEvent(
-                  printerName,
-                  noLists,
-                )),
+        onTap: () => context.read<ExporterBloc>().add(PrintDocumentEvent(
+              document,
+              printerName,
+              noLists,
+            )),
       );
 }

@@ -3,6 +3,7 @@ import 'package:kres_requests2/bloc/editor/requests_move_dialog/requests_move_di
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/service/request_service.dart';
 import 'package:kres_requests2/screens/bloc.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../../common_mocks.dart';

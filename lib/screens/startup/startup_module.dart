@@ -6,12 +6,13 @@ import 'package:kres_requests2/data/editor/json_document_saver.dart';
 import 'package:kres_requests2/data/java/java_process_executor.dart';
 import 'package:kres_requests2/data/models.dart';
 import 'package:kres_requests2/data/models/recent_document_info.dart';
-import 'package:kres_requests2/domain/process_executor.dart';
 import 'package:kres_requests2/data/repository/storage_repository.dart';
-import 'package:kres_requests2/domain/request_processor.dart';
-import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/domain/domain.dart';
+import 'package:kres_requests2/domain/process_executor.dart';
 import 'package:kres_requests2/domain/repository/recent_documents_repository.dart';
+import 'package:kres_requests2/domain/request_processor.dart';
+import 'package:kres_requests2/domain/service/document_manager.dart';
+import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/screens/editor/document_module.dart';
 import 'package:kres_requests2/screens/settings/settings_module.dart';
 import 'package:kres_requests2/screens/startup/startup_screen.dart';
@@ -71,6 +72,7 @@ class StartupModule extends Module {
           (i) => StreamedRepositoryController(
               RepositoryController(RecentDocumentBuilder(), i())),
         ),
+        Bind.singleton<DocumentManager>((i) => DocumentManager()),
       ];
 
   @override

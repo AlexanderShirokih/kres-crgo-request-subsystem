@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/bloc/preview/preview_bloc.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/preview/print_dialog.dart';
 
@@ -16,26 +17,29 @@ import 'widgets/worksheet_card_group.dart';
 class DocumentPreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Вывод документа'),
-      ),
-      body: BlocBuilder<PreviewBloc, PreviewState>(
-        builder: (context, state) {
-          if (state is EmptyDocumentState) {
-            return Center(
-              child: Text(
-                'Документ пуст',
-                style: Theme.of(context).textTheme.headline4!.copyWith(
-                    color: Theme.of(context).textTheme.caption!.color),
-              ),
-            );
-          } else if (state is ShowDocumentState) {
-            return Builder(builder: (ctx) => _buildPage(ctx, state));
-          } else {
-            return LoadingView('...');
-          }
-        },
+    return BlocProvider(
+      create: (_) => Modular.get<PreviewBloc>(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Вывод документа'),
+        ),
+        body: BlocBuilder<PreviewBloc, PreviewState>(
+          builder: (context, state) {
+            if (state is EmptyDocumentState) {
+              return Center(
+                child: Text(
+                  'Документ пуст',
+                  style: Theme.of(context).textTheme.headline4!.copyWith(
+                      color: Theme.of(context).textTheme.caption!.color),
+                ),
+              );
+            } else if (state is ShowDocumentState) {
+              return Builder(builder: (ctx) => _buildPage(ctx, state));
+            } else {
+              return LoadingView('...');
+            }
+          },
+        ),
       ),
     );
   }

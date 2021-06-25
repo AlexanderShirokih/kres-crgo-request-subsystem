@@ -83,3 +83,14 @@ class WorksheetService {
     );
   }
 }
+
+/// Factory to create instances of [WorksheetService]
+class WorksheetServiceFactory {
+  final Repository<Employee> _employeeRepository;
+
+  WorksheetServiceFactory(this._employeeRepository);
+
+  /// Creates a new instance of [WorksheetService] for the [document]
+  WorksheetService createWorksheetService(Document document) =>
+      WorksheetService(document, _employeeRepository);
+}

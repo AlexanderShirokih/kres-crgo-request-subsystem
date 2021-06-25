@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/bloc/editor/worksheet_creation_mode.dart';
+import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models.dart';
 
-/// Widget that provides way to create new worksheet of certain type
+/// Widget that provides a way to create new worksheet of certain type
 class AddNewWorkSheetTabView extends HookWidget {
   final void Function(WorksheetCreationMode) onAddPressed;
 
@@ -100,6 +99,7 @@ class AddNewWorkSheetTabView extends HookWidget {
 class WorksheetTabView extends HookWidget {
   final bool isActive;
   final Worksheet worksheet;
+  final WorksheetEditor Function() editorBuilder;
   final int filteredItemsCount;
   final void Function() onSelect;
   final void Function()? onRemove;
@@ -107,6 +107,7 @@ class WorksheetTabView extends HookWidget {
   const WorksheetTabView({
     Key? key,
     required this.worksheet,
+    required this.editorBuilder,
     required this.filteredItemsCount,
     required this.isActive,
     required this.onSelect,
@@ -120,8 +121,7 @@ class WorksheetTabView extends HookWidget {
 
     void _onEditingDone() {
       isEditable.value = false;
-      final doc = context.read<DocumentMasterBloc>().state.currentDocument;
-      doc.worksheets.edit(worksheet).setName(controller.text).commit();
+      editorBuilder().setName(controller.text).commit();
     }
 
     void _onCancelEditing() {

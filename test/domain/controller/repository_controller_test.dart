@@ -185,9 +185,9 @@ void main() {
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(() => repository.add(_TestEntity('F')));
-      verify(() => repository.update(_PersistedTestEntity(1, 'E')));
-      verify(() => repository.delete(_PersistedTestEntity(2, 'B')));
+      verify(() => repository.add(_TestEntity('F'))).called(1);
+      verify(() => repository.update(_PersistedTestEntity(1, 'E'))).called(1);
+      verify(() => repository.delete(_PersistedTestEntity(2, 'B'))).called(1);
       verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
@@ -203,8 +203,8 @@ void main() {
     verifyZeroInteractions(repository);
 
     await expectLater(controller.commit(), completes);
-    verify(() => repository.add(_TestEntity('F')));
-    verify(() => repository.update(_PersistedTestEntity(1, 'D')));
+    verify(() => repository.add(_TestEntity('F'))).called(1);
+    verify(() => repository.update(_PersistedTestEntity(1, 'D'))).called(1);
     verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
     verifyNoMoreInteractions(repository);
   });

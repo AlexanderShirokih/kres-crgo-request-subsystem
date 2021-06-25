@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:kres_requests2/bloc/editor/editor_view/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/service/worksheet_service.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 import '../../common_mocks.dart';

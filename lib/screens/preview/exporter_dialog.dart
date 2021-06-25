@@ -1,55 +1,29 @@
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/screens/common.dart';
-import 'package:path/path.dart' as path;
-
-/// Extension for getting file extension string from [ExportFormat].
-extension on ExportFormat {
-  String formatExtension() {
-    switch (this) {
-      case ExportFormat.pdf:
-        return "pdf";
-      case ExportFormat.excel:
-        return "xlsx";
-    }
-  }
-}
 
 /// Opens file chooser dialog for exporting file to external formats
 class ExporterDialog extends StatelessWidget {
-  /// Exporting document
-  final Document document;
-
   /// Target export format
   final ExportFormat exportFormat;
 
-  final String suggestedExportBasename;
+  final Document document;
 
-  ExporterDialog(
-    this.exportFormat,
-    this.document,
-  ) : suggestedExportBasename =
-            '${document.suggestedName}.${exportFormat.formatExtension()}';
+  ExporterDialog(this.exportFormat, this.document);
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Экспорт в ${exportFormat.formatExtension().toUpperCase()}'),
+      title: Text('Экспорт в ${exportFormat.extension().toUpperCase()}'),
       content: Container(
         width: 300.0,
         height: 300.0,
         child: BlocProvider(
-          create: (_) => ExporterBloc(
-            exportFormat: exportFormat,
-            requestsService: Modular.get(),
-            settingsRepository: Modular.get(),
-            fileChooser: _showFileChooser,
-            document: document,
-          ),
+          create: (_) => Modular.get<ExporterBloc>()
+            ..add(ExportEvent(exportFormat, document)),
           child: Builder(
             builder: (context) => BlocConsumer<ExporterBloc, ExporterState>(
               builder: (context, state) {
@@ -95,32 +69,5 @@ class ExporterDialog extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<String?> _showFileChooser() async {
-    final extension = exportFormat.formatExtension();
-    final dotExtension = '.$extension';
-    final res = await getSavePath(
-      initialDirectory: document.currentSavePath?.parent.absolute.path,
-      suggestedName: _correctExtension(suggestedExportBasename, dotExtension),
-      confirmButtonText: 'Сохранить',
-      acceptedTypeGroups: [
-        XTypeGroup(
-          label: "Документ ${extension.toUpperCase()}",
-          extensions: [extension],
-        )
-      ],
-    );
-
-    if (res == null) {
-      return null;
-    }
-
-    return _correctExtension(res, dotExtension);
-  }
-
-  String _correctExtension(String filePath, String ext) {
-    if (path.extension(filePath) != ext) return '$filePath$ext';
-    return filePath;
   }
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:kres_requests2/domain/editor/document_filter.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/screens/common.dart';
 
 enum DocumentSavingState {
   pickingSavePath,
@@ -74,5 +75,21 @@ class DocumentService {
   /// When [searchText] is empty filter will be disabled
   void setSearchFilter(String searchText) {
     _documentFilter.setSearchingTest(searchText);
+  }
+}
+
+/// Factory to build [DocumentService] instances
+class DocumentServiceFactory {
+  final DocumentSaver _documentSaver;
+
+  DocumentServiceFactory(this._documentSaver);
+
+  DocumentService createDocumentService(Document document) {
+    return DocumentService(
+      document,
+      _documentSaver,
+      DocumentFilter(document),
+      showSaveDialog,
+    );
   }
 }

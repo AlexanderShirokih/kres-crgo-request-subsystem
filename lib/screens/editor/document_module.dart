@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
-import 'package:kres_requests2/domain/exchange/counters_import_service.dart';
-import 'package:kres_requests2/domain/exchange/file_chooser.dart';
-import 'package:kres_requests2/domain/exchange/megabilling_import_service.dart';
-import 'package:kres_requests2/domain/exchange/native_import_service.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/service/file_picker_service.dart';
+import 'package:kres_requests2/domain/service/import/counters_import_service.dart';
+import 'package:kres_requests2/domain/service/import/document_import_service.dart';
+import 'package:kres_requests2/domain/service/import/megabilling_import_service.dart';
+import 'package:kres_requests2/domain/service/import/native_import_service.dart';
+import 'package:kres_requests2/domain/service/import_file_chooser.dart';
 import 'package:kres_requests2/screens/editor/editor_module.dart';
 import 'package:kres_requests2/screens/importer/counters_importer_screen.dart';
 import 'package:kres_requests2/screens/importer/dialogs/table_chooser_dialog.dart';
@@ -23,12 +25,12 @@ class DocumentModule extends Module {
       '/open',
       child: (_, args) {
         final Map<String, dynamic> data = args.data ?? {};
+
         return BlocProvider(
           create: (context) => ImporterBloc(
-            startWithPicker: true,
-            filePath: data['filePath'],
-            targetDocument: data['document'],
-            importerService: NativeImporterService(
+            navigator: Modular.to,
+            documentManager: Modular.get(),
+            importService: NativeImporterService(
               Modular.get(),
               tableChooser: ((args.queryParams['pickPages'] == 'true'))
                   ? (tables) => showDialog<List<Worksheet>>(
@@ -37,11 +39,10 @@ class DocumentModule extends Module {
                       ).then((worksheets) => worksheets ?? <Worksheet>[])
                   : null,
             ),
-            fileChooser: FileChooser.forType(
-              FilePickerType.native,
-              data['workingDirectory'],
+            pickerService: FilePickerServiceImpl(
+              ImportFileChooser.forType(ImportType.native),
             ),
-          ),
+          )..add(ImportEvent(filePath: data['filePath'])),
           child: NativeImporterScreen(),
         );
       },
@@ -49,14 +50,13 @@ class DocumentModule extends Module {
     ChildRoute(
       '/import/requests',
       child: (_, args) {
-        final Map<String, dynamic> data = args.data ?? {};
         return BlocProvider(
           create: (_) => ImporterBloc(
-            targetDocument: data['document'],
-            importerService: MegaBillingImportService(Modular.get()),
-            fileChooser: FileChooser.forType(
-              FilePickerType.excelRequests,
-              data['workingDirectory'],
+            navigator: Modular.to,
+            documentManager: Modular.get(),
+            importService: MegaBillingImportService(Modular.get()),
+            pickerService: FilePickerServiceImpl(
+              ImportFileChooser.forType(ImportType.excelRequests),
             ),
           ),
           child: RequestsImporterScreen(),
@@ -66,19 +66,18 @@ class DocumentModule extends Module {
     ChildRoute(
       'import/counters',
       child: (_, args) {
-        final Map<String, dynamic> data = args.data ?? {};
         return BlocProvider(
           create: (context) => ImporterBloc(
-            targetDocument: data['document'],
-            importerService: CountersImportService(
+            navigator: Modular.to,
+            documentManager: Modular.get(),
+            importService: CountersImportService(
               tableChooser: (tables) => showDialog<String>(
                 context: context,
                 builder: (_) => TableChooserDialog(tables),
               ),
             ),
-            fileChooser: FileChooser.forType(
-              FilePickerType.excelCounters,
-              data['workingDirectory'],
+            pickerService: FilePickerServiceImpl(
+              ImportFileChooser.forType(ImportType.excelCounters),
             ),
           ),
           child: CountersImportScreen(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
+import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/screens/confirmation_dialog.dart';
 
@@ -13,7 +14,13 @@ class WorksheetsPageController extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final document = context.watch<DocumentMasterBloc>().state.currentDocument;
+    final currentState = context.watch<DocumentMasterBloc>().state;
+
+    if (currentState is! ShowDocumentsState) {
+      return Container();
+    }
+
+    final document = currentState.selected;
     final worksheetsList = document.worksheets;
 
     return Padding(
@@ -42,6 +49,8 @@ class WorksheetsPageController extends StatelessWidget {
                           context,
                           canRemove: worksheets.length == 1,
                           active: active,
+                          editorBuilder: () =>
+                              document.worksheets.edit(worksheets[index]),
                           current: worksheets[index],
                         );
                 });
@@ -53,11 +62,13 @@ class WorksheetsPageController extends StatelessWidget {
     BuildContext context, {
     required Worksheet current,
     required Worksheet active,
+    required WorksheetEditor Function() editorBuilder,
     required bool canRemove,
   }) {
     return WorksheetTabView(
       key: ObjectKey(current),
       worksheet: current,
+      editorBuilder: editorBuilder,
       filteredItemsCount:
           // TODO: Broken code
           // state is WorksheetMasterSearchingState

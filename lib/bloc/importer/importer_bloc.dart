@@ -3,111 +3,64 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:kres_requests2/domain/exchange/document_import_service.dart';
-import 'package:kres_requests2/domain/exchange/file_chooser.dart';
-import 'package:kres_requests2/domain/exchange/megabilling_import_service.dart';
-import 'package:kres_requests2/domain/models/document.dart';
-import 'package:meta/meta.dart';
-import 'package:path/path.dart' as p;
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:kres_requests2/domain/service/document_manager.dart';
+import 'package:kres_requests2/domain/service/file_picker_service.dart';
+import 'package:kres_requests2/domain/service/import/document_import_service.dart';
+import 'package:kres_requests2/screens/bloc.dart';
 
 part 'importer_event.dart';
 
 part 'importer_state.dart';
 
-/// BLoС that controls importing worksheets to the existing or a new document
+/// BLoС that controls importing document to a new document
 /// from external sources
-class ImporterBloc extends Bloc<ImporterEvent, ImporterState> {
-  /// Repository for importing data
-  final DocumentImporterService importerService;
+class ImporterBloc extends Bloc<ImporterEvent, BaseState> {
+  /// Service for handling import results
+  final DocumentImporter importService;
 
-  /// Target document where should consists import results
-  final Document? targetDocument;
+  /// Current document manager instance
+  final DocumentManager documentManager;
 
-  /// Function for picking files from the storage
-  final FileChooser fileChooser;
+  /// Service for picking a file
+  final FilePicker pickerService;
+
+  /// Navigator service
+  final IModularNavigator navigator;
 
   ImporterBloc({
-    this.targetDocument,
-    required this.importerService,
-    required this.fileChooser,
-    File? filePath,
-    bool startWithPicker = false,
-  }) : super(ImporterInitialState()) {
-    if (startWithPicker || filePath != null) {
-      add(ImportEvent(filePath: filePath));
-    }
-  }
+    required this.documentManager,
+    required this.importService,
+    required this.pickerService,
+    required this.navigator,
+  }) : super(InitialState());
 
   @override
-  void onError(Object error, StackTrace stackTrace) {
-    add(_ImportErrorEvent(error, stackTrace));
-    super.onError(error, stackTrace);
-  }
-
-  @override
-  Stream<ImporterState> mapEventToState(ImporterEvent event) async* {
+  Stream<BaseState> mapEventToState(ImporterEvent event) async* {
     if (event is ImportEvent) {
-      yield* _doWorksheetImport(event);
-    } else if (event is _ImportErrorEvent) {
-      yield ImportErrorState(event.error.toString(), event.stackTrace);
-    }
-  }
-
-  Future<String?> _chooseSourcePath(ImportEvent import) async {
-    if (import.filePath != null && await import.filePath!.exists()) {
-      return import.filePath!.absolute.path;
-    }
-    return await fileChooser.pickFile();
-  }
-
-  Stream<ImporterState> _doWorksheetImport(ImportEvent import) async* {
-    final filePath = await _chooseSourcePath(import);
-
-    if (filePath == null) {
-      yield ImporterDoneState(importResult: ImportResult.importCancelled);
-      return;
-    }
-
-    Future<Document> _copyToTarget(Document source) async {
-      final target = targetDocument!;
-
-      final currentSavePath = target.currentSavePath;
-      if (currentSavePath == null) {
-        target.setSavePath(File(p.withoutExtension(filePath) + ".json"));
+      void navigateToEditor() {
+        navigator.navigate('/document/edit');
       }
 
-      target.worksheets.addWorksheets(source.worksheets.list);
-      return target;
-    }
+      yield PickingFileState();
 
-    yield ImporterLoadingState(filePath);
+      final resultPath = await pickerService.chooseSourcePath(event.filePath);
 
-    try {
-      final document = await importerService.importDocument(filePath);
-
-      if (document == null) {
-        yield ImporterDoneState(importResult: ImportResult.importCancelled);
+      if (resultPath == null) {
+        navigateToEditor();
         return;
       }
 
-      final isEmpty = document.worksheets.isEmpty;
+      yield LoadingState();
 
-      if (isEmpty) {
-        yield ImporterDoneState(importResult: ImportResult.documentEmpty);
-        return;
+      try {
+        await importService.importDocument(resultPath, documentManager);
+        navigateToEditor();
+      } on ImporterModuleMissingException {
+        yield ImporterModuleMissingState();
+      } catch (e, s) {
+        yield ErrorState(e.toString(), s);
       }
-
-      final newTarget =
-          targetDocument == null ? document : await _copyToTarget(document);
-
-      yield ImporterDoneState(
-        document: newTarget,
-        importResult: ImportResult.done,
-      );
-    } on ImporterProcessorMissingException {
-      yield ImporterModuleMissingState();
-    } catch (e, s) {
-      yield ImportErrorState(e.toString(), s);
     }
   }
 }

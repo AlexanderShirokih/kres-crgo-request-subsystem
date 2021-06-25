@@ -2,63 +2,34 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:kres_requests2/domain/request_processor.dart';
-import 'package:kres_requests2/domain/exchange/requests_export_service.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/repository/settings_repository.dart';
+import 'package:kres_requests2/domain/service/export_service.dart';
 
 part 'exporter_event.dart';
-
 part 'exporter_state.dart';
-
-/// Describes supported export formats
-enum ExportFormat { pdf, excel }
 
 /// BLoC for exporting documents
 class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
-  /// Exporting document
-  final Document document;
+  /// Export service instance
+  final ExportService service;
 
-  /// File picker function
-  final Future<String?> Function()? fileChooser;
-
-  /// Target export format
-  final ExportFormat? exportFormat;
-
-  /// Requests repository for handling export/print actions
-  final RequestsExportService requestsService;
-
-  /// Settings repository for updating preferred printer name
-  final SettingsRepository settingsRepository;
-
-  ExporterBloc({
-    required this.requestsService,
-    required this.settingsRepository,
-    required this.document,
-    this.exportFormat,
-    this.fileChooser,
-  }) : super(ExporterIdle()) {
-    if (fileChooser != null)
-      add(_ExporterShowSaveDialogEvent());
-    else
-      add(ExporterShowPrintersListEvent());
-  }
+  ExporterBloc({required this.service}) : super(ExporterIdle());
 
   @override
   Stream<ExporterState> mapEventToState(ExporterEvent event) async* {
-    if (event is _ExporterInitialEvent) {
-      if (!await requestsService.isAvailable()) {
+    if (event is _ExporterStartEvent) {
+      if (!await service.isAvailable()) {
         yield ExporterMissingState();
         return;
       }
     }
 
-    if (event is _ExporterShowSaveDialogEvent) {
-      yield* _doExport();
-    } else if (event is ExporterShowPrintersListEvent) {
+    if (event is ExportEvent) {
+      yield* _doExport(event);
+    } else if (event is ShowPrintersListEvent) {
       yield* _listPrinters();
-    } else if (event is ExporterPrintDocumentEvent) {
-      yield* _printDocument(event.printerName, event.noLists);
+    } else if (event is PrintDocumentEvent) {
+      yield* _printDocument(event);
     } else if (event is _ExporterErrorEvent) {
       yield ExporterErrorState(
         event.error.toString(),
@@ -77,73 +48,56 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
     yield ExporterIdle(message: 'Поиск доступных принтеров');
 
     try {
-      final availablePrinters = await requestsService.listPrinters();
-      final preferred =
-          availablePrinters.contains(settingsRepository.lastUsedPrinter)
-              ? await settingsRepository.lastUsedPrinter
-              : null;
+      final printersList = await service.listPrinters();
 
       yield ExporterListPrintersState(
-        preferred,
-        availablePrinters,
+        printersList.preferred,
+        printersList.available,
       );
-    } on RequestProcessorError catch (e) {
+    } on ExportServiceException catch (e) {
       yield ExporterErrorState(e.error, e.stackTrace);
-    } catch (e, s) {
-      yield ExporterErrorState(e.toString(), s.toString());
     }
   }
 
-  Stream<ExporterState> _printDocument(
-      String printerName, bool noLists) async* {
-    await settingsRepository.setLastUsedPrinter(printerName);
-
+  Stream<ExporterState> _printDocument(PrintDocumentEvent event) async* {
     yield ExporterIdle(
         message: 'Создание документа и отправка задания на печать');
 
     try {
-      await requestsService.printDocument(document, printerName, noLists);
+      await service.printDocument(
+        event.document,
+        event.printerName,
+        event.noLists,
+      );
+
       yield ExporterClosingState(isCompleted: true);
-    } on RequestProcessorError catch (e) {
+    } on ExportServiceException catch (e) {
       yield ExporterErrorState(e.error, e.stackTrace);
-    } catch (e, s) {
-      yield ExporterErrorState(e.toString(), s.toString());
     }
   }
 
-  Stream<ExporterState> _doExport() async* {
-    yield ExporterIdle(message: 'Ожидание выбора файла');
-
-    if (fileChooser == null) {
-      throw 'No file chooser passed!';
-    }
-
-    final filePath = await fileChooser!();
-    if (filePath == null) {
-      yield ExporterClosingState(isCompleted: false);
-      return;
-    }
-
-    yield ExporterIdle(message: 'Экспорт файла');
-
-    try {
-      await runExporter(filePath);
-      yield ExporterClosingState(isCompleted: true);
-    } on RequestProcessorError catch (e) {
-      yield ExporterErrorState(e.error, e.stackTrace);
-    } catch (e, s) {
-      yield ExporterErrorState(e.toString(), s.toString());
-    }
-  }
-
-  Future<void> runExporter(String savePath) {
-    switch (exportFormat) {
-      case ExportFormat.pdf:
-        return requestsService.exportToPdf(document, savePath);
-      case ExportFormat.excel:
-        return requestsService.exportToXlsx(document, savePath);
-      default:
-        throw ('Cannot run exporter without export format');
-    }
+  Stream<ExporterState> _doExport(ExportEvent event) {
+    return service
+        .exportDocument(event.document, event.exportFormat)
+        .map((state) {
+      switch (state) {
+        case ExportState.pickingFile:
+          return ExporterIdle(message: 'Ожидание выбора файла');
+        case ExportState.exporting:
+          return ExporterIdle(message: 'Экспорт файла');
+        case ExportState.done:
+          return ExporterClosingState(isCompleted: true);
+        case ExportState.cancelled:
+          return ExporterClosingState(isCompleted: false);
+      }
+    }).transform(
+      StreamTransformer.fromHandlers(handleError: (e, s, sink) {
+        if (e is ExportServiceException) {
+          sink.add(ExporterErrorState(e.error, e.stackTrace));
+        } else {
+          sink.addError(e, s);
+        }
+      }),
+    );
   }
 }

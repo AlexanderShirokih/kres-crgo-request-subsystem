@@ -1,34 +1,26 @@
 import 'package:file_selector/file_selector.dart';
 
-/// Defines kinds of default file pickers dialogs
-enum FilePickerType {
-  excelRequests,
-  excelCounters,
-  native,
-}
+import 'import/document_import_service.dart';
 
 /// Interface for picking file
-abstract class FileChooser {
+abstract class ImportFileChooser {
   /// Shows file picker to choose the file
   Future<String?> pickFile();
 
-  factory FileChooser.forType(FilePickerType type, String? workingDirectory) {
+  factory ImportFileChooser.forType(ImportType type) {
     switch (type) {
-      case FilePickerType.excelRequests:
+      case ImportType.excelRequests:
         return _FileChooserImpl(
-          workingDirectory,
           'Файлы Excel 97-2003',
           ['xls'],
         );
-      case FilePickerType.excelCounters:
+      case ImportType.excelCounters:
         return _FileChooserImpl(
-          workingDirectory,
           'Файлы Excel 2007-365',
           ['xlsx'],
         );
-      case FilePickerType.native:
+      case ImportType.native:
         return _FileChooserImpl(
-          workingDirectory,
           'Документ заявок',
           ['json'],
         );
@@ -36,12 +28,11 @@ abstract class FileChooser {
   }
 }
 
-class _FileChooserImpl implements FileChooser {
-  final String? workingDirectory;
+class _FileChooserImpl implements ImportFileChooser {
   final String fileLabel;
   final List<String> extensions;
 
-  _FileChooserImpl(this.workingDirectory, this.fileLabel, this.extensions);
+  _FileChooserImpl(this.fileLabel, this.extensions);
 
   Future<String?> _getLastUsedDirectory() async {
     // TODO: Implement method
@@ -51,7 +42,7 @@ class _FileChooserImpl implements FileChooser {
   @override
   Future<String?> pickFile() async {
     return await openFile(
-      initialDirectory: workingDirectory ?? await _getLastUsedDirectory(),
+      initialDirectory: await _getLastUsedDirectory(),
       confirmButtonText: 'Открыть',
       acceptedTypeGroups: [
         XTypeGroup(label: fileLabel, extensions: extensions)

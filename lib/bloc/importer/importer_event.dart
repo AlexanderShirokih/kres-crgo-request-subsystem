@@ -14,14 +14,3 @@ class ImportEvent extends ImporterEvent {
   @override
   List<Object?> get props => [filePath];
 }
-
-/// Used internally to signal an error
-class _ImportErrorEvent extends ImporterEvent {
-  final Object error;
-  final StackTrace? stackTrace;
-
-  const _ImportErrorEvent(this.error, this.stackTrace);
-
-  @override
-  List<Object?> get props => [error, stackTrace];
-}
