@@ -1,6 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kres_requests2/screens/bloc/exporter/exporter_bloc.dart';
+import 'package:kres_requests2/presentation/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/export_service.dart';
 import 'package:mocktail/mocktail.dart';

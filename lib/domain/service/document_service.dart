@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:kres_requests2/domain/editor/document_filter.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/screens/common.dart';
+import 'package:kres_requests2/presentation/common.dart';
 
 enum DocumentSavingState {
   pickingSavePath,

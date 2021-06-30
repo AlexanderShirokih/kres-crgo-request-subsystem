@@ -1,8 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:kres_requests2/screens/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
+import 'package:kres_requests2/presentation/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/worksheet_service.dart';
-import 'package:kres_requests2/screens/bloc.dart';
+import 'package:kres_requests2/presentation/bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
