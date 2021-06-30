@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:kres_requests2/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
+import 'package:kres_requests2/screens/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
 
 /// Used to pick date on worksheet config list
 /// Requires [WorksheetConfigBloc] to be injected in the widget tree

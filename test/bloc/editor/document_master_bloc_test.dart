@@ -1,7 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
-import 'package:kres_requests2/bloc/editor/worksheet_creation_mode.dart';
+import 'package:kres_requests2/screens/bloc/editor/document_master_bloc.dart';
+import 'package:kres_requests2/screens/bloc/editor/worksheet_creation_mode.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/domain/service/document_service.dart';

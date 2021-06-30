@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
+import 'package:kres_requests2/screens/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
 
 import 'dropdown_employee_field.dart';

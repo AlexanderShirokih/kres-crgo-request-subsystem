@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
+import 'package:kres_requests2/screens/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/file_picker_service.dart';
 import 'package:kres_requests2/domain/service/import/counters_import_service.dart';

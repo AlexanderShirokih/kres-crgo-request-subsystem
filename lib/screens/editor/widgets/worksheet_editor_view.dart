@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/bloc/editor/editor_view/worksheet_editor_bloc.dart';
+import 'package:kres_requests2/screens/bloc/editor/editor_view/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/screens/editor/request_editor_dialog/request_editor_dialog.dart';
 import 'package:kres_requests2/screens/editor/requests_move_dialog/requests_move_dialog.dart';

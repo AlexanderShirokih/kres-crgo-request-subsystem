@@ -1,5 +1,5 @@
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/bloc/editor/document_master_bloc.dart';
+import 'package:kres_requests2/screens/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/data/editor/json_document_saver.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';

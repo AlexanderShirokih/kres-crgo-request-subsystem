@@ -1,6 +1,6 @@
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/bloc/exporter/exporter_bloc.dart';
-import 'package:kres_requests2/bloc/preview/preview_bloc.dart';
+import 'package:kres_requests2/screens/bloc/exporter/exporter_bloc.dart';
+import 'package:kres_requests2/screens/bloc/preview/preview_bloc.dart';
 import 'package:kres_requests2/domain/service/export_file_chooser.dart';
 import 'package:kres_requests2/domain/service/export_service.dart';
 import 'package:kres_requests2/domain/service/requests_export_service.dart';

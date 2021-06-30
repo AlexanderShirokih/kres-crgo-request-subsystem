@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
 import 'package:kres_requests2/domain/models/position.dart';
 import 'package:kres_requests2/domain/validator.dart';
-import 'package:kres_requests2/bloc/settings/common/undoable_bloc.dart';
-import 'package:kres_requests2/bloc/settings/positions/position_data.dart';
+import 'package:kres_requests2/screens/bloc/settings/common/undoable_bloc.dart';
+import 'package:kres_requests2/screens/bloc/settings/positions/position_data.dart';
 
 /// BLoC that handles actions on position list
 class PositionBloc extends UndoableBloc<PositionData, Position> {

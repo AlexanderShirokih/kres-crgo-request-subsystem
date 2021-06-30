@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/bloc/importer/importer_bloc.dart';
+import 'package:kres_requests2/screens/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/screens/bloc.dart';
 import 'package:kres_requests2/screens/common.dart';
 

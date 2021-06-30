@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:kres_requests2/bloc/settings/common/undoable_data.dart';
+import 'package:kres_requests2/screens/bloc/settings/common/undoable_data.dart';
 
 /// Base class for states that have actions history and can be reverted
 abstract class UndoableState<D> extends Equatable {

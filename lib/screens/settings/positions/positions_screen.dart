@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/bloc/settings/common/undoable_bloc.dart';
-import 'package:kres_requests2/bloc/settings/common/undoable_events.dart';
-import 'package:kres_requests2/bloc/settings/positions/position_bloc.dart';
-import 'package:kres_requests2/bloc/settings/positions/position_data.dart';
+import 'package:kres_requests2/screens/bloc/settings/common/undoable_bloc.dart';
+import 'package:kres_requests2/screens/bloc/settings/common/undoable_events.dart';
+import 'package:kres_requests2/screens/bloc/settings/positions/position_bloc.dart';
+import 'package:kres_requests2/screens/bloc/settings/positions/position_data.dart';
 import 'package:kres_requests2/domain/models/position.dart';
 import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/screens/common/table_view.dart';

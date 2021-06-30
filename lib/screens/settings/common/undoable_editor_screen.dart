@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/screens/bloc/settings/common/undoable_bloc.dart';
+import 'package:kres_requests2/screens/bloc/settings/common/undoable_data.dart';
+import 'package:kres_requests2/screens/bloc/settings/common/undoable_events.dart';
+import 'package:kres_requests2/screens/bloc/settings/common/undoable_state.dart';
 import 'package:kres_requests2/screens/common/save_changes_dialog.dart';
 import 'package:kres_requests2/screens/common/table_view.dart';
-
-import '../../../bloc/settings/common/undoable_bloc.dart';
-import '../../../bloc/settings/common/undoable_data.dart';
-import '../../../bloc/settings/common/undoable_events.dart';
-import '../../../bloc/settings/common/undoable_state.dart';
 
 typedef UndoableBlocBuilder<DH extends UndoableDataHolder<E>, E extends Object>
     = UndoableBloc<DH, E> Function(BuildContext);

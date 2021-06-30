@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/bloc/editor/worksheet_creation_mode.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/domain/service/document_service.dart';
+import 'package:kres_requests2/screens/bloc/editor/worksheet_creation_mode.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 

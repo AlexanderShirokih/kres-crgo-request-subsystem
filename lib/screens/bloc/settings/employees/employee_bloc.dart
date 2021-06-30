@@ -7,8 +7,8 @@ import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/models/position.dart';
 import 'package:kres_requests2/domain/repository/repository.dart';
 import 'package:kres_requests2/domain/validator.dart';
-import 'package:kres_requests2/bloc/settings/common/undoable_bloc.dart';
-import 'package:kres_requests2/bloc/settings/common/undoable_data.dart';
+import 'package:kres_requests2/screens/bloc/settings/common/undoable_bloc.dart';
+import 'package:kres_requests2/screens/bloc/settings/common/undoable_data.dart';
 
 part 'employee_data.dart';
 

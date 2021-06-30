@@ -3,7 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/bloc/preview/preview_bloc.dart';
+import 'package:kres_requests2/screens/bloc/preview/preview_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/screens/common.dart';
 import 'package:kres_requests2/screens/preview/print_dialog.dart';

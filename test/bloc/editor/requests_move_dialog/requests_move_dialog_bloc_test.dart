@@ -1,5 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:kres_requests2/bloc/editor/requests_move_dialog/requests_move_dialog_bloc.dart';
+import 'package:kres_requests2/screens/bloc/editor/requests_move_dialog/requests_move_dialog_bloc.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/service/request_service.dart';
 import 'package:kres_requests2/screens/bloc.dart';
