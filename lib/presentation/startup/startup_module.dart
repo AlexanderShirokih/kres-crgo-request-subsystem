@@ -30,7 +30,7 @@ class StartupModule extends Module {
           ),
         ),
         Bind.instance<DocumentSaver>(
-          const JsonDocumentSaver(saveLegacyInfo: false),
+          const JsonDocumentSaver(saveLegacyInfo: true),
         ),
         Bind.factory<ExportFileChooser>((i) => ExportFileChooserImpl()),
         Bind.factory<AbstractRequestProcessor>(

@@ -4,12 +4,14 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:kres_requests2/domain/service/dialog_service.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/domain/service/file_picker_service.dart';
 import 'package:kres_requests2/domain/service/import/document_import_service.dart';
 import 'package:kres_requests2/presentation/bloc.dart';
 
 part 'importer_event.dart';
+
 part 'importer_state.dart';
 
 /// BLoС that controls importing document to a new document
@@ -27,18 +29,22 @@ class ImporterBloc extends Bloc<ImporterEvent, BaseState> {
   /// Navigator service
   final IModularNavigator navigator;
 
+  /// Dialogs service
+  final DialogService dialogService;
+
   ImporterBloc({
     required this.documentManager,
     required this.importService,
     required this.pickerService,
     required this.navigator,
+    required this.dialogService,
   }) : super(const InitialState());
 
   @override
   Stream<BaseState> mapEventToState(ImporterEvent event) async* {
     if (event is ImportEvent) {
       void navigateToEditor() {
-        navigator.navigate('/document/edit');
+        navigator.pushReplacementNamed('/document/edit');
       }
 
       yield const PickingFileState();
@@ -56,7 +62,9 @@ class ImporterBloc extends Bloc<ImporterEvent, BaseState> {
         await importService.importDocument(resultPath, documentManager);
         navigateToEditor();
       } on ImporterModuleMissingException {
-        yield const ImporterModuleMissingState();
+        dialogService
+            .showErrorMessage('Ошибка: Модуль экспорта файлов отсутcтвует');
+        navigator.pop();
       } catch (e, s) {
         yield ErrorState(e.toString(), s);
       }

@@ -18,12 +18,14 @@ dependencies:
   sqflite_common_ffi: ^2.0.0
   flutter_bloc: ^7.0.0
   flutter_hooks: ^0.17.0
+  provider: ^5.0.0
 
 #  flutter_modular: ^3.2.2+1
   flutter_modular:
     git:
       url: https://github.com/AlexanderShirokih/modular.git
       path: flutter_modular/
+      ref: add-key
 
   rxdart: ^0.26.0
   path_provider: ^2.0.1

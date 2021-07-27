@@ -302,8 +302,8 @@ packages:
     dependency: "direct main"
     description:
       path: flutter_modular
-      ref: HEAD
-      resolved-ref: ede3de7b5260e8212f36b62b5533a172ea076144
+      ref: add-key
+      resolved-ref: "7ba0dc1e930d29149fae7308ddf50fb6b72fabad"
       url: "https://github.com/AlexanderShirokih/modular.git"
     source: git
     version: "3.3.1"
@@ -549,7 +549,7 @@ packages:
     source: hosted
     version: "4.2.3"
   provider:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: provider
       url: "https://pub.dartlang.org"

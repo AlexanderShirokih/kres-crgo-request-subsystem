@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/service/dialog_service.dart';
 import 'package:kres_requests2/domain/service/file_picker_service.dart';
 import 'package:kres_requests2/domain/service/import/counters_import_service.dart';
 import 'package:kres_requests2/domain/service/import/document_import_service.dart';
@@ -29,6 +30,7 @@ class DocumentManagerModule extends Module {
 
         return BlocProvider(
           create: (context) => ImporterBloc(
+            dialogService: Modular.get<DialogService>(),
             navigator: Modular.to,
             documentManager: Modular.get(),
             importService: NativeImporterService(
@@ -53,6 +55,7 @@ class DocumentManagerModule extends Module {
       child: (_, args) {
         return BlocProvider(
           create: (_) => ImporterBloc(
+            dialogService: Modular.get<DialogService>(),
             navigator: Modular.to,
             documentManager: Modular.get(),
             importService: MegaBillingImportService(Modular.get()),
@@ -69,6 +72,7 @@ class DocumentManagerModule extends Module {
       child: (_, args) {
         return BlocProvider(
           create: (context) => ImporterBloc(
+            dialogService: Modular.get<DialogService>(),
             navigator: Modular.to,
             documentManager: Modular.get(),
             importService: CountersImportService(
