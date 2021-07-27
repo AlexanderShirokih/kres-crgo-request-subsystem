@@ -20,7 +20,7 @@ enum SaveState { blank, unsaved, saved, saving }
 /// Data class that holds document with it's state
 class DocumentInfo extends Equatable {
   final SaveState saveState;
-  final String title;
+  final String? title;
   final Document document;
 
   const DocumentInfo(this.saveState, this.title, this.document);
@@ -70,6 +70,7 @@ enum DocumentErrorType {
   savingError,
 }
 
+/// TODO: Use another way to singnal a document error
 /// Used when some error happened in the document
 class DocumentErrorState extends DocumentMasterState {
   /// Problematic document

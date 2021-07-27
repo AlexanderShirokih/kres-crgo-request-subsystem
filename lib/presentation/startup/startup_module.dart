@@ -8,12 +8,14 @@ import 'package:kres_requests2/data/models.dart';
 import 'package:kres_requests2/data/models/recent_document_info.dart';
 import 'package:kres_requests2/data/repository/storage_repository.dart';
 import 'package:kres_requests2/domain/domain.dart';
+import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/process_executor.dart';
 import 'package:kres_requests2/domain/repository/recent_documents_repository.dart';
 import 'package:kres_requests2/domain/request_processor.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
+import 'package:kres_requests2/domain/service/export_file_chooser.dart';
 import 'package:kres_requests2/domain/validators.dart';
-import 'package:kres_requests2/presentation/editor/document_module.dart';
+import 'package:kres_requests2/presentation/editor/document_manager_module.dart';
 import 'package:kres_requests2/presentation/settings/settings_module.dart';
 import 'package:kres_requests2/presentation/startup/startup_screen.dart';
 
@@ -27,10 +29,12 @@ class StartupModule extends Module {
             javaProcessHome: Directory('requests/lib'),
           ),
         ),
+        Bind.instance<DocumentSaver>(JsonDocumentSaver(saveLegacyInfo: false)),
+        Bind.factory<ExportFileChooser>((i) => ExportFileChooserImpl()),
         Bind.factory<AbstractRequestProcessor>(
           (i) => RequestProcessorImpl(
-            i(),
-            JsonDocumentSaver(saveLegacyInfo: false),
+            i<ProcessExecutor>(),
+            i<DocumentSaver>(),
           ),
         ),
         // Employee-related binds
@@ -72,13 +76,14 @@ class StartupModule extends Module {
           (i) => StreamedRepositoryController(
               RepositoryController(RecentDocumentBuilder(), i())),
         ),
-        Bind.singleton<DocumentManager>((i) => DocumentManager()),
+        Bind.singleton<DocumentManager>(
+            (i) => DocumentManager(i<ExportFileChooser>(), i<DocumentSaver>())),
       ];
 
   @override
   final List<ModularRoute> routes = [
     ChildRoute('/', child: (_, __) => StartupScreen()),
     ModuleRoute('/settings', module: SettingsModule()),
-    ModuleRoute('/document', module: DocumentModule()),
+    ModuleRoute('/document', module: DocumentManagerModule()),
   ];
 }

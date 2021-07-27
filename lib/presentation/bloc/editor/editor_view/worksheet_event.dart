@@ -1,13 +1,13 @@
-part of 'worksheet_editor_bloc.dart';
+part of 'worksheet_bloc.dart';
 
-/// Base event class for [WorksheetEditorBloc]
+/// Base event class for [WorksheetBloc]
 @sealed
-abstract class WorksheetEditorEvent extends Equatable {
-  const WorksheetEditorEvent._();
+abstract class WorksheetEvent extends Equatable {
+  const WorksheetEvent._();
 }
 
 /// Sends signal to swap two requests in the list
-class SwapRequestsEvent extends WorksheetEditorEvent {
+class SwapRequestsEvent extends WorksheetEvent {
   final Request from;
   final Request to;
 
@@ -42,7 +42,7 @@ enum SelectionAction {
 }
 
 /// Used to manage request list selections
-class RequestSelectionEvent extends WorksheetEditorEvent {
+class RequestSelectionEvent extends WorksheetEvent {
   /// Target request to do action on it.
   /// Required for [SelectionAction.begin], [SelectionAction.add] and
   /// [SelectionAction.remove] actions
@@ -58,7 +58,7 @@ class RequestSelectionEvent extends WorksheetEditorEvent {
 }
 
 /// Updates group associated with the request
-class ChangeGroupEvent extends WorksheetEditorEvent {
+class ChangeGroupEvent extends WorksheetEvent {
   final Request target;
   final int newGroup;
 
@@ -69,7 +69,7 @@ class ChangeGroupEvent extends WorksheetEditorEvent {
 }
 
 /// Used to trigger state update when worksheet changes
-class SetCurrentWorksheetEvent extends WorksheetEditorEvent {
+class SetCurrentWorksheetEvent extends WorksheetEvent {
   final Worksheet worksheet;
 
   const SetCurrentWorksheetEvent(this.worksheet) : super._();

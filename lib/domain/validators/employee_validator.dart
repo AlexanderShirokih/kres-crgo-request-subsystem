@@ -1,7 +1,7 @@
 import 'package:kres_requests2/domain/models/employee.dart';
 import 'package:kres_requests2/domain/validators.dart';
 
-/// [Validator] implementation that validates employees instances
+/// [Validator] implementation that validates employee instances
 class EmployeeValidator extends MappedValidator<Employee> {
   /// Creates new [EmployeeValidator] instance
   EmployeeValidator()

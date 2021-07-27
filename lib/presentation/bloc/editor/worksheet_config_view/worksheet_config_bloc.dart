@@ -36,6 +36,8 @@ class WorksheetConfigBloc extends Bloc<WorksheetConfigEvent, BaseState> {
       yield* _updateTeamMembers(event.teamMembers);
     } else if (event is UpdateWorkTypesEvent) {
       yield* _updateWorkTypes(event.workTypes);
+    } else if (event is UpdateNameEvent) {
+      yield* _updateName(event.name, event.target);
     }
   }
 
@@ -88,6 +90,13 @@ class WorksheetConfigBloc extends Bloc<WorksheetConfigEvent, BaseState> {
     if (ws == null) return;
 
     _service.updateWorkTypes(ws, workTypes);
+  }
+
+  Stream<BaseState> _updateName(String name, Worksheet? target) async* {
+    final ws = target ?? _findTargetWorksheet();
+    if (ws == null) return;
+
+    _service.updateName(ws, name);
   }
 
   Worksheet? _findTargetWorksheet() {

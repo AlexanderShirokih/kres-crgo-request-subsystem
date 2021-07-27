@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_editor_bloc.dart';
+import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_bloc.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/presentation/editor/request_editor_dialog/request_editor_dialog.dart';
 import 'package:kres_requests2/presentation/editor/requests_move_dialog/requests_move_dialog.dart';
@@ -12,7 +12,7 @@ import 'package:kres_requests2/presentation/editor/widgets/request_item_view.dar
 import '../../confirmation_dialog.dart';
 
 /// Show the list of requests for target worksheet.
-/// Requires [WorksheetEditorBloc] to be injected.
+/// Requires [WorksheetBloc] to be injected.
 class WorksheetEditorView extends HookWidget {
   /// A list of currently highlighted requests
   /// TODO: FIX
@@ -21,7 +21,7 @@ class WorksheetEditorView extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final scroll = useScrollController();
-    return BlocBuilder<WorksheetEditorBloc, WorksheetEditorState>(
+    return BlocBuilder<WorksheetBloc, WorksheetState>(
       builder: (context, state) {
         if (state is WorksheetInitialState) {
           return Center(
@@ -129,7 +129,7 @@ class WorksheetEditorView extends HookWidget {
         return GestureDetector(
           key: ObjectKey(request),
           onLongPress: () => context
-              .read<WorksheetEditorBloc>()
+              .read<WorksheetBloc>()
               .add(RequestSelectionEvent(SelectionAction.begin, request)),
           onDoubleTap: () => _showRequestEditorDialog(context, state, request),
           child: RequestItemView(
@@ -139,14 +139,14 @@ class WorksheetEditorView extends HookWidget {
             defaultGroupIndex: state.lastGroupIndex,
             isHighlighted: state.getIsHighlighted(request),
             isSelected: isSelected,
-            onChanged: (isSelected) => context.read<WorksheetEditorBloc>().add(
+            onChanged: (isSelected) => context.read<WorksheetBloc>().add(
                   RequestSelectionEvent(
                     isSelected ? SelectionAction.add : SelectionAction.remove,
                     request,
                   ),
                 ),
             groupChangeCallback: (newGroup) => context
-                .read<WorksheetEditorBloc>()
+                .read<WorksheetBloc>()
                 .add(ChangeGroupEvent(request, newGroup)),
           ),
         );
@@ -159,7 +159,7 @@ class WorksheetEditorView extends HookWidget {
           newIndex -= 1;
         }
 
-        context.read<WorksheetEditorBloc>().add(
+        context.read<WorksheetBloc>().add(
               SwapRequestsEvent(
                 from: requests[oldIndex],
                 to: requests[newIndex],
@@ -198,7 +198,7 @@ class WorksheetEditorView extends HookWidget {
             icon: Icon(Icons.highlight_off),
             tooltip: "Отменить выделение",
             onPressed: () => context
-                .read<WorksheetEditorBloc>()
+                .read<WorksheetBloc>()
                 .add(RequestSelectionEvent(SelectionAction.cancel)),
           ),
           const SizedBox(width: 24.0),
@@ -211,7 +211,7 @@ class WorksheetEditorView extends HookWidget {
             icon: FaIcon(FontAwesomeIcons.checkSquare),
             tooltip: "Выбрать все",
             onPressed: () => context
-                .read<WorksheetEditorBloc>()
+                .read<WorksheetBloc>()
                 .add(RequestSelectionEvent(SelectionAction.selectAll)),
           ),
           if (singleGroup != 0) ...[
@@ -223,7 +223,7 @@ class WorksheetEditorView extends HookWidget {
               ),
               tooltip:
                   "Выбрать все этой группы (${_translateGroupName(singleGroup)})",
-              onPressed: () => context.read<WorksheetEditorBloc>().add(
+              onPressed: () => context.read<WorksheetBloc>().add(
                   RequestSelectionEvent(SelectionAction.selectSingleGroup)),
             ),
           ],
@@ -258,7 +258,7 @@ class WorksheetEditorView extends HookWidget {
                         ),
                       ).then((confirmed) {
                         if (confirmed != null && confirmed) {
-                          context.read<WorksheetEditorBloc>().add(
+                          context.read<WorksheetBloc>().add(
                               RequestSelectionEvent(
                                   SelectionAction.dropSelected));
                         }
@@ -289,7 +289,7 @@ class WorksheetEditorView extends HookWidget {
     ).then((wasChanged) {
       if (wasChanged ?? false) {
         context
-            .read<WorksheetEditorBloc>()
+            .read<WorksheetBloc>()
             .add(RequestSelectionEvent(SelectionAction.cancel));
       }
     });

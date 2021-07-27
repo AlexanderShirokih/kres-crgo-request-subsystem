@@ -301,10 +301,12 @@ packages:
   flutter_modular:
     dependency: "direct main"
     description:
-      name: flutter_modular
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.2.2+1"
+      path: flutter_modular
+      ref: HEAD
+      resolved-ref: "0d89c5cae8ff3a85900134e00352d901a3d69c86"
+      url: "https://github.com/AlexanderShirokih/modular.git"
+    source: git
+    version: "3.3.1"
   flutter_modular_annotations:
     dependency: transitive
     description:

@@ -1,20 +1,36 @@
+import 'dart:io';
+
+import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/domain/models/export.dart';
 import 'package:rxdart/rxdart.dart';
+
+import 'export_file_chooser.dart';
 
 /// Manages opened [Document] instances
 class DocumentManager {
   final BehaviorSubject<List<Document>> _openedDocuments;
   final BehaviorSubject<int> _selectedIndex;
 
+  /// Interface that returns a save path based on [Document] current
+  /// working directory
+  final ExportFileChooser _savePathChooser;
+
+  /// Class that handles document saving
+  final DocumentSaver _documentSaver;
+
   /// Creates a new document manager with empty document
-  DocumentManager()
+  DocumentManager(this._savePathChooser, this._documentSaver)
       : _openedDocuments = BehaviorSubject.seeded([]),
         _selectedIndex = BehaviorSubject();
 
   /// Creates a new document manager for document instances.
   /// Throws an error if [documents] is empty
-  DocumentManager.forDocuments(List<Document> documents)
-      : _openedDocuments = BehaviorSubject.seeded(documents),
+  DocumentManager.forDocuments(
+    this._savePathChooser,
+    this._documentSaver,
+    List<Document> documents,
+  )   : _openedDocuments = BehaviorSubject.seeded(documents),
         _selectedIndex = BehaviorSubject.seeded(0) {
     if (documents.isEmpty) {
       throw "Documents list should not be empty!";
@@ -110,4 +126,47 @@ class DocumentManager {
       _selectedIndex.add(0);
     }
   }
+
+  /// Saves the document using [DocumentSaver].
+  /// Calls savePathChooser if [changePath] is `true` or current save path is
+  /// not set
+  Stream<DocumentSavingState> save(Document currentDocument,
+      {bool changePath = false}) async* {
+    yield DocumentSavingState.pickingSavePath;
+
+    final savePath = await _getSavePath(currentDocument, changePath);
+
+    if (savePath != null) {
+      currentDocument.setSavePath(savePath);
+
+      yield DocumentSavingState.saving;
+
+      await currentDocument.save(_documentSaver);
+
+      yield DocumentSavingState.saved;
+    }
+  }
+
+  Future<File?> _getSavePath(Document document, bool changePath) async {
+    final savePath = document.currentSavePath;
+
+    if (savePath == null || changePath) {
+      final chosen = await _savePathChooser.getFile(
+        ExportFormat.native,
+        document,
+      );
+
+      if (chosen != null) {
+        return File(chosen);
+      }
+    }
+
+    return savePath;
+  }
+}
+
+enum DocumentSavingState {
+  pickingSavePath,
+  saving,
+  saved,
 }

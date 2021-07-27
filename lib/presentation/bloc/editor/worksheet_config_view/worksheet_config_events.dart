@@ -58,7 +58,7 @@ class UpdateMembersEvent extends WorksheetConfigEvent {
   List<Object?> get props => [teamMembers];
 }
 
-/// Update work types
+/// Updates work types
 class UpdateWorkTypesEvent extends WorksheetConfigEvent {
   final Set<String> workTypes;
 
@@ -66,4 +66,18 @@ class UpdateWorkTypesEvent extends WorksheetConfigEvent {
 
   @override
   List<Object?> get props => [workTypes];
+}
+
+/// Updates worksheet name
+class UpdateNameEvent extends WorksheetConfigEvent {
+  /// New worksheet name
+  final String name;
+
+  /// Target worksheet. If not present, active worksheet will be used
+  final Worksheet? target;
+
+  const UpdateNameEvent(this.name, [this.target]) : super._();
+
+  @override
+  List<Object?> get props => [name];
 }

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/editor/json_document_factory.dart';
-import 'package:kres_requests2/data/editor/json_document_saver.dart';
+import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/process_executor.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:path/path.dart' as path;
@@ -38,7 +38,7 @@ abstract class AbstractRequestProcessor {
 
 class RequestProcessorImpl extends AbstractRequestProcessor {
   final ProcessExecutor _requestsProcessExecutor;
-  final JsonDocumentSaver _saver;
+  final DocumentSaver _saver;
 
   const RequestProcessorImpl(
     this._requestsProcessExecutor,

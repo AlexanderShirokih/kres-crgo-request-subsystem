@@ -4,10 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/models/document.dart';
-import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
-import 'package:kres_requests2/domain/service/document_service.dart';
-import 'package:kres_requests2/presentation/bloc/editor/worksheet_creation_mode.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -15,14 +12,12 @@ part 'document_master_event.dart';
 
 part 'document_master_state.dart';
 
-/// BLoC that manages global state of the [Document]
+/// BLoC that manages global state of the [Document]. Can change currently
+/// active page, create, update or delete documents or it's pages.
 class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
     implements Disposable {
   /// Manager to switch between documents
   final DocumentManager _documentManager;
-
-  /// Factory for creating [DocumentService]s
-  final DocumentServiceFactory _serviceFactory;
 
   /// Navigator for navigating
   final IModularNavigator _navigator;
@@ -32,7 +27,6 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
   /// Creates new [DocumentMasterBloc] instance for [document].
   DocumentMasterBloc(
     this._documentManager,
-    this._serviceFactory,
     this._navigator,
   ) : super(NoOpenedDocumentsState()) {
     _subscription = Rx.combineLatest2(
@@ -59,10 +53,6 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
       await _createNewPage();
     } else if (event is SaveEvent) {
       yield* _saveDocument(event.changePath, event.popAfterSave);
-    } else if (event is AddNewWorksheetEvent) {
-      yield* _createNewWorksheet(event.mode);
-    } else if (event is WorksheetActionEvent) {
-      yield* _handleWorksheetAction(event.targetWorksheet, event.action);
     } else if (event is WorksheetMasterSearchEvent) {
       yield* _toggleSearchMode(event);
     }
@@ -84,12 +74,12 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
     Document? selected,
     List<Document> all,
   ) async* {
-    final allDocumentsInfo = all.map((doc) {
-      final savePath = doc.currentSavePath;
-      final title =
-          savePath == null ? "Несохранённый документ [sP=null]" : savePath.path;
-      return DocumentInfo(SaveState.unsaved, title, doc);
-    }).toList(growable: false);
+    final allDocumentsInfo = all
+        .map(
+          (doc) =>
+              DocumentInfo(SaveState.unsaved, doc.currentSavePath?.path, doc),
+        )
+        .toList(growable: false);
 
     if (selected == null || all.isEmpty) {
       yield NoOpenedDocumentsState();
@@ -110,8 +100,8 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
     final currentInfoIdx = info.indexWhere((doc) => doc == currentDocument);
 
     try {
-      final service = _serviceFactory.createDocumentService(currentDocument);
-      await for (final saveState in service.saveDocument(changePath)) {
+      await for (final saveState
+          in _documentManager.save(currentDocument, changePath: changePath)) {
         switch (saveState) {
           case DocumentSavingState.pickingSavePath:
             break;
@@ -143,52 +133,6 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
           info[currentInfoIdx].copyWith(saveState: SaveState.unsaved);
       yield ShowDocumentsState(currentDocument, List.unmodifiable(info));
     }
-  }
-
-  Stream<DocumentMasterState> _createNewWorksheet(
-      WorksheetCreationMode mode) async* {
-    final currentState = state;
-    if (currentState is! ShowDocumentsState) return;
-
-    final currentDocument = currentState.selected;
-
-    switch (mode) {
-      case WorksheetCreationMode.import:
-        _navigator.navigate('/document/import/requests');
-        return;
-      case WorksheetCreationMode.importCounters:
-        _navigator.navigate('/document/import/counters');
-        return;
-      case WorksheetCreationMode.importNative:
-        _navigator.navigate('/document/open?pickPages=true');
-        return;
-      case WorksheetCreationMode.empty:
-        _serviceFactory
-            .createDocumentService(currentDocument)
-            .addEmptyWorksheet();
-    }
-  }
-
-  Stream<DocumentMasterState> _handleWorksheetAction(
-      Worksheet targetWorksheet, WorksheetAction action) async* {
-    final currentState = state;
-    if (currentState is! ShowDocumentsState) return;
-
-    final service =
-        _serviceFactory.createDocumentService(currentState.selected);
-
-    switch (action) {
-      case WorksheetAction.remove:
-        service.removeWorksheet(targetWorksheet);
-        break;
-      case WorksheetAction.makeActive:
-        service.makeActive(targetWorksheet);
-        break;
-    }
-
-    // Need to make state change unique
-    yield NoOpenedDocumentsState();
-    yield currentState.copyWith();
   }
 
   Stream<DocumentMasterState> _toggleSearchMode(

@@ -16,7 +16,7 @@ class PrintersList extends Equatable {
 }
 
 /// Describes supported export formats
-enum ExportFormat { pdf, excel }
+enum ExportFormat { pdf, excel, native }
 
 /// Extension for getting file extension string from [ExportFormat].
 extension ExportFormatExtension on ExportFormat {
@@ -26,6 +26,8 @@ extension ExportFormatExtension on ExportFormat {
         return "pdf";
       case ExportFormat.excel:
         return "xlsx";
+      case ExportFormat.native:
+        return "json";
     }
   }
 }

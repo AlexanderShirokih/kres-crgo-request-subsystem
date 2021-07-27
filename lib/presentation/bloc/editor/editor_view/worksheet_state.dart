@@ -1,13 +1,13 @@
-part of 'worksheet_editor_bloc.dart';
+part of 'worksheet_bloc.dart';
 
-/// Base state for [WorksheetEditorBloc]
+/// Base state for [WorksheetBloc]
 @sealed
-abstract class WorksheetEditorState extends Equatable {
-  const WorksheetEditorState._();
+abstract class WorksheetState extends Equatable {
+  const WorksheetState._();
 }
 
 /// Initial state used before worksheet data is ready
-class WorksheetInitialState extends WorksheetEditorState {
+class WorksheetInitialState extends WorksheetState {
   const WorksheetInitialState() : super._();
 
   @override
@@ -15,7 +15,7 @@ class WorksheetInitialState extends WorksheetEditorState {
 }
 
 /// State used to show the worksheet data
-class WorksheetDataState extends WorksheetEditorState {
+class WorksheetDataState extends WorksheetState {
   /// A list of request entities
   final List<Request> requests;
 

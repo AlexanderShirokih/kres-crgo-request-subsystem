@@ -1,7 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_editor_bloc.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/service/worksheet_service.dart';
+import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -29,15 +29,15 @@ void main() {
     registerFallbackValue(worksheet);
   });
 
-  blocTest<WorksheetEditorBloc, WorksheetEditorState>(
+  blocTest<WorksheetBloc, WorksheetState>(
     'Ensure initial state is correct',
-    build: () => WorksheetEditorBloc(service: service),
+    build: () => WorksheetBloc(worksheetService: service),
     verify: (e) => expect(e.state, isA<WorksheetInitialState>()),
   );
 
-  blocTest<WorksheetEditorBloc, WorksheetEditorState>(
+  blocTest<WorksheetBloc, WorksheetState>(
     'Emits [WorksheetDataState] when [SetCurrentWorksheetEvent] is added',
-    build: () => WorksheetEditorBloc(service: service),
+    build: () => WorksheetBloc(worksheetService: service),
     act: (bloc) => bloc.add(SetCurrentWorksheetEvent(worksheet)),
     expect: () => [
       WorksheetDataState(
@@ -53,9 +53,9 @@ void main() {
     },
   );
 
-  blocTest<WorksheetEditorBloc, WorksheetEditorState>(
+  blocTest<WorksheetBloc, WorksheetState>(
     'Calls swapRequest() when [SwapRequestsEvent] added',
-    build: () => WorksheetEditorBloc(service: service),
+    build: () => WorksheetBloc(worksheetService: service),
     seed: () => WorksheetDataState(
       document: document,
       worksheet: worksheet,

@@ -7,13 +7,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/presentation/bloc/editor/document_master_bloc.dart';
-import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_editor_bloc.dart';
-import 'package:kres_requests2/domain/service/worksheet_service.dart';
 import 'package:kres_requests2/presentation/editor/widgets/document_tabs_bar.dart';
-import 'package:kres_requests2/presentation/editor/worksheet_config_view/worksheet_config_view.dart';
 
-import 'widgets/worksheet_editor_view.dart';
-import 'widgets/worksheet_page_controller.dart';
+import 'document_module.dart';
 
 extension on DocumentMasterState {
   int get pageCount =>
@@ -32,8 +28,6 @@ extension on DocumentMasterState {
 /// Screen that manages whole document state
 /// Requires [DocumentMasterBloc] to be injected as a [Modular] dependency
 class DocumentEditorScreen extends HookWidget {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-
   /// Defines whether create blank document on start or not
   final bool blankDocumentOnStart;
 
@@ -59,8 +53,6 @@ class DocumentEditorScreen extends HookWidget {
             length: state.pageCount,
             initialIndex: state.pageIndex,
             child: Scaffold(
-              key: _scaffoldKey,
-              endDrawer: _buildEndDrawer(),
               appBar: _buildAppBar(),
               body: BlocListener<DocumentMasterBloc, DocumentMasterState>(
                 listener: (context, state) {
@@ -69,7 +61,9 @@ class DocumentEditorScreen extends HookWidget {
                   }
                 },
                 child: Stack(children: [
-                  Positioned.fill(child: _buildEditor(context, state)),
+                  Positioned.fill(
+                    child: _buildEditor(context, state),
+                  ),
                   // FIXME: BROKEN
                   // if (state is WorksheetMasterSearchingState)
                   // Align(
@@ -83,13 +77,6 @@ class DocumentEditorScreen extends HookWidget {
                   //     ),
                   //   ),
                   // ),
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 80.0),
-                      child: _buildEndDrawerButton(),
-                    ),
-                  )
                 ]),
               ),
             ),
@@ -99,50 +86,7 @@ class DocumentEditorScreen extends HookWidget {
     );
   }
 
-  Widget _buildEndDrawer() =>
-      BlocBuilder<DocumentMasterBloc, DocumentMasterState>(
-        builder: (context, state) {
-          if (state is! ShowDocumentsState) {
-            return Container();
-          }
-
-          return Container(
-            width: 420.0,
-            child: Drawer(
-              child: WorksheetConfigView(
-                Modular.get<WorksheetServiceFactory>()
-                    .createWorksheetService(state.selected),
-              ),
-            ),
-          );
-        },
-      );
-
-  Widget _buildEndDrawerButton() => Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(8.0),
-            bottomLeft: Radius.circular(8.0),
-          ),
-          color: Colors.white,
-        ),
-        child: IconButton(
-          icon: Icon(Icons.menu_open),
-          onPressed: () {
-            _scaffoldKey.currentState!.openEndDrawer();
-          },
-        ),
-      );
-
   AppBar _buildAppBar() => AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () => Navigator.maybePop(context),
-          ),
-        ),
         title: Text('Редактор заявок'),
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(48.0),
@@ -217,7 +161,10 @@ class DocumentEditorScreen extends HookWidget {
     }
   }
 
-  Widget _buildEditor(BuildContext context, DocumentMasterState state) {
+  Widget _buildEditor(
+    BuildContext context,
+    DocumentMasterState state,
+  ) {
     final List<DocumentInfo> allDocs;
     final Widget content;
 
@@ -225,24 +172,9 @@ class DocumentEditorScreen extends HookWidget {
       allDocs = state.all;
 
       content = TabBarView(
-        children: allDocs.map((docInfo) {
-          final serviceFactory = Modular.get<WorksheetServiceFactory>();
-          final document = docInfo.document;
-          final worksheets = document.worksheets;
-          final service = serviceFactory.createWorksheetService(document);
-
-          return IndexedStack(
-            index: worksheets.activePosition,
-            children: worksheets.list
-                .map((e) => BlocProvider(
-                      key: ObjectKey(e),
-                      create: (_) => WorksheetEditorBloc(service: service)
-                        ..add(SetCurrentWorksheetEvent(e)),
-                      child: WorksheetEditorView(),
-                    ))
-                .toList(),
-          );
-        }).toList(growable: false),
+        children: allDocs
+            .map((docInfo) => DocumentScope(docInfo.document))
+            .toList(growable: false),
       );
     } else {
       allDocs = [];
@@ -256,22 +188,7 @@ class DocumentEditorScreen extends HookWidget {
 
     return WillPopScope(
       onWillPop: () => _showExitConfirmationDialog(allDocs, context),
-      child: Row(
-        children: [
-          Container(
-            width: 285.0,
-            height: double.maxFinite,
-            child: WorksheetsPageController(),
-          ),
-          Expanded(
-            child: Container(
-              color: Color(0xFFE5E5E5),
-              height: double.maxFinite,
-              child: content,
-            ),
-          ),
-        ],
-      ),
+      child: content,
     );
   }
 
@@ -283,7 +200,7 @@ class DocumentEditorScreen extends HookWidget {
     if (!isAllSaved) return true;
 
     return true;
-    // TODO: Stub
+    // TODO: Use DialogService instead
     // return await showDialog<bool>(
     //   context: context,
     //   barrierDismissible: false,

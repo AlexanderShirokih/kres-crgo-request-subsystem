@@ -40,7 +40,7 @@ class DocumentTabsBar extends StatelessWidget {
                 .add(SetSelectedPage(all[tab].document)),
             tabs: all.map((info) {
               return DocumentTab(
-                  title: info.title,
+                  title: info.title ?? 'Несохраненный документ',
                   isSaved: info.saveState == SaveState.saved,
                   onClose: () => context
                       .read<DocumentMasterBloc>()

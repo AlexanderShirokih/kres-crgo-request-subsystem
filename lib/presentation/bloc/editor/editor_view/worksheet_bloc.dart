@@ -6,24 +6,24 @@ import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/worksheet_service.dart';
 import 'package:meta/meta.dart';
 
-part 'worksheet_editor_event.dart';
+part 'worksheet_event.dart';
 
-part 'worksheet_editor_state.dart';
+part 'worksheet_state.dart';
 
 /// BLoC responsible for control worksheet state.
-class WorksheetEditorBloc
-    extends Bloc<WorksheetEditorEvent, WorksheetEditorState> {
-  final WorksheetService service;
+class WorksheetBloc extends Bloc<WorksheetEvent, WorksheetState> {
+  /// [WorksheetService] to manage worksheet updates
+  final WorksheetService worksheetService;
 
   StreamSubscription<Worksheet>? _targetSubscription;
 
-  WorksheetEditorBloc({
-    required this.service,
+  WorksheetBloc({
+    required this.worksheetService,
   }) : super(const WorksheetInitialState());
 
   @override
-  Stream<WorksheetEditorState> mapEventToState(
-    WorksheetEditorEvent event,
+  Stream<WorksheetState> mapEventToState(
+    WorksheetEvent event,
   ) async* {
     if (event is SetCurrentWorksheetEvent) {
       yield* _keepSelectionState(_handleWorksheetUpdate(event.worksheet));
@@ -37,15 +37,14 @@ class WorksheetEditorBloc
     }
   }
 
-  Stream<WorksheetEditorState> _swapRequests(Request from, Request to) async* {
+  Stream<WorksheetState> _swapRequests(Request from, Request to) async* {
     final currentState = state;
     if (currentState is WorksheetDataState) {
-      service.swapRequest(currentState.worksheet, from, to);
+      worksheetService.swapRequest(currentState.worksheet, from, to);
     }
   }
 
-  Stream<WorksheetEditorState> _handleWorksheetUpdate(
-      Worksheet worksheet) async* {
+  Stream<WorksheetState> _handleWorksheetUpdate(Worksheet worksheet) async* {
     final currentState = state;
     if (currentState is WorksheetDataState) {
       // Update an existing data
@@ -56,7 +55,7 @@ class WorksheetEditorBloc
     } else {
       // First time emitting
       yield WorksheetDataState(
-        document: service.document,
+        document: worksheetService.document,
         requests: worksheet.requests,
         worksheet: worksheet,
       );
@@ -66,7 +65,7 @@ class WorksheetEditorBloc
 
     // Subscribe to worksheet updates
     _targetSubscription =
-        service.listenOn(worksheet).listen((updatedWorksheet) {
+        worksheetService.listenOn(worksheet).listen((updatedWorksheet) {
       add(SetCurrentWorksheetEvent(updatedWorksheet));
     });
   }
@@ -80,7 +79,7 @@ class WorksheetEditorBloc
   //             _selectionList = null;
 
   /// Deals some action with the selection list
-  Stream<WorksheetEditorState> _handleSelectionEvent(
+  Stream<WorksheetState> _handleSelectionEvent(
     Request? target,
     SelectionAction action,
   ) async* {
@@ -117,7 +116,7 @@ class WorksheetEditorBloc
               currentState,
             );
           case SelectionAction.dropSelected:
-            service.removeRequests(
+            worksheetService.removeRequests(
                 worksheet, currentState.selectionList.toList());
             return currentState.copyWith();
           case SelectionAction.cancel:
@@ -140,7 +139,7 @@ class WorksheetEditorBloc
   }
 
   /// Handles changes on the request group
-  Stream<WorksheetEditorState> _handleGroupUpdate(
+  Stream<WorksheetState> _handleGroupUpdate(
     Request target,
     int newGroup,
   ) async* {
@@ -165,8 +164,8 @@ class WorksheetEditorBloc
     );
   }
 
-  Stream<WorksheetEditorState> _keepSelectionState(
-    Stream<WorksheetEditorState> actions,
+  Stream<WorksheetState> _keepSelectionState(
+    Stream<WorksheetState> actions,
   ) {
     final original = state;
     if (original is WorksheetSelectionState) {

@@ -1,7 +1,7 @@
 import '../models.dart';
 import '../repositories.dart';
 
-/// Service for handling actions on worksheet
+/// Service for handling actions on a certain worksheet
 class WorksheetService {
   final Document document;
   final Repository<Employee> _employeeRepository;
@@ -43,11 +43,16 @@ class WorksheetService {
     document.worksheets.edit(target).setChiefEmployee(employee).commit();
   }
 
-  /// Listen for changes on [target] worksheet
+  /// Updates name of the [target] worksheet
+  void updateName(Worksheet target, String name) {
+    document.worksheets.edit(target).setName(name).commit();
+  }
+
+  /// Listens for changes on [target] worksheet
   Stream<Worksheet> listenOn(Worksheet target) =>
       document.worksheets.streamFor(target);
 
-  /// Listen for changes on active worksheet
+  /// Listens for changes on active worksheet
   Stream<Worksheet> listenOnActive() => document.worksheets.activeStream;
 
   /// Fetches configuration information for [target] worksheet and returns
@@ -82,15 +87,4 @@ class WorksheetService {
       worksheet: worksheet,
     );
   }
-}
-
-/// Factory to create instances of [WorksheetService]
-class WorksheetServiceFactory {
-  final Repository<Employee> _employeeRepository;
-
-  WorksheetServiceFactory(this._employeeRepository);
-
-  /// Creates a new instance of [WorksheetService] for the [document]
-  WorksheetService createWorksheetService(Document document) =>
-      WorksheetService(document, _employeeRepository);
 }

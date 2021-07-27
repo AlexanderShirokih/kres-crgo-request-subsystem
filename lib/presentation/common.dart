@@ -1,9 +1,4 @@
-import 'dart:io';
-
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:kres_requests2/domain/models/document.dart';
-import 'package:path/path.dart' as path;
 
 class ErrorView extends StatelessWidget {
   final String errorDescription;
@@ -66,27 +61,4 @@ class LoadingView extends StatelessWidget {
           ],
         ),
       );
-}
-
-Future<File?> showSaveDialog(
-    Document currentDoc, String currentDirectory) async {
-  final chosenSavePath = await getSavePath(
-    suggestedName: '${currentDoc.suggestedName}.json',
-    initialDirectory: currentDirectory,
-    confirmButtonText: 'Сохранить',
-    acceptedTypeGroups: [
-      XTypeGroup(
-        label: "Документ заявок",
-        extensions: ["json"],
-      )
-    ],
-  );
-
-  if (chosenSavePath != null) {
-    return path.extension(chosenSavePath) != '.json'
-        ? File('$chosenSavePath.json')
-        : File(chosenSavePath);
-  }
-
-  return null;
 }

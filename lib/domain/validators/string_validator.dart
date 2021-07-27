@@ -1,6 +1,6 @@
 import 'package:kres_requests2/domain/validator.dart';
 
-/// [Validator] that validates String field in its length
+/// [Validator] that validates String field in its length bounds
 class StringValidator extends Validator<String?> {
   /// Minimal string length
   final int minLength;

@@ -11,7 +11,7 @@ abstract class FilePicker {
 
 /// Service used to pick files from the storage
 class FilePickerServiceImpl implements FilePicker {
-  /// Function for picking files from the storage
+  /// Interface for picking files from the storage
   final ImportFileChooser _fileChooser;
 
   FilePickerServiceImpl(this._fileChooser);

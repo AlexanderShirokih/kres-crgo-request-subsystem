@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
-import 'package:kres_requests2/domain/service/export_file_chooser.dart';
-import 'package:kres_requests2/domain/service/requests_export_service.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/repository/settings_repository.dart';
 import 'package:kres_requests2/domain/request_processor.dart';
+import 'package:kres_requests2/domain/service/export_file_chooser.dart';
+import 'package:kres_requests2/domain/service/requests_export_service.dart';
 
 /// Exception used by [ExportService] to throw when some error happened.
 class ExportServiceException extends Equatable implements Exception {
@@ -121,6 +121,9 @@ class ExportService {
         return _requestsService.exportToPdf(document, filePath);
       case ExportFormat.excel:
         return _requestsService.exportToXlsx(document, filePath);
+      default:
+        // TODO: Check this case!
+        throw "Unsupported case!";
     }
   }
 

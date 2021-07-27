@@ -1,88 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/presentation/bloc/importer/importer_bloc.dart';
-import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/service/file_picker_service.dart';
-import 'package:kres_requests2/domain/service/import/counters_import_service.dart';
-import 'package:kres_requests2/domain/service/import/document_import_service.dart';
-import 'package:kres_requests2/domain/service/import/megabilling_import_service.dart';
-import 'package:kres_requests2/domain/service/import/native_import_service.dart';
-import 'package:kres_requests2/domain/service/import_file_chooser.dart';
-import 'package:kres_requests2/presentation/editor/editor_module.dart';
-import 'package:kres_requests2/presentation/importer/counters_importer_screen.dart';
-import 'package:kres_requests2/presentation/importer/dialogs/table_chooser_dialog.dart';
-import 'package:kres_requests2/presentation/importer/dialogs/worksheets_chooser_dialog.dart';
-import 'package:kres_requests2/presentation/importer/native_import_screen.dart';
-import 'package:kres_requests2/presentation/importer/requests_importer_screen.dart';
+import 'package:kres_requests2/domain/domain.dart';
+import 'package:kres_requests2/domain/editor/document_filter.dart';
+import 'package:kres_requests2/domain/service/document_service.dart';
+import 'package:kres_requests2/domain/service/worksheet_service.dart';
+import 'package:kres_requests2/presentation/bloc/editor/doc_view/document_bloc.dart';
+import 'package:kres_requests2/presentation/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
+import 'package:kres_requests2/presentation/editor/widgets/document_view.dart';
 
-/// Module that contains all pages and submodules to work with documents
-class DocumentModule extends Module {
+/// Module that provides dependencies for a certain document
+class DocumentScope extends WidgetModule {
+  /// Currently associated document
+  final Document document;
+
+  DocumentScope(this.document);
+
   @override
-  final List<ModularRoute> routes = [
-    ModuleRoute('/edit', module: EditorModule()),
-    ChildRoute(
-      '/open',
-      child: (_, args) {
-        final Map<String, dynamic> data = args.data ?? {};
+  List<Bind<Object>> get binds => [
+        Bind.singleton<DocumentFilter>(
+          (i) => DocumentFilter(document),
+        ),
+        Bind.singleton<WorksheetService>(
+          (i) => WorksheetService(document, i<Repository<Employee>>()),
+        ),
+        Bind.singleton(
+          (i) => DocumentService(document, i<DocumentFilter>()),
+        ),
+        Bind.factory<DocumentBloc>(
+          (i) => DocumentBloc(i<DocumentService>(), Modular.to),
+        ),
+        Bind.factory(
+          (i) => WorksheetConfigBloc(i<WorksheetService>()),
+        ),
+      ];
 
-        return BlocProvider(
-          create: (context) => ImporterBloc(
-            navigator: Modular.to,
-            documentManager: Modular.get(),
-            importService: NativeImporterService(
-              Modular.get(),
-              tableChooser: ((args.queryParams['pickPages'] == 'true'))
-                  ? (tables) => showDialog<List<Worksheet>>(
-                        context: context,
-                        builder: (_) => WorksheetsChooserDialog(tables),
-                      ).then((worksheets) => worksheets ?? <Worksheet>[])
-                  : null,
-            ),
-            pickerService: FilePickerServiceImpl(
-              ImportFileChooser.forType(ImportType.native),
-            ),
-          )..add(ImportEvent(filePath: data['filePath'])),
-          child: NativeImporterScreen(),
-        );
-      },
-    ),
-    ChildRoute(
-      '/import/requests',
-      child: (_, args) {
-        return BlocProvider(
-          create: (_) => ImporterBloc(
-            navigator: Modular.to,
-            documentManager: Modular.get(),
-            importService: MegaBillingImportService(Modular.get()),
-            pickerService: FilePickerServiceImpl(
-              ImportFileChooser.forType(ImportType.excelRequests),
-            ),
-          ),
-          child: RequestsImporterScreen(),
-        );
-      },
-    ),
-    ChildRoute(
-      'import/counters',
-      child: (_, args) {
-        return BlocProvider(
-          create: (context) => ImporterBloc(
-            navigator: Modular.to,
-            documentManager: Modular.get(),
-            importService: CountersImportService(
-              tableChooser: (tables) => showDialog<String>(
-                context: context,
-                builder: (_) => TableChooserDialog(tables),
-              ),
-            ),
-            pickerService: FilePickerServiceImpl(
-              ImportFileChooser.forType(ImportType.excelCounters),
-            ),
-          ),
-          child: CountersImportScreen(),
-        );
-      },
-    ),
-  ];
+  @override
+  Widget get view {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => Modular.get<DocumentBloc>()),
+        BlocProvider(create: (_) => Modular.get<WorksheetConfigBloc>()),
+      ],
+      child: Builder(
+        builder: (_) => DocumentView(),
+      ),
+    );
+  }
 }

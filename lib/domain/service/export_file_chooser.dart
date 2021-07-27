@@ -21,10 +21,16 @@ class ExportFileChooserImpl implements ExportFileChooser {
       suggestedName: _correctExtension(suggested, dotExtension),
       confirmButtonText: 'Сохранить',
       acceptedTypeGroups: [
-        XTypeGroup(
-          label: "Документ ${extension.toUpperCase()}",
-          extensions: [extension],
-        )
+        if (format == ExportFormat.native)
+          XTypeGroup(
+            label: "Документ заявок",
+            extensions: [extension],
+          )
+        else
+          XTypeGroup(
+            label: "Документ ${extension.toUpperCase()}",
+            extensions: [extension],
+          )
       ],
     );
 
