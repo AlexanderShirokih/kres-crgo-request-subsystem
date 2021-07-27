@@ -24,7 +24,7 @@ class DocumentInfo extends Equatable {
   /// Returns index of active worksheet in [all] list
   int get activePosition => all.indexWhere((ws) => ws == active);
 
-  DocumentInfo(this.active, this.all);
+  const DocumentInfo(this.active, this.all);
 
   @override
   List<Object?> get props => [active, all];
@@ -41,7 +41,7 @@ class DocumentBloc extends Bloc<DocumentEvent, BaseState> {
   /// Subscription to document updates
   late StreamSubscription<DocumentInfo> _subscription;
 
-  DocumentBloc(this._service, this._navigator) : super(InitialState()) {
+  DocumentBloc(this._service, this._navigator) : super(const InitialState()) {
     final worksheets = _service.document.worksheets;
 
     _subscription = Rx.combineLatest2<List<Worksheet>, Worksheet, DocumentInfo>(

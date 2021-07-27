@@ -7,6 +7,8 @@ import 'package:kres_requests2/presentation/bloc/editor/document_master_bloc.dar
 /// There is an add button to create an empty document.
 /// Requires [DocumentMasterBloc] to be injected.
 class DocumentTabsBar extends StatelessWidget {
+  const DocumentTabsBar({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -16,8 +18,8 @@ class DocumentTabsBar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 18.0),
           child: IconButton(
             onPressed: () =>
-                context.read<DocumentMasterBloc>().add(CreatePage()),
-            icon: Icon(Icons.add),
+                context.read<DocumentMasterBloc>().add(const CreatePage()),
+            icon: const Icon(Icons.add),
             color: Theme.of(context).colorScheme.onPrimary,
             tooltip: 'Новый документ',
           ),
@@ -79,7 +81,8 @@ class DocumentTab extends StatelessWidget {
           Expanded(child: Text(title)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18.0),
-            child: IconButton(onPressed: onClose, icon: Icon(Icons.close)),
+            child:
+                IconButton(onPressed: onClose, icon: const Icon(Icons.close)),
           ),
         ],
       ),

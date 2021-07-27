@@ -6,7 +6,8 @@ import 'package:kres_requests2/presentation/importer/base_importer_screen.dart';
 
 /// Mega-billing XLS request files import wizard
 class RequestsImporterScreen extends ImporterScreen {
-  const RequestsImporterScreen() : super(title: 'Импорт заявок');
+  const RequestsImporterScreen({Key? key})
+      : super(key: key, title: 'Импорт заявок');
 
   @override
   Widget buildIdleView(BuildContext context) {
@@ -23,11 +24,12 @@ class RequestsImporterScreen extends ImporterScreen {
           ),
           const SizedBox(height: 42.0),
           ElevatedButton.icon(
-            icon: FaIcon(FontAwesomeIcons.fileExcel),
-            label: Text(
+            icon: const FaIcon(FontAwesomeIcons.fileExcel),
+            label: const Text(
               'Открыть отчёт',
             ),
-            onPressed: () => context.read<ImporterBloc>().add(ImportEvent()),
+            onPressed: () =>
+                context.read<ImporterBloc>().add(const ImportEvent()),
           )
         ],
       ),

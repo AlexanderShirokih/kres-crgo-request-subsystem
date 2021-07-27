@@ -27,7 +27,6 @@ void main() {
     when(() => service.document).thenReturn(document);
   });
 
-
   blocTest<DocumentBloc, BaseState>(
     'Calls removeWorksheet in service when [WorksheetMasterWorksheetActionEvent] is added',
     build: () => DocumentBloc(service, navigator),
@@ -56,11 +55,11 @@ void main() {
     },
   );
 
-
   blocTest<DocumentBloc, BaseState>(
     'Add empty worksheet makes call to service',
     build: () => DocumentBloc(service, navigator),
-    act: (bloc) => bloc.add(AddNewWorksheetEvent(WorksheetCreationMode.empty)),
+    act: (bloc) =>
+        bloc.add(const AddNewWorksheetEvent(WorksheetCreationMode.empty)),
     verify: (_) {
       verify(() => service.addEmptyWorksheet()).called(1);
     },
@@ -69,7 +68,8 @@ void main() {
   blocTest<DocumentBloc, BaseState>(
     'Import worksheet event pushes import navigator path',
     build: () => DocumentBloc(service, navigator),
-    act: (bloc) => bloc.add(AddNewWorksheetEvent(WorksheetCreationMode.import)),
+    act: (bloc) =>
+        bloc.add(const AddNewWorksheetEvent(WorksheetCreationMode.import)),
     verify: (_) {
       verify(
         () => navigator.pushNamed('/document/import/requests'),
@@ -80,8 +80,8 @@ void main() {
   blocTest<DocumentBloc, BaseState>(
     'Import counters event pushes counter import navigator path',
     build: () => DocumentBloc(service, navigator),
-    act: (bloc) =>
-        bloc.add(AddNewWorksheetEvent(WorksheetCreationMode.importCounters)),
+    act: (bloc) => bloc
+        .add(const AddNewWorksheetEvent(WorksheetCreationMode.importCounters)),
     verify: (_) {
       verify(
         () => navigator.pushNamed('/document/import/counters'),
@@ -92,8 +92,8 @@ void main() {
   blocTest<DocumentBloc, BaseState>(
     'Native import event pushes document open navigator path',
     build: () => DocumentBloc(service, navigator),
-    act: (bloc) =>
-        bloc.add(AddNewWorksheetEvent(WorksheetCreationMode.importNative)),
+    act: (bloc) => bloc
+        .add(const AddNewWorksheetEvent(WorksheetCreationMode.importNative)),
     verify: (_) {
       verify(
         () => navigator.pushNamed('/document/open?pickPages=true'),

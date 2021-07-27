@@ -13,7 +13,7 @@ class Employee extends Equatable {
   /// Electrical access group
   final int accessGroup;
 
-  Employee({
+  const Employee({
     required this.name,
     required this.position,
     required this.accessGroup,

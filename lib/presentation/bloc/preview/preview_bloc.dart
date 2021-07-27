@@ -5,7 +5,6 @@ import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:meta/meta.dart';
 
 part 'preview_events.dart';
-
 part 'preview_states.dart';
 
 /// BLoC for preparing document worksheets for printing or
@@ -14,8 +13,8 @@ class PreviewBloc extends Bloc<PreviewEvent, PreviewState> {
   /// Document manager instance
   final DocumentManager manager;
 
-  PreviewBloc(this.manager) : super(PreviewInitialState()) {
-    add(_CheckDocumentEvent());
+  PreviewBloc(this.manager) : super(const PreviewInitialState()) {
+    add(const _CheckDocumentEvent());
   }
 
   @override
@@ -31,7 +30,7 @@ class PreviewBloc extends Bloc<PreviewEvent, PreviewState> {
     final selected = manager.selected;
 
     if (selected == null) {
-      yield EmptyDocumentState();
+      yield const EmptyDocumentState();
       return;
     }
 
@@ -42,7 +41,7 @@ class PreviewBloc extends Bloc<PreviewEvent, PreviewState> {
         .toList(growable: false);
 
     if (nonEmptyWorksheets.isEmpty) {
-      yield EmptyDocumentState();
+      yield const EmptyDocumentState();
       return;
     }
 

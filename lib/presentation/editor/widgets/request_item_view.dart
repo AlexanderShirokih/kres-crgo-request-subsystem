@@ -94,7 +94,7 @@ class RequestItemView extends StatelessWidget {
                   children: [
                     Text(
                       request.accountId?.toString().padLeft(6, '0') ?? "--",
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontWeight: FontWeight.w800, fontSize: 20.0),
                     ),
                     const SizedBox(height: 8.0),
@@ -109,11 +109,11 @@ class RequestItemView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(request.name, style: TextStyle(fontSize: 20.0)),
+                    Text(request.name, style: const TextStyle(fontSize: 20.0)),
                     const SizedBox(height: 6.0),
                     Text(
                       request.address,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18.0,
                       ),
                     ),
@@ -132,47 +132,45 @@ class RequestItemView extends StatelessWidget {
               const SizedBox(width: 12.0),
               SizedBox(
                 width: 320.0,
-                child: Container(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 220.0,
-                            child: Text(
-                              request.counter?.mainInfo ?? 'ПУ отсутств.',
-                              style: TextStyle(
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4.0),
-                          Text(
-                            request.counter?.checkInfo ?? '',
-                            style: TextStyle(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 220.0,
+                          child: Text(
+                            request.counter?.mainInfo ?? 'ПУ отсутств.',
+                            style: const TextStyle(
                               fontSize: 16.0,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 10.0),
-                      _printConnectionPoint(request.connectionPoint),
-                      const SizedBox(height: 10.0),
-                      _printPhone(request.phoneNumber),
-                    ],
-                  ),
+                        ),
+                        const SizedBox(width: 4.0),
+                        Text(
+                          request.counter?.checkInfo ?? '',
+                          style: const TextStyle(
+                            fontSize: 16.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10.0),
+                    _printConnectionPoint(request.connectionPoint),
+                    const SizedBox(height: 10.0),
+                    _printPhone(request.phoneNumber),
+                  ],
                 ),
               )
             ],
           ),
-          Divider(),
+          const Divider(),
           Padding(
             padding: const EdgeInsets.only(left: 24.0),
             child: Text(
               request.additionalInfo ?? '',
-              style: TextStyle(fontSize: 16.0),
+              style: const TextStyle(fontSize: 16.0),
             ),
           ),
         ],
@@ -185,9 +183,9 @@ class RequestItemView extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(Icons.phone, size: 20.0),
+        const Icon(Icons.phone, size: 20.0),
         const SizedBox(width: 4.0),
-        Text(phone, style: TextStyle(fontWeight: FontWeight.w700)),
+        Text(phone, style: const TextStyle(fontWeight: FontWeight.w700)),
       ],
     );
   }
@@ -195,7 +193,7 @@ class RequestItemView extends StatelessWidget {
   Widget _printConnectionPoint(ConnectionPoint? connectionPoint) {
     Iterable<Widget> printConnectionPoint0() sync* {
       if (connectionPoint == null || connectionPoint.isEmpty) {
-        yield Text('--');
+        yield const Text('--');
         return;
       }
 
@@ -215,7 +213,7 @@ class RequestItemView extends StatelessWidget {
 
     return Row(
       children: [
-        FaIcon(FontAwesomeIcons.plug, size: 16.0),
+        const FaIcon(FontAwesomeIcons.plug, size: 16.0),
         const SizedBox(width: 12.0),
         ...printConnectionPoint0(),
       ],
@@ -255,7 +253,7 @@ class _MarkWidget extends StatelessWidget {
               }
             }),
             icon: groupIndex == 0
-                ? FaIcon(
+                ? const FaIcon(
                     FontAwesomeIcons.bookmark,
                     size: 16.0,
                     color: Colors.black,
@@ -300,7 +298,7 @@ class _ChooseColorDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      content: Container(
+      content: SizedBox(
         height: 60.0,
         child: Row(
           children: List.generate(

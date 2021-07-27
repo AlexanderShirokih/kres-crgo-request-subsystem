@@ -12,7 +12,7 @@ class RequestsMoveDialogData extends Equatable {
   final Worksheet source;
   final Iterable<Worksheet> targets;
 
-  RequestsMoveDialogData(this.source, this.targets);
+  const RequestsMoveDialogData(this.source, this.targets);
 
   @override
   List<Object?> get props => [source, targets];
@@ -22,7 +22,7 @@ class RequestsMoveDialogData extends Equatable {
 class RequestsMoveDialogBloc extends Bloc<RequestMoveEvent, BaseState> {
   final RequestService _service;
 
-  RequestsMoveDialogBloc(this._service) : super(InitialState());
+  RequestsMoveDialogBloc(this._service) : super(const InitialState());
 
   @override
   Stream<BaseState> mapEventToState(RequestMoveEvent event) async* {

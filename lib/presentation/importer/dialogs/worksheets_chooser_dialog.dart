@@ -6,14 +6,14 @@ import 'package:kres_requests2/domain/models.dart';
 class WorksheetsChooserDialog extends HookWidget {
   final List<Worksheet> tables;
 
-  const WorksheetsChooserDialog(this.tables);
+  const WorksheetsChooserDialog(this.tables, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final selected = useState(Set<Worksheet>.from(tables));
 
     return AlertDialog(
-      title: Text('Выберите листы для импорта'),
+      title: const Text('Выберите листы для импорта'),
       content: SizedBox(
         width: 300.0,
         height: 300.0,
@@ -32,10 +32,10 @@ class WorksheetsChooserDialog extends HookWidget {
               .toList(),
         ),
       ),
-      actionsPadding: EdgeInsets.only(right: 18.0, bottom: 8.0),
+      actionsPadding: const EdgeInsets.only(right: 18.0, bottom: 8.0),
       actions: [
         ElevatedButton(
-          child: Text('Выбрать'),
+          child: const Text('Выбрать'),
           onPressed: () => Navigator.pop(context, selected.value.toList()),
         ),
       ],

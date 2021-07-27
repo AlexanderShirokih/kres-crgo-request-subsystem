@@ -48,9 +48,9 @@ class WorksheetConfigInfo extends Equatable {
     required this.mainEmployees,
     required this.chiefEmployees,
     required this.teamMembersEmployees,
-    required Worksheet worksheet,
+    required this.worksheet,
     this.hasExpandedTeamField = false,
-  }) : worksheet = worksheet;
+  });
 
   @override
   List<Object?> get props => [

@@ -38,7 +38,7 @@ class JavaPathChooserBloc extends Bloc<JavaPathChooserEvent, BaseState> {
     this._settingsRepository,
     this._javaProcessExecutor,
   ) : super(const InitialState()) {
-    add(_FetchCurrentInfo());
+    add(const _FetchCurrentInfo());
   }
 
   @override

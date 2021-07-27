@@ -82,7 +82,7 @@ class TableView extends StatelessWidget {
   Widget _buildHeading(BuildContext context) => Material(
         elevation: 4.0,
         child: Container(
-          padding: EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(12.0),
           child: DefaultTextStyle(
             style: headingTextStyle ?? Theme.of(context).textTheme.headline6!,
             child: Row(

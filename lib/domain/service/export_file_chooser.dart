@@ -12,6 +12,7 @@ abstract class ExportFileChooser {
 
 /// Default implementation of [ExportFileChooser]
 class ExportFileChooserImpl implements ExportFileChooser {
+  @override
   Future<String?> getFile(ExportFormat format, Document document) async {
     final extension = format.extension();
     final suggested = '${document.suggestedName}.$extension';

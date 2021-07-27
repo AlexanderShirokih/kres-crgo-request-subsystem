@@ -49,7 +49,7 @@ class ShowDocumentsState extends DocumentMasterState {
   /// All opened documents
   final List<DocumentInfo> all;
 
-  ShowDocumentsState(this.selected, this.all) : super._();
+  const ShowDocumentsState(this.selected, this.all) : super._();
 
   @override
   List<Object?> get props => [selected, all];

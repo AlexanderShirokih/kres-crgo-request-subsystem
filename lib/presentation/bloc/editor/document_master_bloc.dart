@@ -9,7 +9,6 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
 part 'document_master_event.dart';
-
 part 'document_master_state.dart';
 
 /// BLoC that manages global state of the [Document]. Can change currently
@@ -28,7 +27,7 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
   DocumentMasterBloc(
     this._documentManager,
     this._navigator,
-  ) : super(NoOpenedDocumentsState()) {
+  ) : super(const NoOpenedDocumentsState()) {
     _subscription = Rx.combineLatest2(
       _documentManager.openedDocumentsStream,
       _documentManager.selectedStream,
@@ -82,7 +81,7 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
         .toList(growable: false);
 
     if (selected == null || all.isEmpty) {
-      yield NoOpenedDocumentsState();
+      yield const NoOpenedDocumentsState();
     } else {
       yield ShowDocumentsState(selected, allDocumentsInfo);
     }

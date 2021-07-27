@@ -59,7 +59,7 @@ class AppDatabase extends Disposable {
                   await rootBundle.loadString('assets/sql/autofill.sql');
               await database.execute(data);
             } catch (e) {
-              print("Failed to load autofill data: $e");
+              // Autofill is not available, so nothing to do
             }
           }),
     );

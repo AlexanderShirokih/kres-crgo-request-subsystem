@@ -9,7 +9,7 @@ abstract class UndoableDataEvent extends Equatable {
 class RefreshDataEvent<T> extends UndoableDataEvent {
   final List<T> data;
 
-  RefreshDataEvent(this.data);
+  const RefreshDataEvent(this.data);
 
   @override
   List<Object> get props => [data];

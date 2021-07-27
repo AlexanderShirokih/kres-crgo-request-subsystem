@@ -13,10 +13,8 @@ class _ExporterErrorEvent extends ExporterEvent {
   const _ExporterErrorEvent(this.error, this.stackTrace);
 
   @override
-  List<Object> get props => [error, this.stackTrace];
+  List<Object> get props => [error, stackTrace];
 }
-
-
 
 /// Common class for starting events
 abstract class _ExporterStartEvent extends ExporterEvent {

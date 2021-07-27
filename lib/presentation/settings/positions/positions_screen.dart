@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/models/position.dart';
+import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/presentation/bloc/settings/common/undoable_bloc.dart';
 import 'package:kres_requests2/presentation/bloc/settings/common/undoable_events.dart';
 import 'package:kres_requests2/presentation/bloc/settings/positions/position_bloc.dart';
 import 'package:kres_requests2/presentation/bloc/settings/positions/position_data.dart';
-import 'package:kres_requests2/domain/models/position.dart';
-import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/presentation/common/table_view.dart';
 import 'package:kres_requests2/presentation/settings/common/undoable_editor_screen.dart';
 import 'package:kres_requests2/presentation/settings/common/widgets/delete_button.dart';
@@ -14,15 +14,17 @@ import 'package:kres_requests2/presentation/settings/common/widgets/editable_nam
 
 /// Manages employee positions
 class PositionsScreen extends StatelessWidget {
+  const PositionsScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) => UndoableEditorScreen(
         blocBuilder: (_) => PositionBloc(Modular.get(), Modular.get()),
         addItemButtonName: 'Добавить должность',
-        addItemIcon: FaIcon(FontAwesomeIcons.userPlus),
-        tableHeader: [
+        addItemIcon: const FaIcon(FontAwesomeIcons.userPlus),
+        tableHeader: const [
           TableHeadingColumn(
               label: Text('Название должности'), preferredWidth: 320.0),
-          TableHeadingColumn(label: const SizedBox(), preferredWidth: 60.0),
+          TableHeadingColumn(label: SizedBox(), preferredWidth: 60.0),
         ],
         dataRowBuilder: _buildData,
       );

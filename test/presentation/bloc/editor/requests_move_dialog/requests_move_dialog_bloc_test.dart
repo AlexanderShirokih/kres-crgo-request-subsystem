@@ -1,8 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:kres_requests2/presentation/bloc/editor/requests_move_dialog/requests_move_dialog_bloc.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/service/request_service.dart';
 import 'package:kres_requests2/presentation/bloc.dart';
+import 'package:kres_requests2/presentation/bloc/editor/requests_move_dialog/requests_move_dialog_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -19,7 +19,7 @@ void main() {
     worksheet = WorksheetMock();
 
     registerFallbackValue(worksheet);
-    when(() => service.getTargetWorksheets(any())).thenReturn(Iterable.empty());
+    when(() => service.getTargetWorksheets(any())).thenReturn(const Iterable.empty());
   });
 
   blocTest<RequestsMoveDialogBloc, BaseState>(
@@ -37,10 +37,10 @@ void main() {
   blocTest<RequestsMoveDialogBloc, BaseState>(
     'Moves requests when [MoveRequestsEvent] is added ',
     build: () => RequestsMoveDialogBloc(service),
-    seed: () => DataState(RequestsMoveDialogData(worksheet, [])),
+    seed: () => DataState(RequestsMoveDialogData(worksheet, const [])),
     expect: () => [CompletedState()],
     act: (bloc) => bloc.add(
-      MoveRequestsEvent(
+      const MoveRequestsEvent(
         requests: [],
         removeFromSource: false,
       ),

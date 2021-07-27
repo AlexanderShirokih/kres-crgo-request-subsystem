@@ -15,7 +15,7 @@ abstract class _EditorAction<E> {
 class _InsertEntity<E> extends Equatable implements _EditorAction<E> {
   final E newEntity;
 
-  _InsertEntity(this.newEntity);
+  const _InsertEntity(this.newEntity);
 
   @override
   void applyToList(List<E> data) {
@@ -29,7 +29,7 @@ class _InsertEntity<E> extends Equatable implements _EditorAction<E> {
 class _DeleteEntity<E> extends Equatable implements _EditorAction<E> {
   final E entity;
 
-  _DeleteEntity(this.entity);
+  const _DeleteEntity(this.entity);
 
   @override
   void applyToList(List<E> data) {
@@ -50,7 +50,7 @@ class _UpdateEntity<E> extends Equatable implements _EditorAction<E> {
   final E old;
   final E edited;
 
-  _UpdateEntity(this.old, this.edited, this._persistedObjectBuilder);
+  const _UpdateEntity(this.old, this.edited, this._persistedObjectBuilder);
 
   @override
   void applyToList(List<E> data) {
@@ -141,7 +141,7 @@ class RepositoryController<E> implements AbstractRepositoryController<E> {
 
     if (_data != null) {
       final modifiedList = _applyOperations(_data!);
-      return !IterableEquality().equals(_data, modifiedList);
+      return !const IterableEquality().equals(_data, modifiedList);
     }
     return true;
   }

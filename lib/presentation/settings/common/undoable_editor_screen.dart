@@ -46,7 +46,8 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
                 final dataState = bloc.state as DataState<E, DH>;
                 if (dataState.hasUnsavedChanges && dataState.canSave) {
                   final canPop = await showDialog<bool?>(
-                      context: context, builder: (_) => SaveChangesDialog());
+                      context: context,
+                      builder: (_) => const SaveChangesDialog());
 
                   if (canPop == null) {
                     // Cancelled
@@ -90,10 +91,10 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
                                 ),
                                 onPressed: () => context
                                     .read<UndoableBloc<DH, E>>()
-                                    .add(AddItemEvent()),
+                                    .add(const AddItemEvent()),
                               ),
                             ),
-                            SizedBox(width: 42.0),
+                            const SizedBox(width: 42.0),
                           ],
                         ),
                         dataRowBuilder: dataRowBuilder,
@@ -110,7 +111,7 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
                     ],
                   );
                 }
-                return Center(
+                return const Center(
                   child: Text('Нет данных :('),
                 );
               },
@@ -125,9 +126,9 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
         if (state is DataState<E, DH> && state.canSave) {
           return FloatingActionButton(
             tooltip: 'Сохранить изменения',
-            child: FaIcon(FontAwesomeIcons.solidSave),
+            child: const FaIcon(FontAwesomeIcons.solidSave),
             onPressed: () =>
-                context.read<UndoableBloc<DH, E>>().add(ApplyEvent()),
+                context.read<UndoableBloc<DH, E>>().add(const ApplyEvent()),
           );
         } else {
           return const SizedBox();
@@ -138,12 +139,12 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
       BuildContext context, DataState<E, DH> state) sync* {
     if (state.hasUnsavedChanges) {
       yield IconButton(
-        icon: Icon(Icons.redo),
+        icon: const Icon(Icons.redo),
         tooltip: 'Отменить',
         onPressed: () =>
-            context.read<UndoableBloc<DH, E>>().add(UndoActionEvent()),
+            context.read<UndoableBloc<DH, E>>().add(const UndoActionEvent()),
       );
-      yield SizedBox(width: 36.0);
+      yield const SizedBox(width: 36.0);
     }
   }
 }
@@ -166,17 +167,15 @@ class _EntityTableContent<DH extends UndoableDataHolder<E>, E extends Object>
   }) : super(key: key);
 
   @override
-  _EntityTableContentState createState() =>
-      _EntityTableContentState<DH, E>(dataRowBuilder);
+  _EntityTableContentState createState() => _EntityTableContentState<DH, E>();
 }
 
 class _EntityTableContentState<DH extends UndoableDataHolder<E>,
     E extends Object> extends State<_EntityTableContent> {
-  final TableRowBuilder<DH, E> _rowBuilder;
   late ScrollController _scrollController;
   bool _wasRebuilt = false;
 
-  _EntityTableContentState(this._rowBuilder);
+  _EntityTableContentState();
 
   @override
   void initState() {
@@ -203,18 +202,18 @@ class _EntityTableContentState<DH extends UndoableDataHolder<E>,
       if (_wasRebuilt) {
         _scrollController.animateTo(
           100000.0,
-          duration: Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 500),
           curve: Curves.easeIn,
         );
       }
       _wasRebuilt = true;
     });
 
-    final List<TableDataRow> rows =
-        _rowBuilder(widget.bloc as UndoableBloc<DH, E>, widget.data as DH);
+    final List<TableDataRow> rows = widget.dataRowBuilder(
+        widget.bloc as UndoableBloc<DH, E>, widget.data as DH);
 
     return ConstrainedBox(
-      constraints: BoxConstraints(
+      constraints: const BoxConstraints(
         minHeight: 460.0,
       ),
       child: TableView(

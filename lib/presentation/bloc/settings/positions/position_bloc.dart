@@ -15,7 +15,7 @@ class PositionBloc extends UndoableBloc<PositionData, Position> {
   ) : super(controller, validator);
 
   @override
-  Future<Position> createNewEntity() async => Position(name: '');
+  Future<Position> createNewEntity() async => const Position(name: '');
 
   @override
   Future<PositionData> onRefreshData(List<Position> data) async =>

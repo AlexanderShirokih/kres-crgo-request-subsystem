@@ -19,7 +19,7 @@ class RecentDocumentsBloc extends Bloc<RecentDocsEvent, RecentDocsState> {
   RecentDocumentsBloc(
     this._recentDocsController,
   ) : super(const NoRecentDocumentsState()) {
-    add(FetchRecentDocumentsEvent());
+    add(const FetchRecentDocumentsEvent());
 
     _recentDocsSubscription = _recentDocsController.stream.listen((recentDocs) {
       add(_UpdateRecentDocs(recentDocs));
@@ -52,7 +52,7 @@ class RecentDocumentsBloc extends Bloc<RecentDocsEvent, RecentDocsState> {
     final alive = await _filterAlive(recentDocs).toList();
 
     if (alive.isEmpty) {
-      yield NoRecentDocumentsState();
+      yield const NoRecentDocumentsState();
       return;
     }
 

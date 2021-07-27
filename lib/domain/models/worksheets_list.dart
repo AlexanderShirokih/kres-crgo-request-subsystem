@@ -26,14 +26,14 @@ class WorksheetsList extends Equatable implements WorksheetChangeListener {
         (editors) =>
             editors.map((editor) => editor.current).toList(growable: false),
       )
-      .distinct(ListEquality<Worksheet>().equals);
+      .distinct(const ListEquality<Worksheet>().equals);
 
   /// Returns stream that emits changes of [target] worksheet
   Stream<Worksheet> streamFor(Worksheet target) => stream.flatMap((list) {
         final tId =
             list.indexWhere((ws) => ws.worksheetId == target.worksheetId);
         return tId < 0 || list[tId] == target
-            ? Stream.empty()
+            ? const Stream.empty()
             : Stream.value(list[tId]);
       });
 
@@ -88,7 +88,7 @@ class WorksheetsList extends Equatable implements WorksheetChangeListener {
     final editor = _findEditor(worksheet);
 
     if (editor == null) {
-      throw 'Editor for worksheet \"${worksheet.name}\" if not found!';
+      throw 'Editor for worksheet "${worksheet.name}" if not found!';
     }
 
     return editor;

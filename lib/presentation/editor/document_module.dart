@@ -15,7 +15,7 @@ class DocumentScope extends WidgetModule {
   /// Currently associated document
   final Document document;
 
-  DocumentScope(this.document);
+  DocumentScope(this.document, {Key? key}) : super(key: key);
 
   @override
   List<Bind<Object>> get binds => [
@@ -44,7 +44,7 @@ class DocumentScope extends WidgetModule {
         BlocProvider(create: (_) => Modular.get<WorksheetConfigBloc>()),
       ],
       child: Builder(
-        builder: (_) => DocumentView(),
+        builder: (_) => const DocumentView(),
       ),
     );
   }

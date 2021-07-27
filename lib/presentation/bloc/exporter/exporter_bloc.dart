@@ -13,7 +13,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
   /// Export service instance
   final ExportService service;
 
-  ExporterBloc({required this.service}) : super(ExporterIdle());
+  ExporterBloc({required this.service}) : super(const ExporterIdle());
 
   @override
   Stream<ExporterState> mapEventToState(ExporterEvent event) async* {
@@ -45,7 +45,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
   }
 
   Stream<ExporterState> _listPrinters() async* {
-    yield ExporterIdle(message: 'Поиск доступных принтеров');
+    yield const ExporterIdle(message: 'Поиск доступных принтеров');
 
     try {
       final printersList = await service.listPrinters();
@@ -60,7 +60,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
   }
 
   Stream<ExporterState> _printDocument(PrintDocumentEvent event) async* {
-    yield ExporterIdle(
+    yield const ExporterIdle(
         message: 'Создание документа и отправка задания на печать');
 
     try {
@@ -70,7 +70,7 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
         event.noLists,
       );
 
-      yield ExporterClosingState(isCompleted: true);
+      yield const ExporterClosingState(isCompleted: true);
     } on ExportServiceException catch (e) {
       yield ExporterErrorState(e.error, e.stackTrace);
     }
@@ -82,13 +82,13 @@ class ExporterBloc extends Bloc<ExporterEvent, ExporterState> {
         .map((state) {
       switch (state) {
         case ExportState.pickingFile:
-          return ExporterIdle(message: 'Ожидание выбора файла');
+          return const ExporterIdle(message: 'Ожидание выбора файла');
         case ExportState.exporting:
-          return ExporterIdle(message: 'Экспорт файла');
+          return const ExporterIdle(message: 'Экспорт файла');
         case ExportState.done:
-          return ExporterClosingState(isCompleted: true);
+          return const ExporterClosingState(isCompleted: true);
         case ExportState.cancelled:
-          return ExporterClosingState(isCompleted: false);
+          return const ExporterClosingState(isCompleted: false);
       }
     }).transform(
       StreamTransformer.fromHandlers(handleError: (e, s, sink) {

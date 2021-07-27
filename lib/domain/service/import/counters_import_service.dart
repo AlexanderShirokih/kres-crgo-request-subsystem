@@ -65,7 +65,7 @@ class CountersImportService implements DocumentImporter {
     List<List<dynamic>> rows,
   ) {
     // 'B1' cell should contain account number if it is not a header line
-    final hasHeader = !(rows.first[1] is int);
+    final hasHeader = rows.first[1] is! int;
 
     return (hasHeader ? rows.skip(1) : rows)
         .where((row) =>
@@ -77,7 +77,7 @@ class CountersImportService implements DocumentImporter {
         final phoneMarker = rawName.indexOf('тел.: ');
         final additional = row[6]?.toString();
 
-        final _kDefaultRequestType = const RequestType(
+        const _kDefaultRequestType = RequestType(
           shortName: 'замена',
           fullName: 'Замена по сроку',
         );

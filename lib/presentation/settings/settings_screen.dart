@@ -10,6 +10,8 @@ import 'java_path_selector/java_path_selector_screen.dart';
 /// The settings screen. Provides access to main app preference tables and
 /// ability to configure main parameters.
 class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
+
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
@@ -36,34 +38,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final items = [
       _NavigableItem(
-        icon: Icon(Icons.work),
+        icon: const Icon(Icons.work),
         title: 'Сотрудники',
-        builder: () => EmployeesScreen(),
+        builder: () => const EmployeesScreen(),
       ),
       _NavigableItem(
-        icon: Icon(Icons.badge),
+        icon: const Icon(Icons.badge),
         title: 'Должности',
-        builder: () => PositionsScreen(),
+        builder: () => const PositionsScreen(),
       ),
       _NavigableItem(
-        icon: FaIcon(FontAwesomeIcons.wrench),
+        icon: const FaIcon(FontAwesomeIcons.wrench),
         title: 'Типы заявок',
-        builder: () => RequestTypesScreen(),
+        builder: () => const RequestTypesScreen(),
       ),
       _NavigableItem(
-        icon: FaIcon(FontAwesomeIcons.java),
+        icon: const FaIcon(FontAwesomeIcons.java),
         title: 'Путь к Java (JAVA_HOME)',
-        builder: () => JavaPathChooserScreen(),
+        builder: () => const JavaPathChooserScreen(),
       ),
     ];
     return Scaffold(
       appBar: AppBar(
-        title: Text('Настройки'),
+        title: const Text('Настройки'),
       ),
       body: Row(
         children: [
           ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 340.0),
+            constraints: const BoxConstraints(maxWidth: 340.0),
             child: ListView(
               padding: const EdgeInsets.all(12.0),
               children: List.generate(items.length, (index) {

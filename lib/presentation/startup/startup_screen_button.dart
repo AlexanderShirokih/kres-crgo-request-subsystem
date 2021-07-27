@@ -57,12 +57,14 @@ class TextStartupTile extends StatelessWidget {
 
 /// Content of startup button that shows text and description
 class ShowMoreTile extends StatelessWidget {
+  const ShowMoreTile({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Center(
+        const Center(
           child: FaIcon(
             FontAwesomeIcons.ellipsisH,
             size: 54,
@@ -93,7 +95,7 @@ class RecentDocumentTile extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
+        const Expanded(
           child: Center(
             child: FaIcon(FontAwesomeIcons.solidFileAlt, size: 54),
           ),
@@ -115,7 +117,7 @@ class RecentDocumentTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  FaIcon(FontAwesomeIcons.solidCalendarAlt),
+                  const FaIcon(FontAwesomeIcons.solidCalendarAlt),
                   const SizedBox(width: 4.0),
                   Text(
                     'Изменено:\n${_formattedDate()}',
@@ -130,19 +132,20 @@ class RecentDocumentTile extends StatelessWidget {
     );
   }
 
-  static DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
-  static DateFormat _timeFormat = DateFormat.Hm();
+  static final DateFormat _dateFormat = DateFormat('dd.MM.yyyy');
+  static final DateFormat _timeFormat = DateFormat.Hm();
 
   String _formattedDate() {
     String time() => _timeFormat.format(updateDate);
     final now = DateTime.now();
-    if (now.year == updateDate.year && now.month == updateDate.month)
+    if (now.year == updateDate.year && now.month == updateDate.month) {
       switch (now.day - updateDate.day) {
         case 0:
           return 'Сегодня, в ${time()}';
         case 1:
           return 'Вчера, в ${time()}';
       }
+    }
 
     return _dateFormat.format(updateDate);
   }
@@ -154,20 +157,21 @@ class StartupScreenButtonContainer extends StatelessWidget {
   final Widget child;
 
   const StartupScreenButtonContainer({
+    Key? key,
     required this.onPressed,
     required this.child,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.all(10.0),
         child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: 220.0, minHeight: 240.0),
+          constraints: const BoxConstraints(minWidth: 220.0, minHeight: 240.0),
           child: Container(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.onPrimary,
               borderRadius: BorderRadius.circular(8.0),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black12,
                   blurRadius: 5.0,

@@ -11,10 +11,11 @@ class WorksheetCard extends StatelessWidget {
   final bool isSelected;
 
   const WorksheetCard({
+    Key? key,
     required this.worksheet,
     required this.isSelected,
     required this.onChanged,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +128,7 @@ class WorksheetCard extends StatelessWidget {
         ],
       );
 
-  Widget _printEmployeeLabel(BuildContext ctx, String label) => Container(
+  Widget _printEmployeeLabel(BuildContext ctx, String label) => SizedBox(
         width: 180.0,
         child: Text(
           label,
@@ -156,7 +157,7 @@ class WorksheetCard extends StatelessWidget {
         'Дата выдачи:',
         worksheet.targetDate == null
             ? Text('Не выбрано', style: _createErrorTextStyle(context))
-            : Text('${_dateFormat.format(worksheet.targetDate!)}'),
+            : Text(_dateFormat.format(worksheet.targetDate!)),
       );
 
   Widget _showSubtitle(BuildContext context, String label, Widget child) => Row(
@@ -199,9 +200,9 @@ class WorksheetCard extends StatelessWidget {
     if (errors.isEmpty) {
       return Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: const [
           FaIcon(FontAwesomeIcons.check, color: Colors.green),
-          const SizedBox(width: 12.0),
+          SizedBox(width: 12.0),
           Text('Готово к печати'),
         ],
       );
@@ -222,7 +223,7 @@ class WorksheetCard extends StatelessWidget {
               children: errors
                   .map(
                     (e) => ListTile(
-                      leading: FaIcon(FontAwesomeIcons.exclamationCircle),
+                      leading: const FaIcon(FontAwesomeIcons.exclamationCircle),
                       title: Text(e),
                     ),
                   )

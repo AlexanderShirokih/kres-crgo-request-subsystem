@@ -2,22 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/presentation/bloc/startup/recent_docs_bloc.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/recent_document_info.dart';
+import 'package:kres_requests2/presentation/bloc/startup/recent_docs_bloc.dart';
 import 'package:kres_requests2/presentation/startup/startup_screen_button.dart';
 
 /// Shows startup wizard
 class StartupScreen extends StatelessWidget {
+  const StartupScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text('Начало работы'),
+          title: const Text('Начало работы'),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: IconButton(
-                icon: FaIcon(FontAwesomeIcons.cog),
+                icon: const FaIcon(FontAwesomeIcons.cog),
                 onPressed: () => Modular.to.pushNamed('/settings'),
               ),
             ),
@@ -25,7 +27,7 @@ class StartupScreen extends StatelessWidget {
         ),
         body: Center(
           child: ConstrainedBox(
-            constraints: BoxConstraints(
+            constraints: const BoxConstraints(
               maxWidth: 700.0,
             ),
             child: Column(
@@ -61,7 +63,7 @@ class StartupScreen extends StatelessWidget {
               // TODO: Move to BLoC
               Modular.to.pushNamed('/document/edit?start=blank');
             },
-            child: TextStartupTile(
+            child: const TextStartupTile(
               title: 'Новый документ',
               description: 'Создать новый пустой документ заявок',
               iconData: FontAwesomeIcons.plus,
@@ -72,7 +74,7 @@ class StartupScreen extends StatelessWidget {
               // TODO: Move to BLoC
               Modular.to.pushNamed('/document/open');
             },
-            child: TextStartupTile(
+            child: const TextStartupTile(
               title: 'Открыть документ',
               description: 'Открыть ранее созданный документ заявок',
               iconData: FontAwesomeIcons.solidFolderOpen,
@@ -83,7 +85,7 @@ class StartupScreen extends StatelessWidget {
               // TODO: Move to BLoC
               Modular.to.pushNamed('/document/import/requests');
             },
-            child: TextStartupTile(
+            child: const TextStartupTile(
               title: 'Импорт заявок',
               description:
                   'Создать новый документ из подготовленного файла системы mega-billing',
@@ -143,8 +145,8 @@ class StartupScreen extends StatelessWidget {
               StartupScreenButtonContainer(
                 onPressed: () => context
                     .read<RecentDocumentsBloc>()
-                    .add(FetchRecentDocumentsEvent()),
-                child: ShowMoreTile(),
+                    .add(const FetchRecentDocumentsEvent()),
+                child: const ShowMoreTile(),
               ),
           ],
         ),

@@ -10,7 +10,7 @@ class DocumentFilter {
   /// Creates new [DocumentFilter] from existing document
   DocumentFilter(this._document);
 
-  BehaviorSubject<String> _searchingText = BehaviorSubject.seeded('');
+  final BehaviorSubject<String> _searchingText = BehaviorSubject.seeded('');
 
   void setSearchingTest(String searchingText) {
     _searchingText.add(searchingText);

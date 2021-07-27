@@ -7,7 +7,6 @@ import 'package:kres_requests2/domain/service/worksheet_service.dart';
 import 'package:meta/meta.dart';
 
 part 'worksheet_event.dart';
-
 part 'worksheet_state.dart';
 
 /// BLoC responsible for control worksheet state.

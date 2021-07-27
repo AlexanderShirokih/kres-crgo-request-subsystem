@@ -29,8 +29,8 @@ class RequestValidator extends MappedValidator<Request> {
               name, const StringValidator(maxLength: 30), (e) => e.name),
           ValidationEntry(
               address, const StringValidator(maxLength: 30), (e) => e.address),
-          ValidationEntry(
-              phone, StringValidator(maxLength: 15), (e) => e.phoneNumber),
+          ValidationEntry(phone, const StringValidator(maxLength: 15),
+              (e) => e.phoneNumber),
           ValidationEntry(tp, const StringValidator(maxLength: 6),
               (e) => e.connectionPoint?.tp),
           ValidationEntry(line, const StringValidator(maxLength: 3),

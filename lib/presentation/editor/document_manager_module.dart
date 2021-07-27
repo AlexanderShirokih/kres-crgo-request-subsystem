@@ -44,7 +44,7 @@ class DocumentManagerModule extends Module {
               ImportFileChooser.forType(ImportType.native),
             ),
           )..add(ImportEvent(filePath: data['filePath'])),
-          child: NativeImporterScreen(),
+          child: const NativeImporterScreen(),
         );
       },
     ),
@@ -60,7 +60,7 @@ class DocumentManagerModule extends Module {
               ImportFileChooser.forType(ImportType.excelRequests),
             ),
           ),
-          child: RequestsImporterScreen(),
+          child: const RequestsImporterScreen(),
         );
       },
     ),
@@ -81,7 +81,7 @@ class DocumentManagerModule extends Module {
               ImportFileChooser.forType(ImportType.excelCounters),
             ),
           ),
-          child: CountersImportScreen(),
+          child: const CountersImportScreen(),
         );
       },
     ),

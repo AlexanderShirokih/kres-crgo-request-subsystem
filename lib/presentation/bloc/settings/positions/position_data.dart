@@ -8,7 +8,7 @@ class PositionData extends Equatable implements UndoableDataHolder<Position> {
   @override
   final List<Position> data;
 
-  PositionData(this.data);
+  const PositionData(this.data);
 
   @override
   List<Object?> get props => [data];

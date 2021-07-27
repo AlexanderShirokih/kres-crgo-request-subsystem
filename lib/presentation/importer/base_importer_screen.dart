@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/presentation/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/presentation/bloc.dart';
+import 'package:kres_requests2/presentation/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/presentation/common.dart';
 
 /// Page used to show document import wizard
@@ -11,8 +11,9 @@ abstract class ImporterScreen extends StatelessWidget {
   final String title;
 
   const ImporterScreen({
+    Key? key,
     required this.title,
-  });
+  }) : super(key: key);
 
   /// Builder for titling screen
   Widget buildIdleView(BuildContext context);
@@ -27,9 +28,9 @@ abstract class ImporterScreen extends StatelessWidget {
             bloc: ctx.read<ImporterBloc>(),
             builder: (_, state) {
               if (state is PickingFileState) {
-                return LoadingView('Ожидание выбора файла');
+                return const LoadingView('Ожидание выбора файла');
               } else if (state is LoadingState) {
-                return LoadingView('Загрузка файла');
+                return const LoadingView('Загрузка файла');
               } else if (state is ErrorState) {
                 return ErrorView(
                   errorDescription: state.error.toString(),
@@ -42,7 +43,7 @@ abstract class ImporterScreen extends StatelessWidget {
             listener: (context, state) {
               if (state is ImporterModuleMissingState) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                     duration: Duration(seconds: 6),
                     content: Text('Ошибка: Модуль экспорта файлов отсутcтвует'),
                   ),

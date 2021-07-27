@@ -5,21 +5,21 @@ import 'package:flutter/material.dart';
 class ConfirmationDialog extends StatelessWidget {
   final String message;
 
-  const ConfirmationDialog({required this.message});
+  const ConfirmationDialog({Key? key, required this.message}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      actionsPadding: EdgeInsets.all(8.0),
+      actionsPadding: const EdgeInsets.all(8.0),
       content: Text(message, textAlign: TextAlign.center),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: Text('Нет'),
+          child: const Text('Нет'),
         ),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, true),
-          child: Text('Да'),
+          child: const Text('Да'),
         )
       ],
     );

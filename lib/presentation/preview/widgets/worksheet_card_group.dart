@@ -13,9 +13,10 @@ class WorksheetCardGroup extends StatefulWidget {
   final void Function(List<Worksheet>) onStatusChanged;
 
   const WorksheetCardGroup({
+    Key? key,
     required this.worksheets,
     required this.onStatusChanged,
-  });
+  }) : super(key: key);
 
   @override
   _WorksheetCardGroupState createState() => _WorksheetCardGroupState();
@@ -39,7 +40,7 @@ class _WorksheetCardGroupState extends State<WorksheetCardGroup> {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: Alignment(-0.8, -0.8),
+      alignment: const Alignment(-0.8, -0.8),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final crossAxisCount = max(1, constraints.maxWidth ~/ _tileMaxWidth);
@@ -61,7 +62,7 @@ class _WorksheetCardGroupState extends State<WorksheetCardGroup> {
   List<Widget> _buildChildren(BuildContext context) => widget.worksheets
       .map(
         (worksheet) => ConstrainedBox(
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
             maxWidth: _tileMaxWidth,
           ),
           child: WorksheetCard(

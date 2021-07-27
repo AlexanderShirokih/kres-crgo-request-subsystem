@@ -40,8 +40,9 @@ class NativeImporterService implements DocumentImporter {
     await _repositoryController.commit();
 
     // Register document in the document manager
-    if(optDocument != null)
-    manager.addDocument(optDocument);
+    if (optDocument != null) {
+      manager.addDocument(optDocument);
+    }
 
     return optDocument != null;
   }

@@ -9,7 +9,7 @@ class RequestTypeData extends Equatable
   @override
   final List<RequestType> data;
 
-  RequestTypeData(this.data);
+  const RequestTypeData(this.data);
 
   @override
   List<Object?> get props => [data];

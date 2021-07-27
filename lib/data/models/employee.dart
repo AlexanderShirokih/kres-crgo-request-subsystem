@@ -21,7 +21,7 @@ class EmployeeEntity extends Employee implements PersistedObject<int> {
   @override
   final int id;
 
-  EmployeeEntity(
+  const EmployeeEntity(
     this.id, {
     required String name,
     required Position position,

@@ -6,8 +6,9 @@ import 'package:kres_requests2/presentation/bloc/importer/importer_bloc.dart';
 import 'base_importer_screen.dart';
 
 class CountersImportScreen extends ImporterScreen {
-  CountersImportScreen()
+  const CountersImportScreen({Key? key})
       : super(
+          key: key,
           title: 'Импорт списка счетчиков на замену',
         );
 
@@ -27,9 +28,10 @@ class CountersImportScreen extends ImporterScreen {
             Image.asset('assets/images/counters_import_template.png'),
             const SizedBox(height: 42.0),
             ElevatedButton.icon(
-              icon: FaIcon(FontAwesomeIcons.fileExcel),
-              label: Text('Открыть отчёт'),
-              onPressed: () => context.read<ImporterBloc>().add(ImportEvent()),
+              icon: const FaIcon(FontAwesomeIcons.fileExcel),
+              label: const Text('Открыть отчёт'),
+              onPressed: () =>
+                  context.read<ImporterBloc>().add(const ImportEvent()),
             )
           ],
         ),

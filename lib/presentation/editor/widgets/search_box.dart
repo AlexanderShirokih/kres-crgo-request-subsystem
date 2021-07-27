@@ -59,7 +59,7 @@ class _SearchBoxState extends State<SearchBox>
                   data: Theme.of(context)
                       .primaryIconTheme
                       .copyWith(color: Colors.black54, size: 16.0),
-                  child: FaIcon(FontAwesomeIcons.search),
+                  child: const FaIcon(FontAwesomeIcons.search),
                 ),
                 const SizedBox(width: 8.0),
                 Expanded(

@@ -12,13 +12,14 @@ import 'widgets/work_types_list.dart';
 /// Bottom side view used to manage employees, target date, and work types.
 /// Requires [WorksheetConfigBloc] to be injected in the widget tree
 class WorksheetConfigView extends StatelessWidget {
-  const WorksheetConfigView();
+  const WorksheetConfigView({Key? key}) : super(key: key);
 
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<WorksheetConfigBloc, BaseState>(
       builder: (context, state) {
         if (state is! DataState<WorksheetConfigInfo>) {
-          return Center(
+          return const Center(
             child: SizedBox(
               width: 12.0,
               height: 12.0,

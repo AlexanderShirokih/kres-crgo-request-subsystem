@@ -5,12 +5,12 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class TableChooserDialog extends StatelessWidget {
   final List<String> choices;
 
-  const TableChooserDialog(this.choices);
+  const TableChooserDialog(this.choices, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Выберите таблицу для импорта'),
+      title: const Text('Выберите таблицу для импорта'),
       content: SizedBox(
         width: 300.0,
         height: 440.0,
@@ -18,7 +18,7 @@ class TableChooserDialog extends StatelessWidget {
           children: choices
               .map(
                 (e) => ListTile(
-                  leading: FaIcon(FontAwesomeIcons.table),
+                  leading: const FaIcon(FontAwesomeIcons.table),
                   title: Text(e),
                   onTap: () => Navigator.pop(context, e),
                 ),

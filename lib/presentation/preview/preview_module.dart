@@ -1,9 +1,9 @@
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/presentation/bloc/exporter/exporter_bloc.dart';
-import 'package:kres_requests2/presentation/bloc/preview/preview_bloc.dart';
 import 'package:kres_requests2/domain/service/export_file_chooser.dart';
 import 'package:kres_requests2/domain/service/export_service.dart';
 import 'package:kres_requests2/domain/service/requests_export_service.dart';
+import 'package:kres_requests2/presentation/bloc/exporter/exporter_bloc.dart';
+import 'package:kres_requests2/presentation/bloc/preview/preview_bloc.dart';
 import 'package:kres_requests2/presentation/preview/document_preview_screen.dart';
 
 /// Module that contains pages to work with document preview and exporting
@@ -25,7 +25,7 @@ class PreviewModule extends Module {
   final List<ModularRoute> routes = [
     ChildRoute(
       '/',
-      child: (_, args) => DocumentPreviewScreen(),
+      child: (_, args) => const DocumentPreviewScreen(),
     ),
   ];
 }

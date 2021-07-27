@@ -19,7 +19,7 @@ class DocumentView extends HookWidget {
   /// Creates document view widget from [Document] and [WorksheetService]
   /// associated with the same document.
   /// Requires [DocumentBloc] and [WorksheetBloc] to be injected.
-  const DocumentView();
+  const DocumentView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -82,13 +82,13 @@ class DocumentView extends HookWidget {
     return BlocBuilder<DocumentBloc, BaseState>(
       builder: (context, state) {
         if (state is! DataState<DocumentInfo>) {
-          return Center(
+          return const Center(
             child: Text('No opened document...'),
           );
         }
 
         return Container(
-          color: Color(0xFFE5E5E5),
+          color: const Color(0xFFE5E5E5),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -96,7 +96,7 @@ class DocumentView extends HookWidget {
                 width: 285.0,
                 color: Colors.white,
                 height: double.maxFinite,
-                child: WorksheetsPageController(),
+                child: const WorksheetsPageController(),
               ),
               Expanded(
                 child: SizedBox(
@@ -119,7 +119,7 @@ class DocumentView extends HookWidget {
                   width: 420.0,
                   height: double.maxFinite,
                   color: Colors.white,
-                  child: WorksheetConfigView(),
+                  child: const WorksheetConfigView(),
                 ),
               ),
             ],
@@ -136,7 +136,7 @@ class DocumentView extends HookWidget {
       Container(
         width: 60,
         height: 60,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(8.0),
             bottomLeft: Radius.circular(8.0),
@@ -144,7 +144,7 @@ class DocumentView extends HookWidget {
           color: Colors.white,
         ),
         child: IconButton(
-          icon: Icon(Icons.menu_open),
+          icon: const Icon(Icons.menu_open),
           onPressed: () {
             final isClosed = !isConfigViewOpened.value;
             isConfigViewOpened.value = isClosed;

@@ -42,7 +42,7 @@ class Worksheet extends Equatable {
     this.mainEmployee,
     this.chiefEmployee,
     this.membersEmployee = const {},
-  }) : this.workTypes = workTypes == null
+  }) : workTypes = workTypes == null
             ? _getDefaultWorkTypes(requests)
             : workTypes.union(_getDefaultWorkTypes(requests));
 
@@ -129,8 +129,9 @@ class Worksheet extends Equatable {
 
     if (requests.isEmpty) yield "Нет заявок для печати";
 
-    if (requests.length > 18)
+    if (requests.length > 18) {
       yield "Слишком много заявок для печати на одном листе";
+    }
 
     if (targetDate == null) yield "Не выбрана дата";
   }

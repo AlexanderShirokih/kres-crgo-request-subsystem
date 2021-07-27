@@ -15,9 +15,7 @@ class StringValidator extends Validator<String?> {
 
   @override
   Iterable<String> validate(String? entity) sync* {
-    if (entity == null) {
-      entity = '';
-    }
+    entity ??= '';
 
     // TODO: move hardcoded strings to i18n file
     if (entity.isEmpty && minLength != 0) {

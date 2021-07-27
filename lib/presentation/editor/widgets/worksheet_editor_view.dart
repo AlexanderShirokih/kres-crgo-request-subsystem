@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_bloc.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_bloc.dart';
 import 'package:kres_requests2/presentation/editor/request_editor_dialog/request_editor_dialog.dart';
 import 'package:kres_requests2/presentation/editor/requests_move_dialog/requests_move_dialog.dart';
 import 'package:kres_requests2/presentation/editor/widgets/request_item_view.dart';
@@ -17,6 +17,8 @@ class WorksheetEditorView extends HookWidget {
   /// A list of currently highlighted requests
   /// TODO: FIX
   // final Stream<List<RequestEntity>> highlighted;
+
+  WorksheetEditorView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +77,7 @@ class WorksheetEditorView extends HookWidget {
           child: Padding(
             padding: const EdgeInsets.all(30.0),
             child: FloatingActionButton(
-              child: FaIcon(FontAwesomeIcons.plus),
+              child: const FaIcon(FontAwesomeIcons.plus),
               tooltip: "Добавить заявку",
               onPressed: () => _showRequestEditorDialog(context, state),
             ),
@@ -152,8 +154,9 @@ class WorksheetEditorView extends HookWidget {
         );
       },
       scrollController: controller,
-      padding:
-          isInSelectionMode ? EdgeInsets.only(top: 64) : EdgeInsets.all(10.0),
+      padding: isInSelectionMode
+          ? const EdgeInsets.only(top: 64)
+          : const EdgeInsets.all(10.0),
       onReorder: (int oldIndex, int newIndex) {
         if (newIndex > oldIndex) {
           newIndex -= 1;
@@ -195,11 +198,11 @@ class WorksheetEditorView extends HookWidget {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.highlight_off),
+            icon: const Icon(Icons.highlight_off),
             tooltip: "Отменить выделение",
             onPressed: () => context
                 .read<WorksheetBloc>()
-                .add(RequestSelectionEvent(SelectionAction.cancel)),
+                .add(const RequestSelectionEvent(SelectionAction.cancel)),
           ),
           const SizedBox(width: 24.0),
           Text(
@@ -208,11 +211,11 @@ class WorksheetEditorView extends HookWidget {
           ),
           const SizedBox(width: 24.0),
           IconButton(
-            icon: FaIcon(FontAwesomeIcons.checkSquare),
+            icon: const FaIcon(FontAwesomeIcons.checkSquare),
             tooltip: "Выбрать все",
             onPressed: () => context
                 .read<WorksheetBloc>()
-                .add(RequestSelectionEvent(SelectionAction.selectAll)),
+                .add(const RequestSelectionEvent(SelectionAction.selectAll)),
           ),
           if (singleGroup != 0) ...[
             const SizedBox(width: 24.0),
@@ -224,7 +227,8 @@ class WorksheetEditorView extends HookWidget {
               tooltip:
                   "Выбрать все этой группы (${_translateGroupName(singleGroup)})",
               onPressed: () => context.read<WorksheetBloc>().add(
-                  RequestSelectionEvent(SelectionAction.selectSingleGroup)),
+                  const RequestSelectionEvent(
+                      SelectionAction.selectSingleGroup)),
             ),
           ],
           Expanded(
@@ -234,32 +238,32 @@ class WorksheetEditorView extends HookWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.drive_file_move),
+                    icon: const Icon(Icons.drive_file_move),
                     tooltip: "Переместить",
                     onPressed: () =>
                         _showMoveDialog(context, MoveMethod.move, state),
                   ),
                   const SizedBox(width: 24.0),
                   IconButton(
-                    icon: Icon(Icons.file_copy),
+                    icon: const Icon(Icons.file_copy),
                     tooltip: "Копировать",
                     onPressed: () =>
                         _showMoveDialog(context, MoveMethod.copy, state),
                   ),
                   const SizedBox(width: 46.0),
                   IconButton(
-                    icon: Icon(Icons.delete_forever),
+                    icon: const Icon(Icons.delete_forever),
                     tooltip: "Удалить (Насовсем)",
                     onPressed: () {
                       showDialog(
                         context: context,
-                        builder: (_) => ConfirmationDialog(
+                        builder: (_) => const ConfirmationDialog(
                           message: 'Удалить выбранные заявки?',
                         ),
                       ).then((confirmed) {
                         if (confirmed != null && confirmed) {
                           context.read<WorksheetBloc>().add(
-                              RequestSelectionEvent(
+                              const RequestSelectionEvent(
                                   SelectionAction.dropSelected));
                         }
                       });
@@ -290,7 +294,7 @@ class WorksheetEditorView extends HookWidget {
       if (wasChanged ?? false) {
         context
             .read<WorksheetBloc>()
-            .add(RequestSelectionEvent(SelectionAction.cancel));
+            .add(const RequestSelectionEvent(SelectionAction.cancel));
       }
     });
   }

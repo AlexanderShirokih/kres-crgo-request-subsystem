@@ -10,12 +10,12 @@ import 'package:kres_requests2/presentation/bloc/editor/worksheet_config_view/wo
 class AddNewWorkSheetTabView extends HookWidget {
   final void Function(WorksheetCreationMode) onAddPressed;
 
-  const AddNewWorkSheetTabView(this.onAddPressed);
+  const AddNewWorkSheetTabView(this.onAddPressed, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final isExpanded = useState(false);
-    return Container(
+    return SizedBox(
       width: double.maxFinite,
       child: Card(
         elevation: 5.0,
@@ -30,7 +30,7 @@ class AddNewWorkSheetTabView extends HookWidget {
         onTap: () => isExpanded.value = !isExpanded.value,
         title: 'Добавить',
         tooltip: 'Добавить новый лист',
-        icon: Icon(Icons.add),
+        icon: const Icon(Icons.add),
       );
 
   Widget _buildExpandedLayout(ValueNotifier<bool> isExpanded) {
@@ -49,27 +49,27 @@ class AddNewWorkSheetTabView extends HookWidget {
           onTap: _onCreate(WorksheetCreationMode.empty),
           title: 'Пустой лист заявок',
           tooltip: 'Добавить пустой лист для создания заявок',
-          icon: FaIcon(FontAwesomeIcons.file),
+          icon: const FaIcon(FontAwesomeIcons.file),
         ),
         _buildItemTile(
           onTap: _onCreate(WorksheetCreationMode.importNative),
           title: 'Импорт из другого документа',
           tooltip: 'Добавить листы из другого документа',
-          icon: FaIcon(FontAwesomeIcons.fileImport),
+          icon: const FaIcon(FontAwesomeIcons.fileImport),
         ),
         _buildItemTile(
           onTap: _onCreate(WorksheetCreationMode.import),
           title: 'Импорт файла заявок',
           tooltip:
               'Создать новый лист заявок из подготовленного файла Mega-billing',
-          icon: FaIcon(FontAwesomeIcons.fileExcel),
+          icon: const FaIcon(FontAwesomeIcons.fileExcel),
         ),
         _buildItemTile(
           onTap: _onCreate(WorksheetCreationMode.importCounters),
           title: 'Импорт списка счётчиков',
           tooltip:
               'Создать новый лист заявок из подготовленного списка счётчиков',
-          icon: FaIcon(FontAwesomeIcons.table),
+          icon: const FaIcon(FontAwesomeIcons.table),
         )
       ],
     );
@@ -130,7 +130,7 @@ class WorksheetTabView extends HookWidget {
       isEditable.value = false;
     }
 
-    return Container(
+    return SizedBox(
       width: double.maxFinite,
       child: Card(
         elevation: 5.0,
@@ -161,17 +161,17 @@ class WorksheetTabView extends HookWidget {
               children: [
                 if (isEditable.value)
                   IconButton(
-                    icon: Icon(Icons.done),
+                    icon: const Icon(Icons.done),
                     onPressed: _onEditingDone,
                   ),
                 if (isEditable.value)
                   IconButton(
-                    icon: Icon(Icons.close),
+                    icon: const Icon(Icons.close),
                     onPressed: _onCancelEditing,
                   ),
                 if (onRemove != null && !isEditable.value)
                   IconButton(
-                    icon: Icon(Icons.delete),
+                    icon: const Icon(Icons.delete),
                     onPressed: onRemove,
                   )
               ],

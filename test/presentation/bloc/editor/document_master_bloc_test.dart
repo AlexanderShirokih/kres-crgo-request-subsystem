@@ -31,7 +31,7 @@ void main() {
   blocTest<DocumentMasterBloc, DocumentMasterState>(
     'Calls setSearchFilter in service when [WorksheetMasterSearchEvent] is added',
     build: () => DocumentMasterBloc(documentManager, navigator),
-    act: (bloc) => bloc.add(WorksheetMasterSearchEvent('hello')),
+    act: (bloc) => bloc.add(const WorksheetMasterSearchEvent('hello')),
     verify: (_) {
       fail("Unimplemented!");
       // verify(() => service.setSearchFilter('hello')).called(1);
@@ -42,7 +42,7 @@ void main() {
     'Reacts on document saving w/o popping',
     build: () => DocumentMasterBloc(documentManager, navigator),
     act: (bloc) => bloc.add(
-      SaveEvent(changePath: true, popAfterSave: false),
+      const SaveEvent(changePath: true, popAfterSave: false),
     ),
     expect: () => [
       // TODO: Fix expects
@@ -56,7 +56,7 @@ void main() {
     'Reacts on document saving with popping',
     build: () => DocumentMasterBloc(documentManager, navigator),
     act: (bloc) => bloc.add(
-      SaveEvent(changePath: true, popAfterSave: true),
+      const SaveEvent(changePath: true, popAfterSave: true),
     ),
     expect: () => [
       // TODO: Fix expects
@@ -79,7 +79,7 @@ void main() {
       'Reacts on document saving with error',
       build: () => DocumentMasterBloc(documentManager, navigator),
       act: (bloc) => bloc.add(
-        SaveEvent(changePath: true, popAfterSave: true),
+        const SaveEvent(changePath: true, popAfterSave: true),
       ),
       expect: () => [
         // TODO: Fix expects

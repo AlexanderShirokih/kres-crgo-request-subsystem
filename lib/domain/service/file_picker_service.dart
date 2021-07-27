@@ -16,6 +16,7 @@ class FilePickerServiceImpl implements FilePicker {
 
   FilePickerServiceImpl(this._fileChooser);
 
+  @override
   Future<String?> chooseSourcePath(File? desiredPath) async {
     if (desiredPath != null && await desiredPath.exists()) {
       return desiredPath.absolute.path;

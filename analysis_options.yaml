@@ -1,0 +1,2 @@
+# Use default flutter lints
+include: package:flutter_lints/flutter.yaml

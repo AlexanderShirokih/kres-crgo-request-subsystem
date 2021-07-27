@@ -44,7 +44,7 @@ void main() {
         document: document,
         worksheet: worksheet,
         lastGroupIndex: 0,
-        groupList: {},
+        groupList: const {},
         requests: [prev, curr],
       ),
     ],

@@ -10,7 +10,6 @@ import 'package:kres_requests2/domain/service/import/document_import_service.dar
 import 'package:kres_requests2/presentation/bloc.dart';
 
 part 'importer_event.dart';
-
 part 'importer_state.dart';
 
 /// BLoС that controls importing document to a new document
@@ -33,7 +32,7 @@ class ImporterBloc extends Bloc<ImporterEvent, BaseState> {
     required this.importService,
     required this.pickerService,
     required this.navigator,
-  }) : super(InitialState());
+  }) : super(const InitialState());
 
   @override
   Stream<BaseState> mapEventToState(ImporterEvent event) async* {
@@ -42,7 +41,7 @@ class ImporterBloc extends Bloc<ImporterEvent, BaseState> {
         navigator.navigate('/document/edit');
       }
 
-      yield PickingFileState();
+      yield const PickingFileState();
 
       final resultPath = await pickerService.chooseSourcePath(event.filePath);
 
@@ -57,7 +56,7 @@ class ImporterBloc extends Bloc<ImporterEvent, BaseState> {
         await importService.importDocument(resultPath, documentManager);
         navigateToEditor();
       } on ImporterModuleMissingException {
-        yield ImporterModuleMissingState();
+        yield const ImporterModuleMissingState();
       } catch (e, s) {
         yield ErrorState(e.toString(), s);
       }

@@ -5,6 +5,6 @@ import 'package:kres_requests2/presentation/settings/settings_screen.dart';
 class SettingsModule extends Module {
   @override
   final List<ModularRoute> routes = [
-    ChildRoute('/', child: (_, __) => SettingsScreen()),
+    ChildRoute('/', child: (_, __) => const SettingsScreen()),
   ];
 }

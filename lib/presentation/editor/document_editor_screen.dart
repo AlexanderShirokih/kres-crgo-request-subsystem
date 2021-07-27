@@ -31,9 +31,10 @@ class DocumentEditorScreen extends HookWidget {
   /// Defines whether create blank document on start or not
   final bool blankDocumentOnStart;
 
-  DocumentEditorScreen({
+  const DocumentEditorScreen({
+    Key? key,
     this.blankDocumentOnStart = false,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,7 @@ class DocumentEditorScreen extends HookWidget {
 
     useEffect(() {
       if (blankDocumentOnStart) {
-        bloc.add(CreatePage());
+        bloc.add(const CreatePage());
       }
     });
 
@@ -87,38 +88,38 @@ class DocumentEditorScreen extends HookWidget {
   }
 
   AppBar _buildAppBar() => AppBar(
-        title: Text('Редактор заявок'),
-        bottom: PreferredSize(
+        title: const Text('Редактор заявок'),
+        bottom: const PreferredSize(
           preferredSize: Size.fromHeight(48.0),
           child: DocumentTabsBar(),
         ),
         actions: [
           _createActionButton(
-            icon: FaIcon(FontAwesomeIcons.search),
+            icon: const FaIcon(FontAwesomeIcons.search),
             tooltip: 'Поиск',
             onPressed: (context) => context
                 .read<DocumentMasterBloc>()
-                .add(WorksheetMasterSearchEvent()),
+                .add(const WorksheetMasterSearchEvent()),
           ),
           const SizedBox(width: 24.0),
           _createActionButton(
-            icon: FaIcon(FontAwesomeIcons.save),
+            icon: const FaIcon(FontAwesomeIcons.save),
             tooltip: 'Сохранить',
             onPressed: (context) =>
-                context.read<DocumentMasterBloc>().add(SaveEvent()),
+                context.read<DocumentMasterBloc>().add(const SaveEvent()),
           ),
           const SizedBox(width: 24.0),
           _createActionButton(
-            icon: FaIcon(FontAwesomeIcons.solidSave),
+            icon: const FaIcon(FontAwesomeIcons.solidSave),
             tooltip: 'Сохранить как (копия)',
             onPressed: (context) => context
                 .read<DocumentMasterBloc>()
-                .add(SaveEvent(changePath: true)),
+                .add(const SaveEvent(changePath: true)),
           ),
           const SizedBox(width: 24.0),
           Builder(
             builder: (context) => IconButton(
-              icon: FaIcon(FontAwesomeIcons.fileExport),
+              icon: const FaIcon(FontAwesomeIcons.fileExport),
               tooltip: 'Вывод',
               onPressed: () => Modular.to.pushNamed('preview'),
             ),

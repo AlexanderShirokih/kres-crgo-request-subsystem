@@ -15,7 +15,7 @@ class RequestTypeBloc extends UndoableBloc<RequestTypeData, RequestType> {
   ) : super(controller, validator);
 
   @override
-  Future<RequestType> createNewEntity() async => RequestType(
+  Future<RequestType> createNewEntity() async => const RequestType(
         shortName: '',
         fullName: '',
       );

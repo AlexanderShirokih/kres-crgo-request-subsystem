@@ -66,18 +66,18 @@ class WorksheetService {
 
     final unusedEmployees = employees.difference(used);
 
-    final mainEmployees = [
+    final mainEmployees = {
       ...unusedEmployees,
       if (worksheet.mainEmployee != null) worksheet.mainEmployee!
-    ].toSet();
+    };
 
     final teamMembersEmployees =
         unusedEmployees.union(worksheet.membersEmployee);
 
-    final chiefEmployees = [
+    final chiefEmployees = {
       ...unusedEmployees.where((e) => e.accessGroup >= 4),
       if (worksheet.chiefEmployee != null) worksheet.chiefEmployee!
-    ].toSet();
+    };
 
     return WorksheetConfigInfo(
       allEmployees: employees,

@@ -1,8 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kres_requests2/presentation/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/export_service.dart';
+import 'package:kres_requests2/presentation/bloc/exporter/exporter_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../common_mocks.dart';
@@ -82,7 +82,7 @@ void main() {
       expect: () => [
         isA<ExporterIdle>(),
         isA<ExporterIdle>(),
-        ExporterClosingState(isCompleted: true),
+        const ExporterClosingState(isCompleted: true),
       ],
     );
   });
@@ -109,7 +109,7 @@ void main() {
       act: (bloc) => bloc..add(ExportEvent(ExportFormat.excel, document)),
       expect: () => [
         isA<ExporterIdle>(),
-        ExporterClosingState(isCompleted: false),
+        const ExporterClosingState(isCompleted: false),
       ],
     );
   });
@@ -126,7 +126,7 @@ void main() {
       when(() => service.exportDocument(document, ExportFormat.pdf))
           .thenAnswer((i) async* {
         yield ExportState.pickingFile;
-        throw ExportServiceException("error", "stack trace");
+        throw const ExportServiceException("error", "stack trace");
       });
     });
 
@@ -160,7 +160,7 @@ void main() {
       act: (bloc) => bloc..add(PrintDocumentEvent(document, 'printer', true)),
       expect: () => [
         isA<ExporterIdle>(),
-        ExporterClosingState(isCompleted: true),
+        const ExporterClosingState(isCompleted: true),
       ],
     );
   });
@@ -176,7 +176,7 @@ void main() {
       when(() => service.isAvailable()).thenAnswer((_) async => true);
       when(() => service.printDocument(document, 'printer', true))
           .thenAnswer((i) async {
-        throw ExportServiceException("error", "stack trace");
+        throw const ExportServiceException("error", "stack trace");
       });
     });
 
@@ -197,7 +197,7 @@ void main() {
 
     setUp(() {
       service = _ExportServiceMock();
-      printers = PrintersList('preferred', ['preferred']);
+      printers = const PrintersList('preferred', ['preferred']);
 
       when(() => service.isAvailable()).thenAnswer((_) async => true);
       when(() => service.listPrinters()).thenAnswer((_) async => printers);
@@ -209,7 +209,7 @@ void main() {
       act: (bloc) => bloc..add(ShowPrintersListEvent()),
       expect: () => [
         isA<ExporterIdle>(),
-        ExporterListPrintersState('preferred', ['preferred']),
+        const ExporterListPrintersState('preferred', ['preferred']),
       ],
     );
   });

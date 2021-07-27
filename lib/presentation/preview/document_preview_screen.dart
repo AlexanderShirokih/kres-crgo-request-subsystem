@@ -3,8 +3,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/presentation/bloc/preview/preview_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/presentation/bloc/preview/preview_bloc.dart';
 import 'package:kres_requests2/presentation/common.dart';
 import 'package:kres_requests2/presentation/preview/print_dialog.dart';
 
@@ -15,13 +15,15 @@ import 'widgets/worksheet_card_group.dart';
 /// exporting to external formats
 /// Requires [PreviewBloc] to be injected in the widget tree.
 class DocumentPreviewScreen extends StatelessWidget {
+  const DocumentPreviewScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => Modular.get<PreviewBloc>(),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Вывод документа'),
+          title: const Text('Вывод документа'),
         ),
         body: BlocBuilder<PreviewBloc, PreviewState>(
           builder: (context, state) {
@@ -36,7 +38,7 @@ class DocumentPreviewScreen extends StatelessWidget {
             } else if (state is ShowDocumentState) {
               return Builder(builder: (ctx) => _buildPage(ctx, state));
             } else {
-              return LoadingView('...');
+              return const LoadingView('...');
             }
           },
         ),
@@ -154,13 +156,14 @@ class DocumentPreviewScreen extends StatelessWidget {
         builder: (_) => ExporterDialog(format, documentState.printableDocument),
       ).then(
         (resultMessage) {
-          if (resultMessage != null)
+          if (resultMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(resultMessage),
-                duration: Duration(seconds: 6),
+                duration: const Duration(seconds: 6),
               ),
             );
+          }
         },
       );
 
@@ -174,13 +177,14 @@ class DocumentPreviewScreen extends StatelessWidget {
         builder: (_) => PrintDialog(documentState.printableDocument),
       ).then(
         (resultMessage) {
-          if (resultMessage != null)
+          if (resultMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(resultMessage),
-                duration: Duration(seconds: 6),
+                duration: const Duration(seconds: 6),
               ),
             );
+          }
         },
       );
 }

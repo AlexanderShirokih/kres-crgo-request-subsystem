@@ -1,14 +1,14 @@
-import 'package:mocktail/mocktail.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/controller/streamed_controller.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
 class _TestEntity extends Equatable {
   final String label;
 
-  _TestEntity(this.label);
+  const _TestEntity(this.label);
 
   @override
   List<Object> get props => [label];
@@ -18,7 +18,7 @@ class _PersistedTestEntity extends _TestEntity implements PersistedObject<int> {
   @override
   final int id;
 
-  _PersistedTestEntity(this.id, String label) : super(label);
+  const _PersistedTestEntity(this.id, String label) : super(label);
 
   @override
   List<Object> get props => [...super.props, id];
@@ -40,14 +40,14 @@ void main() {
     when(() => mockController.commit()).thenAnswer((_) async => true);
     when(() => mockController.getAll()).thenAnswer(
       (_) async => [
-        _PersistedTestEntity(1, 'A'),
+        const _PersistedTestEntity(1, 'A'),
       ],
     );
   });
 
   test('all methods call their proxies', () {
-    final testEntity = _TestEntity('test');
-    final testEntity2 = _TestEntity('test2');
+    const testEntity = _TestEntity('test');
+    const testEntity2 = _TestEntity('test2');
 
     streamedController.add(testEntity);
     verify(() => mockController.add(testEntity)).called(1);

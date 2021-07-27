@@ -9,7 +9,7 @@ class RequestEntityImpl extends Request implements PersistedObject<int> {
   @override
   final int id;
 
-  RequestEntityImpl({
+  const RequestEntityImpl({
     required this.id,
     String address = '',
     String name = '',
@@ -45,7 +45,7 @@ class RequestEntityImpl extends Request implements PersistedObject<int> {
     required String? reason,
   }) =>
       RequestEntityImpl(
-        id: this.id,
+        id: id,
         name: name,
         address: address,
         reason: reason,

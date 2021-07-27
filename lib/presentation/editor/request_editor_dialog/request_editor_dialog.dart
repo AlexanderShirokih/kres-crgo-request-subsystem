@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/presentation/bloc/editor/request_editor_dialog/request_editor_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/utils.dart';
 import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/presentation/bloc.dart';
+import 'package:kres_requests2/presentation/bloc/editor/request_editor_dialog/request_editor_bloc.dart';
 import 'package:kres_requests2/presentation/common.dart';
 
 /// Dialog for editing [Request].
@@ -45,7 +45,7 @@ class RequestEditorDialog extends StatelessWidget {
         buildWhen: (_, curr) => curr is DataState<RequestEditorData>,
         builder: (context, state) {
           if (state is InitialState) {
-            return LoadingView('No data...');
+            return const LoadingView('No data...');
           } else if (state is DataState<RequestEditorData>) {
             return _RequestEditorView(state, validator);
           }
@@ -107,7 +107,7 @@ class _RequestEditorView extends HookWidget {
       content: Container(
         width: 640.0,
         height: 580.0,
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           onChanged: () => isValid.value = formKey.currentState!.validate(),
           autovalidateMode: AutovalidateMode.always,
@@ -132,7 +132,7 @@ class _RequestEditorView extends HookWidget {
               ),
               const SizedBox(height: 28),
               _createInputField("Дополнительно", null, additional, limit: 35),
-              Divider(),
+              const Divider(),
             ],
           ),
         ),
@@ -140,8 +140,8 @@ class _RequestEditorView extends HookWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
+          child: const Padding(
+            padding: EdgeInsets.all(12.0),
             child: Text("Отмена"),
           ),
         ),
@@ -165,8 +165,8 @@ class _RequestEditorView extends HookWidget {
                     requestType: requestType.value,
                   ));
             },
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
+            child: const Padding(
+              padding: EdgeInsets.all(12.0),
               child: Text("Сохранить"),
             ),
           ),
@@ -202,9 +202,9 @@ class _RequestEditorView extends HookWidget {
           SizedBox(
             width: 220.0,
             child: DropdownButtonFormField<RequestType>(
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12.0, vertical: 17.0),
+              decoration: const InputDecoration(
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12.0, vertical: 17.0),
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 border: OutlineInputBorder(),
                 labelText: "Тип заявки",
@@ -320,10 +320,10 @@ class _RequestEditorView extends HookWidget {
         SizedBox(
           width: 100.0,
           child: DropdownButtonFormField<int?>(
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               floatingLabelBehavior: FloatingLabelBehavior.always,
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 17.0),
+                  EdgeInsets.symmetric(horizontal: 12.0, vertical: 17.0),
               border: OutlineInputBorder(),
               labelText: 'Квартал ГП',
             ),
@@ -354,8 +354,9 @@ class _RequestEditorView extends HookWidget {
                   (year.isNotEmpty && hasNoCounterFilled())) return '';
 
               final yearRegExp = RegExp(r'^\d{2}$|^(19|20)\d{2}$');
-              if (year.isNotEmpty && !yearRegExp.hasMatch(year))
+              if (year.isNotEmpty && !yearRegExp.hasMatch(year)) {
                 return "Неверн. дата";
+              }
 
               return null;
             },
@@ -363,7 +364,7 @@ class _RequestEditorView extends HookWidget {
         ),
       ],
     );
-    yield SizedBox(height: 6.0);
+    yield const SizedBox(height: 6.0);
     yield SizedBox(
       width: 320.0,
       child: TextFormField(
@@ -385,7 +386,7 @@ class _RequestEditorView extends HookWidget {
             ? FloatingLabelBehavior.always
             : FloatingLabelBehavior.auto,
         counter: hasCounter ? null : const SizedBox(),
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
         labelText: label,
       );
 }

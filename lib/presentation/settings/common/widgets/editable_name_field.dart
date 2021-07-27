@@ -77,7 +77,7 @@ class _EditableNameFieldState extends State<EditableNameField> {
                 return errors.isEmpty ? null : errors.first;
               },
               onEditingComplete: _onEditingDone,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: InputBorder.none,
                 counter: SizedBox(),
               ),
@@ -86,12 +86,12 @@ class _EditableNameFieldState extends State<EditableNameField> {
           ),
           if (_isEditing)
             IconButton(
-              icon: FaIcon(FontAwesomeIcons.check),
+              icon: const FaIcon(FontAwesomeIcons.check),
               onPressed: _onEditingDone,
             )
           else
             IconButton(
-              icon: FaIcon(FontAwesomeIcons.edit),
+              icon: const FaIcon(FontAwesomeIcons.edit),
               onPressed: () => setState(
                 () {
                   _focusNode.requestFocus();

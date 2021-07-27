@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/presentation/bloc/editor/requests_move_dialog/requests_move_dialog_bloc.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/presentation/bloc.dart';
+import 'package:kres_requests2/presentation/bloc/editor/requests_move_dialog/requests_move_dialog_bloc.dart';
 
 /// Defines worksheet movement strategy
 enum MoveMethod {
@@ -27,10 +27,11 @@ class RequestsMoveDialog extends StatelessWidget {
   final MoveMethod moveMethod;
 
   const RequestsMoveDialog({
+    Key? key,
     required this.movingRequests,
     required this.sourceWorksheet,
     required this.moveMethod,
-  });
+  }) : super(key: key);
 
   String get _title {
     switch (moveMethod) {
@@ -47,7 +48,7 @@ class RequestsMoveDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(_title, textAlign: TextAlign.center),
-      content: Container(
+      content: SizedBox(
         width: 400,
         height: 300,
         child: BlocProvider(
@@ -60,7 +61,7 @@ class RequestsMoveDialog extends StatelessWidget {
             }
           }, builder: (context, state) {
             if (state is! DataState<RequestsMoveDialogData>) {
-              return Text('Нет данных :(');
+              return const Text('Нет данных :(');
             }
 
             return ListView(

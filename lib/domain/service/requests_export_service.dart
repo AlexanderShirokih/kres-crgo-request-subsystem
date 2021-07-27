@@ -1,5 +1,5 @@
-import 'package:kres_requests2/domain/request_processor.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/request_processor.dart';
 
 /// A class responsible for exporting and printing documents
 class RequestsExportService {

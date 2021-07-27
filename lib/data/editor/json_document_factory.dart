@@ -142,7 +142,7 @@ class JsonDocumentFactory implements DocumentFactory {
     );
 
     if (e['id'] != null) {
-      return EmployeePersistedBuilder().build(e['id'], employee);
+      return const EmployeePersistedBuilder().build(e['id'], employee);
     }
 
     return employee;
@@ -151,7 +151,7 @@ class JsonDocumentFactory implements DocumentFactory {
   Position _createPosition(Map<String, dynamic> map) {
     final position = Position(name: map['name']);
     if (map['id'] != null) {
-      return PositionPersistedBuilder().build(map['id'], position);
+      return const PositionPersistedBuilder().build(map['id'], position);
     }
     return position;
   }
@@ -236,7 +236,7 @@ class JsonDocumentFactory implements DocumentFactory {
     );
 
     if (data['id'] != null) {
-      return RequestTypePersistedBuilder().build(data['id'], requestType);
+      return const RequestTypePersistedBuilder().build(data['id'], requestType);
     }
 
     return requestType;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kres_requests2/presentation/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
 import 'package:kres_requests2/domain/models/employee.dart';
+import 'package:kres_requests2/presentation/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
 
 import 'dropdown_employee_field.dart';
 
@@ -47,7 +47,7 @@ class _TeamMembersGroupViewState extends State<TeamMembersGroupView> {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.add),
+              icon: const Icon(Icons.add),
               tooltip: 'Добавить члена бригады',
               onPressed: widget.canHaveMoreMembers
                   ? () => setState(() {

@@ -29,7 +29,9 @@ class StartupModule extends Module {
             javaProcessHome: Directory('requests/lib'),
           ),
         ),
-        Bind.instance<DocumentSaver>(JsonDocumentSaver(saveLegacyInfo: false)),
+        Bind.instance<DocumentSaver>(
+          const JsonDocumentSaver(saveLegacyInfo: false),
+        ),
         Bind.factory<ExportFileChooser>((i) => ExportFileChooserImpl()),
         Bind.factory<AbstractRequestProcessor>(
           (i) => RequestProcessorImpl(
@@ -44,7 +46,7 @@ class StartupModule extends Module {
         Bind.factory<Repository<Employee>>((i) => EmployeeRepository(i())),
         Bind.factory<StreamedRepositoryController<Employee>>(
           (i) => StreamedRepositoryController(
-              RepositoryController(EmployeePersistedBuilder(), i())),
+              RepositoryController(const EmployeePersistedBuilder(), i())),
         ),
         Bind.factory<MappedValidator<Employee>>((i) => EmployeeValidator()),
         // Position-related binds
@@ -54,7 +56,7 @@ class StartupModule extends Module {
             (i) => PersistedStorageRepository<Position, PositionEntity>(i())),
         Bind.factory<StreamedRepositoryController<Position>>(
           (i) => StreamedRepositoryController(
-              RepositoryController(PositionPersistedBuilder(), i())),
+              RepositoryController(const PositionPersistedBuilder(), i())),
         ),
         Bind.factory<MappedValidator<Position>>((i) => PositionValidator()),
         // Request type related binds
@@ -64,7 +66,7 @@ class StartupModule extends Module {
             PersistedStorageRepository<RequestType, RequestTypeEntity>(i())),
         Bind.factory<StreamedRepositoryController<RequestType>>(
           (i) => StreamedRepositoryController(
-              RepositoryController(RequestTypePersistedBuilder(), i())),
+              RepositoryController(const RequestTypePersistedBuilder(), i())),
         ),
         Bind.factory<MappedValidator<RequestType>>(
             (i) => RequestTypeValidator()),
@@ -74,7 +76,7 @@ class StartupModule extends Module {
             (i) => RecentDocumentsRepository(i())),
         Bind.lazySingleton<StreamedRepositoryController<RecentDocumentInfo>>(
           (i) => StreamedRepositoryController(
-              RepositoryController(RecentDocumentBuilder(), i())),
+              RepositoryController(const RecentDocumentBuilder(), i())),
         ),
         Bind.singleton<DocumentManager>(
             (i) => DocumentManager(i<ExportFileChooser>(), i<DocumentSaver>())),
@@ -82,7 +84,7 @@ class StartupModule extends Module {
 
   @override
   final List<ModularRoute> routes = [
-    ChildRoute('/', child: (_, __) => StartupScreen()),
+    ChildRoute('/', child: (_, __) => const StartupScreen()),
     ModuleRoute('/settings', module: SettingsModule()),
     ModuleRoute('/document', module: DocumentManagerModule()),
   ];

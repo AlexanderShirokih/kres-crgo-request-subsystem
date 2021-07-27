@@ -44,7 +44,7 @@ class DropdownEmployeeField extends StatelessWidget {
       children: [
         if (onRemove != null)
           IconButton(
-              icon: FaIcon(FontAwesomeIcons.timesCircle, size: 16.0),
+              icon: const FaIcon(FontAwesomeIcons.timesCircle, size: 16.0),
               onPressed: onRemove),
         Expanded(
           child: DropdownButtonFormField<Employee>(

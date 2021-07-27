@@ -2,11 +2,13 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/presentation/bloc/settings/java_path_chooser/java_path_chooser_bloc.dart';
 import 'package:kres_requests2/presentation/bloc.dart';
+import 'package:kres_requests2/presentation/bloc/settings/java_path_chooser/java_path_chooser_bloc.dart';
 
 /// Widget used to select java executable path from filesystem and save them.
 class JavaPathChooserScreen extends StatelessWidget {
+  const JavaPathChooserScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -16,7 +18,7 @@ class JavaPathChooserScreen extends StatelessWidget {
           if (state is DataState<JavaInfo>) {
             return _buildDataState(context, state.data);
           } else {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
         },
       ),
@@ -39,8 +41,8 @@ class JavaPathChooserScreen extends StatelessWidget {
           Row(
             children: [
               info.isOk
-                  ? Icon(Icons.check_circle, color: Colors.green)
-                  : Icon(Icons.error, color: Colors.red),
+                  ? const Icon(Icons.check_circle, color: Colors.green)
+                  : const Icon(Icons.error, color: Colors.red),
               const SizedBox(width: 8.0),
               Text(info.info),
             ],
@@ -59,7 +61,7 @@ class JavaPathChooserScreen extends StatelessWidget {
             context.read<JavaPathChooserBloc>().add(UpdateJavaPath(newPath));
           }
         }),
-        child: Text('Изменить'),
+        child: const Text('Изменить'),
       );
 
   Future<String?> _showJavaPathSelector(String initial) {

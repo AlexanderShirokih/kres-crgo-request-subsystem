@@ -57,7 +57,7 @@ class RequestService {
   }
 
   /// Creates temporary request with blank fields
-  Request createTemporaryRequest() => _TemporaryRequest.empty();
+  Request createTemporaryRequest() => const _TemporaryRequest.empty();
 
   /// Validates current request and tries to save it
   /// Throws [ValidationError] if request fields has an error

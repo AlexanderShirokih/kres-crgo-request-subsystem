@@ -76,9 +76,10 @@ class WorksheetsPageController extends StatelessWidget {
                     message: "Удалить страницу ${current.name}?",
                   ),
                 ).then((result) {
-                  if (result)
+                  if (result) {
                     context.read<DocumentBloc>().add(
                         WorksheetActionEvent(current, WorksheetAction.remove));
+                  }
                 });
               } else {
                 context

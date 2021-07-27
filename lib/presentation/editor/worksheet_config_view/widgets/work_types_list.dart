@@ -27,7 +27,7 @@ class _WorkTypesListState extends State<WorkTypesList> {
                 style: Theme.of(context).textTheme.headline6),
           ),
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             tooltip: 'Добавить',
             onPressed: () => setState(() {
               _hasAdditionalField = true;
@@ -49,7 +49,7 @@ class _WorkTypesListState extends State<WorkTypesList> {
           .map(
             (e) => ListTile(
               leading: IconButton(
-                icon: Icon(Icons.remove_circle_outline, size: 16.0),
+                icon: const Icon(Icons.remove_circle_outline, size: 16.0),
                 onPressed: () => setState(() {
                   if (e == null) {
                     _hasAdditionalField = false;

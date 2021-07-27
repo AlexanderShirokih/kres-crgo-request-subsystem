@@ -62,8 +62,8 @@ class _DatePickerState extends State<DatePicker> {
     return CalendarDatePicker(
       initialCalendarMode: DatePickerMode.day,
       initialDate: target,
-      firstDate: target.subtract(Duration(days: 15)),
-      lastDate: DateTime.now().add(Duration(days: 15)),
+      firstDate: target.subtract(const Duration(days: 15)),
+      lastDate: DateTime.now().add(const Duration(days: 15)),
       onDateChanged: (newDate) {
         setState(() {
           _isDateChosen = true;

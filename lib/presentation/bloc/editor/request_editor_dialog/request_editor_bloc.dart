@@ -48,7 +48,7 @@ class RequestEditorBloc extends Bloc<RequestEditorEvent, BaseState> {
   final RequestService service;
 
   /// Creates new [RequestEditorBloc]
-  RequestEditorBloc({required this.service}) : super(InitialState());
+  RequestEditorBloc({required this.service}) : super(const InitialState());
 
   @override
   Stream<BaseState> mapEventToState(RequestEditorEvent event) async* {

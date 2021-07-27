@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:kres_requests2/presentation/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/presentation/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/presentation/common.dart';
 
 /// Opens file chooser dialog for exporting file to external formats
@@ -12,13 +12,14 @@ class ExporterDialog extends StatelessWidget {
 
   final Document document;
 
-  ExporterDialog(this.exportFormat, this.document);
+  const ExporterDialog(this.exportFormat, this.document, {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Экспорт в ${exportFormat.extension().toUpperCase()}'),
-      content: Container(
+      content: SizedBox(
         width: 300.0,
         height: 300.0,
         child: BlocProvider(
@@ -50,10 +51,11 @@ class ExporterDialog extends StatelessWidget {
                 }
                 if (state is ExporterIdle) {
                   return LoadingView(state.message ?? '...');
-                } else
-                  return Center(
+                } else {
+                  return const Center(
                     child: CircularProgressIndicator(),
                   );
+                }
               },
               listener: (context, state) {
                 if (state is ExporterClosingState) {

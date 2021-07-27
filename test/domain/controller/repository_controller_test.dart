@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 class _TestEntity extends Equatable {
   final String label;
 
-  _TestEntity(this.label);
+  const _TestEntity(this.label);
 
   @override
   List<Object> get props => [label];
@@ -18,7 +18,7 @@ class _PersistedTestEntity extends _TestEntity implements PersistedObject<int> {
   @override
   final int id;
 
-  _PersistedTestEntity(this.id, String label) : super(label);
+  const _PersistedTestEntity(this.id, String label) : super(label);
 
   @override
   List<Object> get props => [...super.props, id];
@@ -34,9 +34,9 @@ class _TestObjectBuilder implements PersistedObjectBuilder<_TestEntity> {
 
 void main() {
   final testEntities = [
-    _PersistedTestEntity(1, 'A'),
-    _PersistedTestEntity(2, 'B'),
-    _PersistedTestEntity(3, 'C'),
+    const _PersistedTestEntity(1, 'A'),
+    const _PersistedTestEntity(2, 'B'),
+    const _PersistedTestEntity(3, 'C'),
   ];
 
   late Repository<_TestEntity> repository;
@@ -45,7 +45,7 @@ void main() {
   setUp(() {
     repository = _MockRepository();
     controller = RepositoryController(_TestObjectBuilder(), repository);
-    registerFallbackValue(_TestEntity("test"));
+    registerFallbackValue(const _TestEntity("test"));
     when(() => repository.getAll()).thenAnswer((_) async => testEntities);
     when(() => repository.update(any()))
         .thenAnswer((_) async => Future.value());
@@ -70,9 +70,9 @@ void main() {
   });
 
   test('CRUD functions does not affects repository until committed', () {
-    controller.add(_TestEntity('D'));
-    controller.delete(_TestEntity('D'));
-    controller.update(_TestEntity('D'), _TestEntity('E'));
+    controller.add(const _TestEntity('D'));
+    controller.delete(const _TestEntity('D'));
+    controller.update(const _TestEntity('D'), const _TestEntity('E'));
 
     verifyZeroInteractions(repository);
   });
@@ -84,11 +84,11 @@ void main() {
         (_) async => <_PersistedTestEntity>[],
       );
 
-      controller.add(_TestEntity('A'));
+      controller.add(const _TestEntity('A'));
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(() => repository.add(_TestEntity('A')));
+      verify(() => repository.add(const _TestEntity('A')));
       verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
@@ -101,7 +101,7 @@ void main() {
         (_) async => <_PersistedTestEntity>[],
       );
 
-      controller.delete(_TestEntity('A'));
+      controller.delete(const _TestEntity('A'));
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
@@ -117,8 +117,8 @@ void main() {
         (_) async => <_PersistedTestEntity>[],
       );
 
-      controller.add(_TestEntity('A'));
-      controller.delete(_TestEntity('A'));
+      controller.add(const _TestEntity('A'));
+      controller.delete(const _TestEntity('A'));
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
@@ -134,7 +134,7 @@ void main() {
         (_) async => <_PersistedTestEntity>[],
       );
 
-      controller.update(_TestEntity('A'), _TestEntity('B'));
+      controller.update(const _TestEntity('A'), const _TestEntity('B'));
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
@@ -150,12 +150,12 @@ void main() {
         (_) async => <_PersistedTestEntity>[],
       );
 
-      controller.add(_TestEntity('A'));
-      controller.update(_TestEntity('A'), _TestEntity('B'));
+      controller.add(const _TestEntity('A'));
+      controller.update(const _TestEntity('A'), const _TestEntity('B'));
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(() => repository.add(_TestEntity('B')));
+      verify(() => repository.add(const _TestEntity('B')));
       verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
@@ -164,12 +164,12 @@ void main() {
   test(
     'Adding and then updating item on present data works as expected',
     () async {
-      controller.add(_TestEntity('D'));
-      controller.update(_TestEntity('D'), _TestEntity('E'));
+      controller.add(const _TestEntity('D'));
+      controller.update(const _TestEntity('D'), const _TestEntity('E'));
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(() => repository.add(_TestEntity('E')));
+      verify(() => repository.add(const _TestEntity('E')));
       verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
@@ -178,33 +178,40 @@ void main() {
   test(
     'Complex work present data works as expected',
     () async {
-      controller.add(_TestEntity('F'));
-      controller.update(_PersistedTestEntity(1, 'A'), _TestEntity('D'));
-      controller.update(_PersistedTestEntity(1, 'D'), _TestEntity('E'));
-      controller.delete(_PersistedTestEntity(2, 'B'));
+      controller.add(const _TestEntity('F'));
+      controller.update(
+          const _PersistedTestEntity(1, 'A'), const _TestEntity('D'));
+      controller.update(
+          const _PersistedTestEntity(1, 'D'), const _TestEntity('E'));
+      controller.delete(const _PersistedTestEntity(2, 'B'));
       verifyZeroInteractions(repository);
 
       await expectLater(controller.commit(), completes);
-      verify(() => repository.add(_TestEntity('F'))).called(1);
-      verify(() => repository.update(_PersistedTestEntity(1, 'E'))).called(1);
-      verify(() => repository.delete(_PersistedTestEntity(2, 'B'))).called(1);
+      verify(() => repository.add(const _TestEntity('F'))).called(1);
+      verify(() => repository.update(const _PersistedTestEntity(1, 'E')))
+          .called(1);
+      verify(() => repository.delete(const _PersistedTestEntity(2, 'B')))
+          .called(1);
       verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
       verifyNoMoreInteractions(repository);
     },
   );
 
   test('Undo cancels previous operation', () async {
-    controller.add(_TestEntity('F'));
-    controller.update(_PersistedTestEntity(1, 'A'), _TestEntity('D'));
-    controller.update(_PersistedTestEntity(1, 'D'), _TestEntity('E'));
+    controller.add(const _TestEntity('F'));
+    controller.update(
+        const _PersistedTestEntity(1, 'A'), const _TestEntity('D'));
+    controller.update(
+        const _PersistedTestEntity(1, 'D'), const _TestEntity('E'));
     controller.undo();
-    controller.delete(_PersistedTestEntity(2, 'B'));
+    controller.delete(const _PersistedTestEntity(2, 'B'));
     controller.undo();
     verifyZeroInteractions(repository);
 
     await expectLater(controller.commit(), completes);
-    verify(() => repository.add(_TestEntity('F'))).called(1);
-    verify(() => repository.update(_PersistedTestEntity(1, 'D'))).called(1);
+    verify(() => repository.add(const _TestEntity('F'))).called(1);
+    verify(() => repository.update(const _PersistedTestEntity(1, 'D')))
+        .called(1);
     verify(() => repository.getAll()).called(lessThanOrEqualTo(1));
     verifyNoMoreInteractions(repository);
   });
@@ -213,8 +220,8 @@ void main() {
     await controller.getAll();
 
     controller.update(
-      _PersistedTestEntity(1, 'A'),
-      _PersistedTestEntity(1, 'A'),
+      const _PersistedTestEntity(1, 'A'),
+      const _PersistedTestEntity(1, 'A'),
     );
 
     expect(controller.hasUncommittedChanges, isFalse);

@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/presentation/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/presentation/bloc/exporter/exporter_bloc.dart';
 import 'package:kres_requests2/presentation/common.dart';
 
 /// Dialog used to create printable document and send it to the printer
@@ -12,13 +12,13 @@ class PrintDialog extends StatelessWidget {
   /// Target document
   final Document document;
 
-  const PrintDialog(this.document);
+  const PrintDialog(this.document, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Печать', textAlign: TextAlign.center),
-      content: Container(
+      title: const Text('Печать', textAlign: TextAlign.center),
+      content: SizedBox(
         width: 340.0,
         height: 380.0,
         child: BlocProvider(
@@ -46,13 +46,14 @@ class PrintDialog extends StatelessWidget {
                           stackTrace: StackTrace.fromString(state.stackTrace),
                         ),
                       ),
-                      BackButton(),
+                      const BackButton(),
                     ],
                   );
-                } else
-                  return Center(
+                } else {
+                  return const Center(
                     child: Text('Possibly unknown state'),
                   );
+                }
               },
               listener: (context, state) {
                 if (state is ExporterClosingState) {
@@ -91,16 +92,16 @@ class _ListPrintersView extends HookWidget {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Доступные принтеры не найдены'),
+          const Text('Доступные принтеры не найдены'),
           const SizedBox(height: 12.0),
           OutlinedButton.icon(
-            icon: FaIcon(FontAwesomeIcons.sync),
-            label: Text('Обновить'),
+            icon: const FaIcon(FontAwesomeIcons.sync),
+            label: const Text('Обновить'),
             onPressed: () =>
                 context.read<ExporterBloc>().add(ShowPrintersListEvent()),
           ),
           const SizedBox(height: 12.0),
-          BackButton(),
+          const BackButton(),
         ],
       );
     } else {
@@ -119,7 +120,7 @@ class _ListPrintersView extends HookWidget {
                 onChanged: (newValue) => noLists.value = newValue!,
               ),
               const SizedBox(height: 8.0),
-              Text('Печать без списка работ'),
+              const Text('Печать без списка работ'),
             ],
           ),
           const SizedBox(height: 8.0),
@@ -128,7 +129,7 @@ class _ListPrintersView extends HookWidget {
             children: [
               OutlinedButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Отмена'),
+                child: const Text('Отмена'),
               )
             ],
           )
@@ -143,7 +144,7 @@ class _ListPrintersView extends HookWidget {
   ) sync* {
     if (preferredPrinter == null) return;
 
-    yield Text('Последний принтер:');
+    yield const Text('Последний принтер:');
     yield const SizedBox(height: 12.0);
     yield _createPrinterItem(context, preferredPrinter!, noLists);
     yield const SizedBox(height: 18.0);
@@ -153,7 +154,7 @@ class _ListPrintersView extends HookWidget {
     BuildContext context,
     bool noLists,
   ) sync* {
-    yield Text('Доступные принтеры:');
+    yield const Text('Доступные принтеры:');
     yield const SizedBox(height: 12.0);
     yield Expanded(
       child: SingleChildScrollView(
@@ -173,7 +174,7 @@ class _ListPrintersView extends HookWidget {
     bool noLists,
   ) =>
       ListTile(
-        leading: FaIcon(FontAwesomeIcons.print),
+        leading: const FaIcon(FontAwesomeIcons.print),
         title: Text(printerName),
         onTap: () => context.read<ExporterBloc>().add(PrintDocumentEvent(
               document,

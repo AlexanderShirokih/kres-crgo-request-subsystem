@@ -23,7 +23,7 @@ abstract class UndoableBloc<DH extends UndoableDataHolder<E>, E extends Object>
   UndoableBloc(
     this._controller,
     this._validator,
-  ) : super(InitialState()) {
+  ) : super(const InitialState()) {
     _subscription = _controller.stream.listen((event) {
       add(RefreshDataEvent(event));
     }, onError: (e, s) {

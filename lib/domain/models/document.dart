@@ -88,7 +88,7 @@ class Document extends Equatable {
     String fmtDate(DateTime d) => DateFormat('dd.MM.yyyy').format(d);
     return savePath == null
         ? 'Заявки ${fmtDate(updateDate)}'
-        : '${path.basenameWithoutExtension(savePath.path)}';
+        : path.basenameWithoutExtension(savePath.path);
   }
 
   @override
