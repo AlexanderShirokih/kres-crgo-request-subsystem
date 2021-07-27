@@ -4,6 +4,18 @@ part of 'document_master_bloc.dart';
 @sealed
 abstract class DocumentMasterState extends Equatable {
   const DocumentMasterState._();
+
+  int get pageCount =>
+      this is ShowDocumentsState ? (this as ShowDocumentsState).all.length : 0;
+
+  int get pageIndex {
+    if (this is ShowDocumentsState) {
+      final state = this as ShowDocumentsState;
+      return state.all.indexWhere((info) => info.document == state.selected);
+    } else {
+      return 0;
+    }
+  }
 }
 
 /// State indicating that no opened documents in the editor
@@ -56,6 +68,8 @@ class ShowDocumentsState extends DocumentMasterState {
   @override
   List<Object?> get props => [selected, all];
 
+  get selectedIndex => null;
+
   /// Creates a copy of [ShowDocumentsState] with ability to change some
   /// parameters
   ShowDocumentsState copyWith({
@@ -66,34 +80,4 @@ class ShowDocumentsState extends DocumentMasterState {
         selected ?? this.selected,
         all ?? this.all,
       );
-}
-
-enum DocumentErrorType {
-  savingError,
-}
-
-/// TODO: Use another way to singnal a document error
-/// Used when some error happened in the document
-class DocumentErrorState extends DocumentMasterState {
-  /// Problematic document
-  final Document target;
-
-  /// Describes error type
-  final DocumentErrorType error;
-
-  /// Error description
-  final String description;
-
-  /// Error stack trace
-  final StackTrace? stackTrace;
-
-  const DocumentErrorState({
-    required this.target,
-    required this.error,
-    required this.description,
-    required this.stackTrace,
-  }) : super._();
-
-  @override
-  List<Object?> get props => [target, error, description, stackTrace];
 }

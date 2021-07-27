@@ -35,7 +35,10 @@ class _DialogManagerState extends State<DialogManager>
 
   @override
   void showErrorMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+
+    messenger.removeCurrentSnackBar();
+    messenger.showSnackBar(
       SnackBar(
         backgroundColor: Colors.red,
         duration: const Duration(seconds: 6),

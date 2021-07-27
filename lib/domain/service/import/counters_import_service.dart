@@ -27,6 +27,8 @@ class CountersImportService implements DocumentImporter {
       return false;
     }
 
+
+
     manager.addDocument(document);
     return true;
   }

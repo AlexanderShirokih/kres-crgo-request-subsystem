@@ -41,6 +41,9 @@ class DocumentManager {
   Stream<List<Document>> get openedDocumentsStream =>
       _openedDocuments.stream.map((list) => List.unmodifiable(list));
 
+  /// Returns a list of currently opened documents
+  List<Document> get opened => _openedDocuments.value ?? const <Document>[];
+
   /// Returns a stream with currently selected document
   Stream<Document?> get selectedStream => _selectedIndex
       .map((index) => index == -1 ? null : _openedDocuments.requireValue[index])
@@ -120,10 +123,14 @@ class DocumentManager {
 
   // Adds document to the list and notifies the stream
   void _addDocument(Document document) {
-    _openedDocuments.add(_openedDocuments.requireValue..add(document));
+    final currentDocs = _openedDocuments.requireValue;
+
+    _openedDocuments.add(currentDocs..add(document));
 
     if (!_selectedIndex.hasValue || _selectedIndex.requireValue == -1) {
       _selectedIndex.add(0);
+    } else {
+      _selectedIndex.add(currentDocs.length - 1);
     }
   }
 

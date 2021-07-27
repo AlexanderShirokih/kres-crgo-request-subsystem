@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/models/document.dart';
+import 'package:kres_requests2/domain/service/dialog_service.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
@@ -22,11 +23,15 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
   /// Navigator for navigating
   final IModularNavigator _navigator;
 
+  /// Dialog service to show an errors
+  final DialogService _dialogService;
+
   StreamSubscription? _subscription;
 
   /// Creates new [DocumentMasterBloc] instance for [document].
   DocumentMasterBloc(
     this._documentManager,
+      this._dialogService,
     this._navigator,
   ) : super(const NoOpenedDocumentsState()) {
     _subscription = Rx.combineLatest2(
@@ -76,8 +81,7 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
   ) async* {
     final allDocumentsInfo = all
         .map(
-          (doc) =>
-              DocumentInfo(SaveState.unsaved, doc),
+          (doc) => DocumentInfo(SaveState.unsaved, doc),
         )
         .toList(growable: false);
 
@@ -124,13 +128,9 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
       if (popAfterSave) {
         _navigator.pop();
       }
-    } catch (e, s) {
-      yield DocumentErrorState(
-        target: currentDocument,
-        error: DocumentErrorType.savingError,
-        description: e.toString(),
-        stackTrace: s,
-      );
+    } catch (e) {
+      _dialogService
+          .showErrorMessage('Не удалось сохранить документ! (${e.toString()})');
 
       info[currentInfoIdx] =
           info[currentInfoIdx].copyWith(saveState: SaveState.unsaved);

@@ -7,23 +7,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/presentation/bloc/editor/document_master_bloc.dart';
+import 'package:kres_requests2/presentation/common/dialog_service.dart';
 import 'package:kres_requests2/presentation/editor/widgets/document_tabs_bar.dart';
 
 import 'document_module.dart';
-
-extension on DocumentMasterState {
-  int get pageCount =>
-      this is ShowDocumentsState ? (this as ShowDocumentsState).all.length : 0;
-
-  int get pageIndex {
-    if (this is ShowDocumentsState) {
-      final state = this as ShowDocumentsState;
-      return state.all.indexWhere((info) => info.document == state.selected);
-    } else {
-      return 0;
-    }
-  }
-}
 
 /// Screen that manages whole document state
 /// Requires [DocumentMasterBloc] to be injected as a [Modular] dependency
@@ -55,12 +42,8 @@ class DocumentEditorScreen extends HookWidget {
             initialIndex: state.pageIndex,
             child: Scaffold(
               appBar: _buildAppBar(),
-              body: BlocListener<DocumentMasterBloc, DocumentMasterState>(
-                listener: (context, state) {
-                  if (state is DocumentErrorState) {
-                    _handleErrors(context, state);
-                  }
-                },
+              body: DialogManager(
+                dialogService: Modular.get(),
                 child: Stack(children: [
                   Positioned.fill(
                     child: _buildEditor(context, state),
@@ -140,27 +123,6 @@ class DocumentEditorScreen extends HookWidget {
           onPressed: () => onPressed(ctx),
         ),
       );
-
-  void _handleErrors(BuildContext context, DocumentErrorState state) {
-    final scaffold = ScaffoldMessenger.of(context);
-    void showSnackbar(String message, Duration duration) =>
-        scaffold.showSnackBar(
-          SnackBar(
-            content: Text(message),
-            duration: duration,
-          ),
-        );
-
-    scaffold.removeCurrentSnackBar();
-
-    if (state.error == DocumentErrorType.savingError) {
-      print("${state.error}\n${state.stackTrace}");
-      showSnackbar(
-        'Не удалось сохранить! ${state.error}',
-        const Duration(seconds: 6),
-      );
-    }
-  }
 
   Widget _buildEditor(
     BuildContext context,

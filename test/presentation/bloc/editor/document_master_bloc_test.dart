@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/service/dialog_service.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/presentation/bloc/editor/document_master_bloc.dart';
 import 'package:mocktail/mocktail.dart';
@@ -10,13 +11,17 @@ import '../common_mocks.dart';
 
 class _DocumentManagerMock extends Mock implements DocumentManager {}
 
+class _DialogServiceMock extends Mock implements DialogService {}
+
 void main() {
   late DocumentManager documentManager;
   late Document document;
+  late DialogService dialogService;
   late IModularNavigator navigator;
 
   setUp(() {
     documentManager = _DocumentManagerMock();
+    dialogService = _DialogServiceMock();
     document = DocumentMock();
     navigator = NavigatorMock();
 
@@ -30,7 +35,7 @@ void main() {
 
   blocTest<DocumentMasterBloc, DocumentMasterState>(
     'Calls setSearchFilter in service when [WorksheetMasterSearchEvent] is added',
-    build: () => DocumentMasterBloc(documentManager, navigator),
+    build: () => DocumentMasterBloc(documentManager, dialogService, navigator),
     act: (bloc) => bloc.add(const WorksheetMasterSearchEvent('hello')),
     verify: (_) {
       fail("Unimplemented!");
@@ -40,7 +45,7 @@ void main() {
 
   blocTest<DocumentMasterBloc, DocumentMasterState>(
     'Reacts on document saving w/o popping',
-    build: () => DocumentMasterBloc(documentManager, navigator),
+    build: () => DocumentMasterBloc(documentManager, dialogService, navigator),
     act: (bloc) => bloc.add(
       const SaveEvent(changePath: true, popAfterSave: false),
     ),
@@ -54,7 +59,7 @@ void main() {
 
   blocTest<DocumentMasterBloc, DocumentMasterState>(
     'Reacts on document saving with popping',
-    build: () => DocumentMasterBloc(documentManager, navigator),
+    build: () => DocumentMasterBloc(documentManager, dialogService, navigator),
     act: (bloc) => bloc.add(
       const SaveEvent(changePath: true, popAfterSave: true),
     ),
@@ -77,7 +82,8 @@ void main() {
 
     blocTest<DocumentMasterBloc, DocumentMasterState>(
       'Reacts on document saving with error',
-      build: () => DocumentMasterBloc(documentManager, navigator),
+      build: () =>
+          DocumentMasterBloc(documentManager, dialogService, navigator),
       act: (bloc) => bloc.add(
         const SaveEvent(changePath: true, popAfterSave: true),
       ),

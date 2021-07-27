@@ -13,7 +13,6 @@ class DocumentTabsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _createTabs()),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18.0),
           child: IconButton(
@@ -24,6 +23,7 @@ class DocumentTabsBar extends StatelessWidget {
             tooltip: 'Новый документ',
           ),
         ),
+        Expanded(child: _createTabs()),
       ],
     );
   }
@@ -34,7 +34,13 @@ class DocumentTabsBar extends StatelessWidget {
             return Container();
           }
 
+          final controller = DefaultTabController.of(context);
           final all = state.all;
+          final current = state.pageIndex;
+
+          if(controller!.index != current) {
+            controller.index = current;
+          }
 
           return TabBar(
             onTap: (tab) => context

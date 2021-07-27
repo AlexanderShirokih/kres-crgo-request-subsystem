@@ -59,7 +59,15 @@ class ImporterBloc extends Bloc<ImporterEvent, BaseState> {
       yield LoadingState();
 
       try {
-        await importService.importDocument(resultPath, documentManager);
+        final alreadyOpened = documentManager.opened.indexWhere((doc) {
+              return resultPath == doc.currentSavePath?.path;
+            }) !=
+            -1;
+
+        if (!alreadyOpened) {
+          await importService.importDocument(resultPath, documentManager);
+        }
+
         navigateToEditor();
       } on ImporterModuleMissingException {
         dialogService

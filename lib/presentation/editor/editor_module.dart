@@ -1,5 +1,6 @@
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
+import 'package:kres_requests2/domain/service/dialog_service.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/presentation/bloc/editor/document_master_bloc.dart';
@@ -17,7 +18,11 @@ class EditorModule extends Module {
         //   (i) => RequestService(i(), i(), i.args!.data as Document),
         // ),
         Bind.factory(
-          (i) => DocumentMasterBloc(i<DocumentManager>(), Modular.to),
+          (i) => DocumentMasterBloc(
+            i<DocumentManager>(),
+            i<DialogService>(),
+            Modular.to,
+          ),
         ),
       ];
 
