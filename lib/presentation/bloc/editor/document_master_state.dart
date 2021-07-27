@@ -20,10 +20,13 @@ enum SaveState { blank, unsaved, saved, saving }
 /// Data class that holds document with it's state
 class DocumentInfo extends Equatable {
   final SaveState saveState;
-  final String? title;
   final Document document;
 
-  const DocumentInfo(this.saveState, this.title, this.document);
+  const DocumentInfo(this.saveState, this.document);
+
+  /// Returns current document save path as a title.
+  /// If document if not saved yet, it will be `null`
+  String? get title => document.currentSavePath?.path;
 
   /// Creates a copy with customizable params
   DocumentInfo copyWith({
@@ -33,12 +36,11 @@ class DocumentInfo extends Equatable {
   }) =>
       DocumentInfo(
         saveState ?? this.saveState,
-        title ?? this.title,
         document ?? this.document,
       );
 
   @override
-  List<Object?> get props => [title, saveState, document];
+  List<Object?> get props => [saveState, document];
 }
 
 /// State used to show opened documents

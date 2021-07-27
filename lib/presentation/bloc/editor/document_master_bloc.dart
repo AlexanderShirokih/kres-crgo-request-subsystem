@@ -9,6 +9,7 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
 part 'document_master_event.dart';
+
 part 'document_master_state.dart';
 
 /// BLoC that manages global state of the [Document]. Can change currently
@@ -76,7 +77,7 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
     final allDocumentsInfo = all
         .map(
           (doc) =>
-              DocumentInfo(SaveState.unsaved, doc.currentSavePath?.path, doc),
+              DocumentInfo(SaveState.unsaved, doc),
         )
         .toList(growable: false);
 
@@ -94,9 +95,10 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
     final currentState = state;
     if (currentState is! ShowDocumentsState) return;
 
-    final info = currentState.all;
+    final info = currentState.all.toList();
     final currentDocument = currentState.selected;
-    final currentInfoIdx = info.indexWhere((doc) => doc == currentDocument);
+    final currentInfoIdx =
+        info.indexWhere((doc) => doc.document == currentDocument);
 
     try {
       await for (final saveState
@@ -107,11 +109,13 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
           case DocumentSavingState.saving:
             info[currentInfoIdx] =
                 info[currentInfoIdx].copyWith(saveState: SaveState.saving);
+            yield const NoOpenedDocumentsState();
             yield ShowDocumentsState(currentDocument, List.unmodifiable(info));
             break;
           case DocumentSavingState.saved:
             info[currentInfoIdx] =
                 info[currentInfoIdx].copyWith(saveState: SaveState.saved);
+            yield const NoOpenedDocumentsState();
             yield ShowDocumentsState(currentDocument, List.unmodifiable(info));
             break;
         }

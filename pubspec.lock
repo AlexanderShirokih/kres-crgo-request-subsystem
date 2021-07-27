@@ -303,7 +303,7 @@ packages:
     description:
       path: flutter_modular
       ref: HEAD
-      resolved-ref: f71b5096a66b2bc389ecc5204fa51ac9b2d8c328
+      resolved-ref: ede3de7b5260e8212f36b62b5533a172ea076144
       url: "https://github.com/AlexanderShirokih/modular.git"
     source: git
     version: "3.3.1"
