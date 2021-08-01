@@ -9,18 +9,20 @@ class RequestTypeValidator extends MappedValidator<RequestType> {
   RequestTypeValidator()
       : super([
           ValidationEntry(
-              'shortName',
-              const StringValidator(
+              name: 'shortName',
+              localName: 'Короткое название',
+              validator: const StringValidator(
                 minLength: 3,
                 maxLength: 10,
               ),
-              (e) => e.shortName),
+              fieldSelector: (e) => e.shortName),
           ValidationEntry(
-              'fullName',
-              const StringValidator(
+              name: 'fullName',
+              localName: 'Полное название',
+              validator: const StringValidator(
                 minLength: 5,
                 maxLength: 20,
               ),
-              (e) => e.fullName),
+              fieldSelector: (e) => e.fullName),
         ]);
 }

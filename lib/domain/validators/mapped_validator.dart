@@ -5,13 +5,21 @@ class ValidationEntry<E> {
   /// Field name
   final String name;
 
+  /// Localized field name to display
+  final String? localName;
+
   /// Validator instance
   final Validator validator;
 
   /// Field selector
   final dynamic Function(E) fieldSelector;
 
-  const ValidationEntry(this.name, this.validator, this.fieldSelector);
+  const ValidationEntry({
+    required this.name,
+    required this.validator,
+    required this.fieldSelector,
+    this.localName,
+  });
 }
 
 /// [Validator] that assigns validators to fields
@@ -25,7 +33,7 @@ class MappedValidator<E> extends Validator<E> {
     for (final entry in _validators) {
       yield* entry.validator
           .validate(entry.fieldSelector(entity))
-          .map((e) => entry.name + ": " + e);
+          .map((e) => (entry.localName ?? entry.name) + ": " + e);
     }
   }
 

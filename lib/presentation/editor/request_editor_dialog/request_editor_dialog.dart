@@ -119,10 +119,11 @@ class _RequestEditorView extends HookWidget {
             children: [
               _createMainRow(id, requestType),
               const SizedBox(height: 8.0),
-              _createInputField("ФИО", "ФИО не должно быть пустым", name),
+              _createInputField("ФИО", "ФИО не должно быть пустым", name,
+                  limit: 50),
               const SizedBox(height: 8.0),
-              _createInputField(
-                  "Адрес", "Адрес не должен быть пустым", address, limit: 50),
+              _createInputField("Адрес", "Адрес не должен быть пустым", address,
+                  limit: 50),
               const SizedBox(height: 8.0),
               _createPhoneAndConnectionPointRow(phone, tp, line, pillar),
               const SizedBox(height: 28),

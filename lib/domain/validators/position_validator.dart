@@ -7,11 +7,12 @@ class PositionValidator extends MappedValidator<Position> {
   PositionValidator()
       : super([
           ValidationEntry(
-              'name',
-              const StringValidator(
+              name: 'name',
+              localName: "ФИО",
+              validator: const StringValidator(
                 minLength: 3,
                 maxLength: 20,
               ),
-              (p) => p.name),
+              fieldSelector: (p) => p.name),
         ]);
 }

@@ -7,12 +7,13 @@ class EmployeeValidator extends MappedValidator<Employee> {
   EmployeeValidator()
       : super([
           ValidationEntry(
-            'name',
-            const StringValidator(
+            name: 'name',
+            localName: 'ФИО',
+            validator: const StringValidator(
               minLength: 3,
               maxLength: 50,
             ),
-            (e) => e.name,
+            fieldSelector: (e) => e.name,
           )
         ]);
 }

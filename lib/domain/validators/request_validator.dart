@@ -18,31 +18,54 @@ class RequestValidator extends MappedValidator<Request> {
   RequestValidator()
       : super([
           ValidationEntry(
-              account,
-              const IntegerValidator(
+              name: account,
+              localName: 'Лицевой счет',
+              validator: const IntegerValidator(
                 min: 0,
               ),
-              (e) => e.accountId),
+              fieldSelector: (e) => e.accountId),
           ValidationEntry(
-              requestType, RequestTypeValidator(), (e) => e.requestType),
+              name: requestType,
+              localName: 'Тип заявки',
+              validator: RequestTypeValidator(),
+              fieldSelector: (e) => e.requestType),
           ValidationEntry(
-              name, const StringValidator(maxLength: 30), (e) => e.name),
+              name: name,
+              localName: 'ФИО',
+              validator: const StringValidator(maxLength: 50),
+              fieldSelector: (e) => e.name),
           ValidationEntry(
-              address, const StringValidator(maxLength: 50), (e) => e.address),
-          ValidationEntry(phone, const StringValidator(maxLength: 15),
-              (e) => e.phoneNumber),
-          ValidationEntry(tp, const StringValidator(maxLength: 6),
-              (e) => e.connectionPoint?.tp),
-          ValidationEntry(line, const StringValidator(maxLength: 3),
-              (e) => e.connectionPoint?.line),
-          ValidationEntry(pillar, const StringValidator(maxLength: 6),
-              (e) => e.connectionPoint?.pillar),
+              name: address,
+              localName: 'Адрес',
+              validator: const StringValidator(maxLength: 50),
+              fieldSelector: (e) => e.address),
           ValidationEntry(
-              additionalInfo,
-              const StringValidator(
+              name: phone,
+              localName: 'Телефон',
+              validator: const StringValidator(maxLength: 15),
+              fieldSelector: (e) => e.phoneNumber),
+          ValidationEntry(
+              name: tp,
+              localName: 'ТП',
+              validator: const StringValidator(maxLength: 6),
+              fieldSelector: (e) => e.connectionPoint?.tp),
+          ValidationEntry(
+              name: line,
+              localName: 'Линия',
+              validator: const StringValidator(maxLength: 3),
+              fieldSelector: (e) => e.connectionPoint?.line),
+          ValidationEntry(
+              name: pillar,
+              localName: 'Опора',
+              validator: const StringValidator(maxLength: 6),
+              fieldSelector: (e) => e.connectionPoint?.pillar),
+          ValidationEntry(
+              name: additionalInfo,
+              localName: 'Дополнительно',
+              validator: const StringValidator(
                 minLength: 0,
                 maxLength: 35,
               ),
-              (e) => e.additionalInfo),
+              fieldSelector: (e) => e.additionalInfo),
         ]);
 }
