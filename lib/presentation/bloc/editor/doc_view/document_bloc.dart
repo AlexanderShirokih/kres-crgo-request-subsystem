@@ -78,13 +78,16 @@ class DocumentBloc extends Bloc<DocumentEvent, BaseState> {
   Stream<BaseState> _createNewWorksheet(WorksheetCreationMode mode) async* {
     switch (mode) {
       case WorksheetCreationMode.import:
-        _navigator.navigate('/document/import/requests');
-        return;
+        _navigator.pushReplacementNamed(
+          '/document/import/requests',
+          arguments: {'document': _service.document},
+        );
+        break;
       case WorksheetCreationMode.importCounters:
-        _navigator.navigate('/document/import/counters');
-        return;
-      case WorksheetCreationMode.importNative:
-        _navigator.navigate('/document/open?pickPages=true');
+        _navigator.pushReplacementNamed(
+          '/document/import/counters',
+          arguments: {'document': _service.document},
+        );
         return;
       case WorksheetCreationMode.empty:
         _service.addEmptyWorksheet();

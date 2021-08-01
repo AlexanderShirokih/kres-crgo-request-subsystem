@@ -9,7 +9,11 @@ abstract class ImporterEvent extends Equatable {
 class ImportEvent extends ImporterEvent {
   final File? filePath;
 
-  const ImportEvent({this.filePath});
+  /// If target is not `null`, resulting document will be merged with [mergeTarget].
+  /// Otherwise new document will be created
+  final Document? mergeTarget;
+
+  const ImportEvent({this.filePath, this.mergeTarget});
 
   @override
   List<Object?> get props => [filePath];

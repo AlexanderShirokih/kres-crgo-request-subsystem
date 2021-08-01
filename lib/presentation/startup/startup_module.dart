@@ -79,7 +79,12 @@ class StartupModule extends Module {
               RepositoryController(const RecentDocumentBuilder(), i())),
         ),
         Bind.singleton<DocumentManager>(
-            (i) => DocumentManager(i<ExportFileChooser>(), i<DocumentSaver>())),
+          (i) => DocumentManager(
+            i<ExportFileChooser>(),
+            i<DocumentSaver>(),
+            i<StreamedRepositoryController<RecentDocumentInfo>>(),
+          ),
+        ),
       ];
 
   @override

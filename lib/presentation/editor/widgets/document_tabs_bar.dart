@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/presentation/bloc/editor/document_master_bloc.dart';
 
 /// Represents document tabs bar. This bar shows tabs to switch between
@@ -13,16 +15,7 @@ class DocumentTabsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18.0),
-          child: IconButton(
-            onPressed: () =>
-                context.read<DocumentMasterBloc>().add(const CreatePage()),
-            icon: const Icon(Icons.add),
-            color: Theme.of(context).colorScheme.onPrimary,
-            tooltip: 'Новый документ',
-          ),
-        ),
+        const _DocumentTabBarActionButtons(),
         Expanded(child: _createTabs()),
       ],
     );
@@ -38,7 +31,8 @@ class DocumentTabsBar extends StatelessWidget {
           final all = state.all;
           final current = state.pageIndex;
 
-          if(controller!.index != current) {
+          if (controller!.index != current) {
+            // TODO: Called during build!
             controller.index = current;
           }
 
@@ -93,5 +87,96 @@ class DocumentTab extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _DropdownActionItem {
+  final String title;
+  final Widget icon;
+  final DocumentMasterEvent event;
+
+  const _DropdownActionItem(this.title, this.icon, this.event);
+}
+
+class _DocumentTabBarActionButtons extends StatelessWidget {
+  const _DocumentTabBarActionButtons({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    const items = [
+      _DropdownActionItem(
+        'Новый документ',
+        Icon(Icons.add),
+        CreatePage(),
+      ),
+      _DropdownActionItem(
+        'Открыть другой документ',
+        FaIcon(FontAwesomeIcons.fileImport),
+        ImportPage(),
+      ),
+      _DropdownActionItem(
+        'Создать документ из файла заявок',
+        FaIcon(FontAwesomeIcons.fileExcel),
+        ImportMegaBillingRequests(),
+      ),
+    ];
+
+    final mainItem = items[0];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: mainItem.icon,
+            tooltip: mainItem.title,
+            color: Theme.of(context).colorScheme.onPrimary,
+            onPressed: () =>
+                context.read<DocumentMasterBloc>().add(mainItem.event),
+          ),
+          const SizedBox(width: 4.0),
+          IconButton(
+            icon: const Icon(Icons.expand_more_outlined),
+            tooltip: 'Создать из...',
+            color: Theme.of(context).colorScheme.onPrimary,
+            onPressed: () {
+              _showExpandedItems(context, items);
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  void _showExpandedItems(
+      BuildContext context, List<_DropdownActionItem> items) {
+    final renderObject = context.findRenderObject();
+    if (renderObject != null) {
+      final bounds = renderObject.paintBounds;
+      final position = RelativeRect.fromSize(
+        bounds.shift(bounds.bottomRight).shift(const Offset(0.0, 46.0)),
+        const Size(460, 300),
+      );
+
+      showMenu(
+        context: context,
+        position: position,
+        items: items
+            .map(
+              (e) => PopupMenuItem(
+                child: ListTile(
+                  leading: e.icon,
+                  title: Text(e.title),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    context.read<DocumentMasterBloc>().add(e.event);
+                  },
+                ),
+              ),
+            )
+            .toList(),
+      );
+    }
   }
 }

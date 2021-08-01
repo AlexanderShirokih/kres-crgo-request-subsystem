@@ -48,6 +48,22 @@ class CreatePage extends DocumentMasterEvent {
   List<Object?> get props => [];
 }
 
+/// Imports document from the storage
+class ImportPage extends DocumentMasterEvent {
+  const ImportPage() : super._();
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// Event used to create new document from mega-billing requests
+class ImportMegaBillingRequests extends DocumentMasterEvent {
+  const ImportMegaBillingRequests() : super._();
+
+  @override
+  List<Object?> get props => [];
+}
+
 /// Event that used when user wants to save current document.
 class SaveEvent extends DocumentMasterEvent {
   /// If `true` 'Save as' behaviour will be used.

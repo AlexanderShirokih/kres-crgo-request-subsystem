@@ -30,11 +30,7 @@ class _WorksheetCardGroupState extends State<WorksheetCardGroup> {
   @override
   void initState() {
     super.initState();
-    _checkedCards = Map.fromIterable(
-      widget.worksheets,
-      key: (k) => k,
-      value: (_) => true,
-    );
+    _checkedCards = {for (var k in widget.worksheets) k: true};
   }
 
   @override

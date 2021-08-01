@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/presentation/bloc/importer/importer_bloc.dart';
 
 import 'base_importer_screen.dart';
 
 class CountersImportScreen extends ImporterScreen {
-  const CountersImportScreen({Key? key})
-      : super(
+  final Document? mergeTarget;
+
+  const CountersImportScreen({
+    Key? key,
+    this.mergeTarget,
+  }) : super(
           key: key,
           title: 'Импорт списка счетчиков на замену',
         );
@@ -30,8 +35,9 @@ class CountersImportScreen extends ImporterScreen {
             ElevatedButton.icon(
               icon: const FaIcon(FontAwesomeIcons.fileExcel),
               label: const Text('Открыть отчёт'),
-              onPressed: () =>
-                  context.read<ImporterBloc>().add(const ImportEvent()),
+              onPressed: () => context
+                  .read<ImporterBloc>()
+                  .add(ImportEvent(mergeTarget: mergeTarget)),
             )
           ],
         ),

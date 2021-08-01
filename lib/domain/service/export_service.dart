@@ -47,8 +47,10 @@ class ExportService {
       }
     });
 
+    final lastUsedPrinter = await _settingsRepository.lastUsedPrinter;
+
     final preferred =
-        availablePrinters.contains(_settingsRepository.lastUsedPrinter)
+        availablePrinters.contains(lastUsedPrinter)
             ? await _settingsRepository.lastUsedPrinter
             : null;
 

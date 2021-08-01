@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
-import 'package:kres_requests2/domain/service/document_manager.dart';
+import 'package:kres_requests2/domain/domain.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
 import '../../models.dart';
@@ -11,26 +11,21 @@ import 'document_import_service.dart';
 typedef TableChooser = Future<String?> Function(List<String>);
 
 /// Service responsible for importing requests from XLSX data
-class CountersImportService implements DocumentImporter {
+class CountersImportService extends DocumentImporter {
   /// Function for choosing the table from tables list
   final TableChooser tableChooser;
 
-  const CountersImportService({
-    required this.tableChooser,
-  });
+  const CountersImportService({required this.tableChooser});
 
   @override
-  Future<bool> importDocument(String filePath, DocumentManager manager) async {
+  Future<Document?> doImport(String filePath) async {
     final document = await _importAsRequestsList(filePath, tableChooser);
 
     if (document == null || document.worksheets.isEmpty) {
-      return false;
+      return null;
     }
 
-
-
-    manager.addDocument(document);
-    return true;
+    return document;
   }
 
   Future<Document?> _importAsRequestsList(

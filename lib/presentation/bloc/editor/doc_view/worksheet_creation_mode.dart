@@ -8,7 +8,4 @@ enum WorksheetCreationMode {
 
   /// Imports counters list into new page
   importCounters,
-
-  /// Imports content saved in the native format
-  importNative,
 }

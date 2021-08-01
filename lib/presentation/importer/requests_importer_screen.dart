@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/presentation/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/presentation/importer/base_importer_screen.dart';
 
 /// Mega-billing XLS request files import wizard
 class RequestsImporterScreen extends ImporterScreen {
-  const RequestsImporterScreen({Key? key})
+  final Document? mergeTarget;
+
+  const RequestsImporterScreen({Key? key, this.mergeTarget})
       : super(key: key, title: 'Импорт заявок');
 
   @override
@@ -25,11 +28,15 @@ class RequestsImporterScreen extends ImporterScreen {
           const SizedBox(height: 42.0),
           ElevatedButton.icon(
             icon: const FaIcon(FontAwesomeIcons.fileExcel),
-            label: const Text(
-              'Открыть отчёт',
+            label: const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                'Открыть отчёт',
+              ),
             ),
-            onPressed: () =>
-                context.read<ImporterBloc>().add(const ImportEvent()),
+            onPressed: () => context
+                .read<ImporterBloc>()
+                .add(ImportEvent(mergeTarget: mergeTarget)),
           )
         ],
       ),

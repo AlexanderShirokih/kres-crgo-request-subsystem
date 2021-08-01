@@ -52,12 +52,6 @@ class AddNewWorkSheetTabView extends HookWidget {
           icon: const FaIcon(FontAwesomeIcons.file),
         ),
         _buildItemTile(
-          onTap: _onCreate(WorksheetCreationMode.importNative),
-          title: 'Импорт из другого документа',
-          tooltip: 'Добавить листы из другого документа',
-          icon: const FaIcon(FontAwesomeIcons.fileImport),
-        ),
-        _buildItemTile(
           onTap: _onCreate(WorksheetCreationMode.import),
           title: 'Импорт файла заявок',
           tooltip:

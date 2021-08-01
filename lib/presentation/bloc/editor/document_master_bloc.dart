@@ -31,7 +31,7 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
   /// Creates new [DocumentMasterBloc] instance for [document].
   DocumentMasterBloc(
     this._documentManager,
-      this._dialogService,
+    this._dialogService,
     this._navigator,
   ) : super(const NoOpenedDocumentsState()) {
     _subscription = Rx.combineLatest2(
@@ -56,6 +56,10 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
       await _deletePage(event.target);
     } else if (event is CreatePage) {
       await _createNewPage();
+    } else if (event is ImportPage) {
+      await _importPage();
+    } else if (event is ImportMegaBillingRequests) {
+      await _importMegaBilling();
     } else if (event is SaveEvent) {
       yield* _saveDocument(event.changePath, event.popAfterSave);
     } else if (event is WorksheetMasterSearchEvent) {
@@ -74,6 +78,14 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
   Future<void> _deletePage(Document target) => _documentManager.close(target);
 
   Future<void> _createNewPage() => _documentManager.createNew();
+
+  Future<void> _importPage() async {
+    _navigator.pushReplacementNamed('/document/open?pickPages=true');
+  }
+
+  Future<void> _importMegaBilling() async {
+    _navigator.pushReplacementNamed('/document/import/requests');
+  }
 
   Stream<DocumentMasterState> _setDocuments(
     Document? selected,

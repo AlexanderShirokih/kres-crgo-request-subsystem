@@ -34,7 +34,6 @@ class DocumentManagerModule extends Module {
             navigator: Modular.to,
             documentManager: Modular.get(),
             importService: NativeImporterService(
-              Modular.get(),
               tableChooser: ((args.queryParams['pickPages'] == 'true'))
                   ? (tables) => showDialog<List<Worksheet>>(
                         context: context,
@@ -63,7 +62,7 @@ class DocumentManagerModule extends Module {
               ImportFileChooser.forType(ImportType.excelRequests),
             ),
           ),
-          child: const RequestsImporterScreen(),
+          child: RequestsImporterScreen(mergeTarget: _findMergeTarget(args)),
         );
       },
     ),
@@ -85,9 +84,19 @@ class DocumentManagerModule extends Module {
               ImportFileChooser.forType(ImportType.excelCounters),
             ),
           ),
-          child: const CountersImportScreen(),
+          child: CountersImportScreen(mergeTarget: _findMergeTarget(args)),
         );
       },
     ),
   ];
+
+  static Document? _findMergeTarget(ModularArguments args) {
+    final data = args.data ?? {};
+
+    if (data['target'] != null && data['target'] is Document) {
+      return data['target'] as Document;
+    }
+
+    return null;
+  }
 }

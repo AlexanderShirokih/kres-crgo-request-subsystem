@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/export.dart';
+import 'package:kres_requests2/domain/models/recent_document_info.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'export_file_chooser.dart';
@@ -12,6 +14,9 @@ class DocumentManager {
   final BehaviorSubject<List<Document>> _openedDocuments;
   final BehaviorSubject<int> _selectedIndex;
 
+  /// Recent documents controller to add saved items into recent documents list
+  final StreamedRepositoryController<RecentDocumentInfo> _repositoryController;
+
   /// Interface that returns a save path based on [Document] current
   /// working directory
   final ExportFileChooser _savePathChooser;
@@ -20,8 +25,11 @@ class DocumentManager {
   final DocumentSaver _documentSaver;
 
   /// Creates a new document manager with empty document
-  DocumentManager(this._savePathChooser, this._documentSaver)
-      : _openedDocuments = BehaviorSubject.seeded([]),
+  DocumentManager(
+    this._savePathChooser,
+    this._documentSaver,
+    this._repositoryController,
+  )   : _openedDocuments = BehaviorSubject.seeded([]),
         _selectedIndex = BehaviorSubject();
 
   /// Creates a new document manager for document instances.
@@ -29,6 +37,7 @@ class DocumentManager {
   DocumentManager.forDocuments(
     this._savePathChooser,
     this._documentSaver,
+    this._repositoryController,
     List<Document> documents,
   )   : _openedDocuments = BehaviorSubject.seeded(documents),
         _selectedIndex = BehaviorSubject.seeded(0) {
@@ -149,6 +158,10 @@ class DocumentManager {
       yield DocumentSavingState.saving;
 
       await currentDocument.save(_documentSaver);
+
+      // Register file in the recent documents list
+      _repositoryController.add(RecentDocumentInfo(path: savePath));
+      await _repositoryController.commit();
 
       yield DocumentSavingState.saved;
     }

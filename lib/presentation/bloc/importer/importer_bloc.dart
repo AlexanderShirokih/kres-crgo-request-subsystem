@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/dialog_service.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/domain/service/file_picker_service.dart';
@@ -65,7 +66,11 @@ class ImporterBloc extends Bloc<ImporterEvent, BaseState> {
             -1;
 
         if (!alreadyOpened) {
-          await importService.importDocument(resultPath, documentManager);
+          await importService.importDocument(
+            resultPath,
+            documentManager,
+            event.mergeTarget,
+          );
         }
 
         navigateToEditor();

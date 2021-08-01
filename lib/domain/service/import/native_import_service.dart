@@ -4,24 +4,19 @@ import 'dart:io';
 import 'package:kres_requests2/data/editor/json_document_factory.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/service/document_manager.dart';
 
 import 'document_import_service.dart';
 
 typedef MultiTableChooser = Future<List<Worksheet>> Function(List<Worksheet>);
 
 /// Loads documents from native file format
-class NativeImporterService implements DocumentImporter {
+class NativeImporterService extends DocumentImporter {
   final MultiTableChooser? tableChooser;
-  final StreamedRepositoryController<RecentDocumentInfo> _repositoryController;
 
-  const NativeImporterService(
-    this._repositoryController, {
-    this.tableChooser,
-  });
+  const NativeImporterService({this.tableChooser});
 
   @override
-  Future<bool> importDocument(String filePath, DocumentManager manager) async {
+  Future<Document?> doImport(String filePath) async {
     final documentFile = File(filePath);
 
     final fileContent = await documentFile.readAsString();
@@ -34,17 +29,7 @@ class NativeImporterService implements DocumentImporter {
         ? document
         : await _chooseWorksheets(document, tableChooser!);
 
-    // Register file in the recent documents list
-    // TODO: MOVE THIS CODE TO THE [DocumentManager]
-    _repositoryController.add(RecentDocumentInfo(path: documentFile));
-    await _repositoryController.commit();
-
-    // Register document in the document manager
-    if (optDocument != null) {
-      manager.addDocument(optDocument);
-    }
-
-    return optDocument != null;
+    return optDocument;
   }
 
   Future<Document?> _chooseWorksheets(

@@ -31,19 +31,18 @@ class DocumentFilter {
 
     searchText = searchText.toLowerCase();
 
-    return Map.fromIterable(ws,
-        key: (worksheet) => worksheet,
-        value: (worksheet) => worksheet.requests.where((Request request) {
-              return (request.printableAccountId.contains(searchText) ||
-                  request.name.toLowerCase().contains(searchText) ||
-                  request.address.toLowerCase().contains(searchText) ||
-                  (request.counter?.mainInfo
-                          .toLowerCase()
-                          .contains(searchText) ??
-                      false) ||
-                  (request.additionalInfo?.toLowerCase().contains(searchText) ??
-                      false));
-            }).toList());
+    return {
+      for (var worksheet in ws)
+        worksheet: worksheet.requests.where((Request request) {
+          return (request.printableAccountId.contains(searchText) ||
+              request.name.toLowerCase().contains(searchText) ||
+              request.address.toLowerCase().contains(searchText) ||
+              (request.counter?.mainInfo.toLowerCase().contains(searchText) ??
+                  false) ||
+              (request.additionalInfo?.toLowerCase().contains(searchText) ??
+                  false));
+        }).toList()
+    };
   }
 
   /// Closes internal resources
