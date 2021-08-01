@@ -10,6 +10,7 @@ import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_bl
 import 'package:kres_requests2/presentation/editor/widgets/worksheet_editor_view.dart';
 import 'package:kres_requests2/presentation/editor/widgets/worksheet_page_controller.dart';
 import 'package:kres_requests2/presentation/editor/worksheet_config_view/worksheet_config_view.dart';
+import 'package:kres_requests2/presentation/editor/worksheet_navigation_routes.dart';
 
 /// Widget that displays content of the document.
 /// Left side contains a page switcher.
@@ -71,7 +72,11 @@ class DocumentView extends HookWidget {
 
                   /// TODO: Use common bloc or create WorksheetModule
                   create: (_) => WorksheetBloc(
-                    worksheetService: Modular.get(),
+                    Modular.get<WorksheetService>(),
+                    WorksheetNavigationRoutesImpl(
+                      context,
+                      Modular.get(),
+                    ),
                   )..add(SetCurrentWorksheetEvent(e)),
                   child: WorksheetEditorView(),
                 ))

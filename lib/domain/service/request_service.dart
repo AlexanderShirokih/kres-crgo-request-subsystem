@@ -1,4 +1,6 @@
+import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/service/document_manager.dart';
 
 import '../repositories.dart';
 import '../validator.dart';
@@ -8,30 +10,37 @@ class RequestService {
   /// Repository for fetching request types list
   final Repository<RequestType> _requestTypeRepository;
 
-  // Validator for checking fields completion in [RequestEntity]
+  /// Validator for checking fields completion in [RequestEntity]
   final Validator<Request> _requestValidator;
 
-  final Document _document;
+  /// Document manager instance
+  final DocumentManager _documentManager;
 
   const RequestService(
     this._requestTypeRepository,
     this._requestValidator,
-    this._document,
+    this._documentManager,
   );
 
-  /// Moves [requests] from [source] worksheet to [target] worksheet.
+  /// Moves [requests] from [sourceWorksheet]  to [targetWorksheet].
   /// If [removeFromSource] is `true` then [requests] will permanently moved
-  /// to [target] worksheet, otherwise it will be *copied*.
+  /// to [targetWorksheet], otherwise it will be *copied*.
+  /// If [targetWorksheet] is `null` new worksheet on [targetDocument] will be created.
   void moveRequests({
-    required Worksheet? target,
-    required Worksheet source,
+    required MoveSource source,
+    required Document targetDocument,
+    required Worksheet? targetWorksheet,
     required bool removeFromSource,
     required List<Request> requests,
   }) {
-    final sourceEditor = _document.worksheets.edit(source);
-    final targetEditor = target == null
-        ? _document.worksheets.add(name: source.name, activate: true)
-        : _document.worksheets.edit(target);
+    final sourceWorksheet = source.worksheet;
+    final sourceEditor = source.document.worksheets.edit(sourceWorksheet);
+
+    // When target worksheet is `null` we need to create a new one
+    final targetEditor = targetWorksheet == null
+        ? targetDocument.worksheets
+            .add(name: sourceWorksheet.name, activate: true)
+        : targetDocument.worksheets.edit(targetWorksheet);
 
     targetEditor.addAll(requests).commit();
 
@@ -135,13 +144,46 @@ class RequestService {
     }
   }
 
-  /// Returns [Worksheet]s that can be used as target worksheets.
-  /// Actually it's all worksheets except [sourceWorksheet] from the current
-  /// document
-  Iterable<Worksheet> getTargetWorksheets(Worksheet sourceWorksheet) =>
-      _document.worksheets.list.where(
-        (worksheet) => worksheet != sourceWorksheet,
-      );
+  /// Returns [Worksheet]s in the documents that can be used as destination worksheets.
+  /// Actually it's all worksheets except [sourceWorksheet] from the all opened
+  /// documents
+  Iterable<MoveTarget> getTargetWorksheets(Worksheet sourceWorksheet) sync* {
+    for (final document in _documentManager.opened) {
+      final worksheets = document.worksheets.list
+          .where(
+            (worksheet) => worksheet != sourceWorksheet,
+          )
+          .toList(growable: false);
+
+      yield MoveTarget(worksheets, document);
+    }
+  }
+}
+
+/// Simple class that pairs worksheet with its document
+class MoveSource extends Equatable {
+  final Document document;
+  final Worksheet worksheet;
+
+  const MoveSource(this.document, this.worksheet);
+
+  @override
+  List<Object?> get props => [document, worksheet];
+}
+
+/// Describes a list of worksheets that can be used as move destination
+/// and its owning document.
+class MoveTarget extends Equatable {
+  /// List of destination targets
+  final List<Worksheet> worksheets;
+
+  /// Owning document for the destination targets
+  final Document document;
+
+  const MoveTarget(this.worksheets, this.document);
+
+  @override
+  List<Object?> get props => [worksheets, document];
 }
 
 /// Interface that keeps raw field of request info

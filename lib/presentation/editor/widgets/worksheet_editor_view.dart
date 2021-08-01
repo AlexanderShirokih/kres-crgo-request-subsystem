@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_bloc.dart';
-import 'package:kres_requests2/presentation/editor/request_editor_dialog/request_editor_dialog.dart';
 import 'package:kres_requests2/presentation/editor/requests_move_dialog/requests_move_dialog.dart';
 import 'package:kres_requests2/presentation/editor/widgets/request_item_view.dart';
 
@@ -79,7 +76,8 @@ class WorksheetEditorView extends HookWidget {
             child: FloatingActionButton(
               child: const FaIcon(FontAwesomeIcons.plus),
               tooltip: "Добавить заявку",
-              onPressed: () => _showRequestEditorDialog(context, state),
+              onPressed: () =>
+                  context.read<WorksheetBloc>().add(const EditRequestEvent()),
             ),
           ),
         ),
@@ -133,7 +131,8 @@ class WorksheetEditorView extends HookWidget {
           onLongPress: () => context
               .read<WorksheetBloc>()
               .add(RequestSelectionEvent(SelectionAction.begin, request)),
-          onDoubleTap: () => _showRequestEditorDialog(context, state, request),
+          onDoubleTap: () =>
+              context.read<WorksheetBloc>().add(EditRequestEvent(request)),
           child: RequestItemView(
             request: request,
             position: index + 1,
@@ -171,22 +170,6 @@ class WorksheetEditorView extends HookWidget {
       },
     );
   }
-
-  void _showRequestEditorDialog(
-    BuildContext ctx,
-    WorksheetDataState state, [
-    Request? initial,
-  ]) =>
-      showDialog(
-        context: ctx,
-        barrierDismissible: false,
-        builder: (_) => RequestEditorDialog(
-          worksheet: state.worksheet,
-          document: state.document,
-          validator: Modular.get(),
-          initial: initial,
-        ),
-      );
 
   Widget _createSelectionContextMenu({
     required BuildContext context,
@@ -286,6 +269,7 @@ class WorksheetEditorView extends HookWidget {
     showDialog(
       context: context,
       builder: (_) => RequestsMoveDialog(
+        sourceDocument: state.document,
         sourceWorksheet: state.worksheet,
         movingRequests: state.selectionList.toList(growable: false),
         moveMethod: moveMethod,

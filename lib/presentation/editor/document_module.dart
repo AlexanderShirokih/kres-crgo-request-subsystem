@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/editor/document_filter.dart';
+import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/domain/service/document_service.dart';
+import 'package:kres_requests2/domain/service/request_service.dart';
 import 'package:kres_requests2/domain/service/worksheet_service.dart';
 import 'package:kres_requests2/presentation/bloc/editor/doc_view/document_bloc.dart';
 import 'package:kres_requests2/presentation/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
@@ -21,6 +23,13 @@ class DocumentScope extends WidgetModule {
   List<Bind<Object>> get binds => [
         Bind.singleton<DocumentFilter>(
           (i) => DocumentFilter(document),
+        ),
+        Bind.singleton<RequestService>(
+          (i) => RequestService(
+            i<Repository<RequestType>>(),
+            i<Validator<Request>>(),
+            i<DocumentManager>(),
+          ),
         ),
         Bind.singleton<WorksheetService>(
           (i) => WorksheetService(document, i<Repository<Employee>>()),

@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/service/request_service.dart';
 import 'package:kres_requests2/presentation/bloc.dart';
@@ -13,19 +14,26 @@ class _RequestServiceMock extends Mock implements RequestService {}
 void main() {
   late RequestService service;
   late Worksheet worksheet;
+  late Document document;
+  late IModularNavigator navigator;
+
+  MoveSource getSource() => MoveSource(document, worksheet);
 
   setUp(() {
     service = _RequestServiceMock();
     worksheet = WorksheetMock();
+    navigator = NavigatorMock();
+    document = DocumentMock();
 
     registerFallbackValue(worksheet);
-    when(() => service.getTargetWorksheets(any())).thenReturn(const Iterable.empty());
+    when(() => service.getTargetWorksheets(any()))
+        .thenReturn(const Iterable.empty());
   });
 
   blocTest<RequestsMoveDialogBloc, BaseState>(
     'Emits [DataState<RequestsMoveDialogData>] when [FetchDataEvent] is added ',
-    build: () => RequestsMoveDialogBloc(service),
-    act: (bloc) => bloc.add(FetchDataEvent(worksheet)),
+    build: () => RequestsMoveDialogBloc(service, navigator),
+    act: (bloc) => bloc.add(FetchDataEvent(getSource())),
     expect: () => [
       isA<DataState<RequestsMoveDialogData>>(),
     ],
@@ -36,13 +44,14 @@ void main() {
 
   blocTest<RequestsMoveDialogBloc, BaseState>(
     'Moves requests when [MoveRequestsEvent] is added ',
-    build: () => RequestsMoveDialogBloc(service),
-    seed: () => DataState(RequestsMoveDialogData(worksheet, const [])),
-    expect: () => [CompletedState()],
+    build: () => RequestsMoveDialogBloc(service, navigator),
+    seed: () => DataState(RequestsMoveDialogData(getSource(), const [])),
     act: (bloc) => bloc.add(
-      const MoveRequestsEvent(
-        requests: [],
+      MoveRequestsEvent(
+        requests: const [],
         removeFromSource: false,
+        targetDocument: document,
+        targetWorksheet: null,
       ),
     ),
     verify: (_) {
@@ -50,10 +59,13 @@ void main() {
         () => service.moveRequests(
           removeFromSource: false,
           requests: [],
-          target: any(named: "target"),
-          source: worksheet,
+          targetWorksheet: any(named: "targetWorksheet"),
+          targetDocument: any(named: "targetDocument"),
+          source: getSource(),
         ),
       ).called(1);
+
+      verify(() => navigator.pop()).called(1);
     },
   );
 }

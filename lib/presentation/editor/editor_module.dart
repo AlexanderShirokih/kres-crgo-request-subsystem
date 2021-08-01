@@ -13,10 +13,6 @@ class EditorModule extends Module {
   List<Bind<Object>> get binds => [
         // Request entity related binds
         Bind.factory<MappedValidator<Request>>((i) => RequestValidator()),
-        // TODO: Replace factories with a separate modules to drop argument dependency
-        // Bind.factory<RequestService>(
-        //   (i) => RequestService(i(), i(), i.args!.data as Document),
-        // ),
         Bind.factory(
           (i) => DocumentMasterBloc(
             i<DocumentManager>(),

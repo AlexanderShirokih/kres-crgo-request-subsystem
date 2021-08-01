@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/request_service.dart';
@@ -47,8 +48,13 @@ class RequestEditorBloc extends Bloc<RequestEditorEvent, BaseState> {
   /// Service for handling actions on [Request]
   final RequestService service;
 
+  final IModularNavigator navigator;
+
   /// Creates new [RequestEditorBloc]
-  RequestEditorBloc({required this.service}) : super(const InitialState());
+  RequestEditorBloc({
+    required this.service,
+    required this.navigator,
+  }) : super(const InitialState());
 
   @override
   Stream<BaseState> mapEventToState(RequestEditorEvent event) async* {
@@ -66,7 +72,7 @@ class RequestEditorBloc extends Bloc<RequestEditorEvent, BaseState> {
       final data = currentState.data;
 
       try {
-        // Check request and try to save it
+        // Check the request and try to save it
         service.saveRequest(
           updatedInfo: event,
           document: data.document,
@@ -74,7 +80,8 @@ class RequestEditorBloc extends Bloc<RequestEditorEvent, BaseState> {
           current: data.current,
         );
 
-        yield CompletedState();
+        // Close the dialog
+        navigator.pop();
       } on ValidationError catch (e) {
         // We have some errors in field completion
         final currentState = state;

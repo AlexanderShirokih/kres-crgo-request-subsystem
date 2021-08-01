@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/service/worksheet_service.dart';
 import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_bloc.dart';
+import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_navigation_routes.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -9,14 +10,19 @@ import '../../common_mocks.dart';
 
 class _WorksheetServiceMock extends Mock implements WorksheetService {}
 
+class _WorksheetNavigationRoutesMock extends Mock
+    implements WorksheetNavigationRoutes {}
+
 void main() {
   late WorksheetService service;
   late Document document;
   late Worksheet worksheet;
   late Request prev;
   late Request curr;
+  late WorksheetNavigationRoutes routes;
 
   setUp(() {
+    routes = _WorksheetNavigationRoutesMock();
     service = _WorksheetServiceMock();
     worksheet = WorksheetMock();
     document = DocumentMock();
@@ -31,13 +37,13 @@ void main() {
 
   blocTest<WorksheetBloc, WorksheetState>(
     'Ensure initial state is correct',
-    build: () => WorksheetBloc(worksheetService: service),
+    build: () => WorksheetBloc(service, routes),
     verify: (e) => expect(e.state, isA<WorksheetInitialState>()),
   );
 
   blocTest<WorksheetBloc, WorksheetState>(
     'Emits [WorksheetDataState] when [SetCurrentWorksheetEvent] is added',
-    build: () => WorksheetBloc(worksheetService: service),
+    build: () => WorksheetBloc(service, routes),
     act: (bloc) => bloc.add(SetCurrentWorksheetEvent(worksheet)),
     expect: () => [
       WorksheetDataState(
@@ -55,7 +61,7 @@ void main() {
 
   blocTest<WorksheetBloc, WorksheetState>(
     'Calls swapRequest() when [SwapRequestsEvent] added',
-    build: () => WorksheetBloc(worksheetService: service),
+    build: () => WorksheetBloc(service, routes),
     seed: () => WorksheetDataState(
       document: document,
       worksheet: worksheet,

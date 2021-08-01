@@ -22,6 +22,7 @@ class RequestEditorDialog extends StatelessWidget {
   /// Target document
   final Document document;
 
+  /// Validator instance to validate request
   final MappedValidator<Request> validator;
 
   const RequestEditorDialog({
@@ -35,8 +36,10 @@ class RequestEditorDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<RequestEditorBloc>(
-      create: (_) => RequestEditorBloc(service: Modular.get())
-        ..add(SetRequestEvent(
+      create: (_) => RequestEditorBloc(
+        service: Modular.get(),
+        navigator: Modular.to,
+      )..add(SetRequestEvent(
           document: document,
           worksheet: worksheet,
           request: initial,
@@ -53,11 +56,10 @@ class RequestEditorDialog extends StatelessWidget {
         },
         listener: (context, state) {
           if (state is ErrorState) {
+            /// Inject DialogService
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text('Ошибка сохранения заявки: ${state.error}'),
             ));
-          } else if (state is CompletedState) {
-            Navigator.pop(context);
           }
         },
       ),
@@ -120,7 +122,7 @@ class _RequestEditorView extends HookWidget {
               _createInputField("ФИО", "ФИО не должно быть пустым", name),
               const SizedBox(height: 8.0),
               _createInputField(
-                  "Адрес", "Адрес не должен быть пустым", address),
+                  "Адрес", "Адрес не должен быть пустым", address, limit: 50),
               const SizedBox(height: 8.0),
               _createPhoneAndConnectionPointRow(phone, tp, line, pillar),
               const SizedBox(height: 28),

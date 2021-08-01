@@ -8,13 +8,13 @@ abstract class RequestMoveEvent extends Equatable {
 
 /// Used to trigger initial data fetching
 class FetchDataEvent extends RequestMoveEvent {
-  /// Current source worksheet from which request will copying
-  final Worksheet sourceWorksheet;
+  /// Current source worksheet and document from which request will copying
+  final MoveSource source;
 
-  const FetchDataEvent(this.sourceWorksheet) : super._();
+  const FetchDataEvent(this.source) : super._();
 
   @override
-  List<Object?> get props => [sourceWorksheet];
+  List<Object?> get props => [source];
 }
 
 /// Triggers moving requests
@@ -25,15 +25,24 @@ class MoveRequestsEvent extends RequestMoveEvent {
   /// If `true` then moving requests will be removed from the source worksheet
   final bool removeFromSource;
 
-  /// Target worksheet. If `null` new worksheet will be created
-  final Worksheet? target;
+  /// The document owning [targetWorksheet]
+  final Document targetDocument;
+
+  /// Request move target. If worksheet is `null` new worksheet will be created.
+  final Worksheet? targetWorksheet;
 
   const MoveRequestsEvent({
-    this.target,
+    required this.targetDocument,
+    required this.targetWorksheet,
     required this.requests,
     required this.removeFromSource,
   }) : super._();
 
   @override
-  List<Object?> get props => [requests, removeFromSource, target];
+  List<Object?> get props => [
+        targetDocument,
+        targetWorksheet,
+        requests,
+        removeFromSource,
+      ];
 }

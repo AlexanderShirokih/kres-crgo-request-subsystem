@@ -77,3 +77,14 @@ class SetCurrentWorksheetEvent extends WorksheetEvent {
   @override
   List<Object?> get props => [worksheet];
 }
+
+/// Event used to edit existing request or create a new request
+class EditRequestEvent extends WorksheetEvent {
+  /// Request to edit
+  final Request? request;
+
+  const EditRequestEvent([this.request]) : super._();
+
+  @override
+  List<Object?> get props => [request];
+}

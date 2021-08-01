@@ -1,8 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:kres_requests2/presentation/bloc/editor/request_editor_dialog/request_editor_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/request_service.dart';
 import 'package:kres_requests2/presentation/bloc.dart';
+import 'package:kres_requests2/presentation/bloc/editor/request_editor_dialog/request_editor_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
@@ -15,12 +16,14 @@ void main() {
   late Document document;
   late Worksheet worksheet;
   late Request request;
+  late IModularNavigator navigator;
 
   setUp(() {
     service = _RequestEditorServiceMock();
     document = DocumentMock();
     worksheet = WorksheetMock();
     request = RequestMock();
+    navigator = NavigatorMock();
 
     when(() => service.createTemporaryRequest()).thenReturn(request);
     when(() => service.fetchRequestTypes(any())).thenAnswer((_) async => []);
@@ -29,7 +32,7 @@ void main() {
   blocTest<RequestEditorBloc, BaseState>(
     'Emits [DataState<RequestEditorData>] when [SetRequestEvent] is added '
     'and request not present',
-    build: () => RequestEditorBloc(service: service),
+    build: () => RequestEditorBloc(service: service, navigator: navigator),
     act: (bloc) => bloc.add(SetRequestEvent(
       worksheet: worksheet,
       document: document,
@@ -46,7 +49,7 @@ void main() {
   blocTest<RequestEditorBloc, BaseState>(
     'Emits [DataState<RequestEditorData>] when [SetRequestEvent] is added '
     'and request is present',
-    build: () => RequestEditorBloc(service: service),
+    build: () => RequestEditorBloc(service: service, navigator: navigator),
     act: (bloc) => bloc.add(SetRequestEvent(
       worksheet: worksheet,
       document: document,

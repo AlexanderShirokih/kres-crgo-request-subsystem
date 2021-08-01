@@ -4,21 +4,26 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/worksheet_service.dart';
+import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_navigation_routes.dart';
 import 'package:meta/meta.dart';
 
 part 'worksheet_event.dart';
+
 part 'worksheet_state.dart';
 
 /// BLoC responsible for control worksheet state.
 class WorksheetBloc extends Bloc<WorksheetEvent, WorksheetState> {
   /// [WorksheetService] to manage worksheet updates
-  final WorksheetService worksheetService;
+  final WorksheetService _worksheetService;
+
+  final WorksheetNavigationRoutes _worksheetNavigationRoutes;
 
   StreamSubscription<Worksheet>? _targetSubscription;
 
-  WorksheetBloc({
-    required this.worksheetService,
-  }) : super(const WorksheetInitialState());
+  WorksheetBloc(
+    this._worksheetService,
+    this._worksheetNavigationRoutes,
+  ) : super(const WorksheetInitialState());
 
   @override
   Stream<WorksheetState> mapEventToState(
@@ -26,6 +31,8 @@ class WorksheetBloc extends Bloc<WorksheetEvent, WorksheetState> {
   ) async* {
     if (event is SetCurrentWorksheetEvent) {
       yield* _keepSelectionState(_handleWorksheetUpdate(event.worksheet));
+    } else if (event is EditRequestEvent) {
+      yield* _editRequest(event.request);
     } else if (event is SwapRequestsEvent) {
       yield* _swapRequests(event.from, event.to);
     } else if (event is RequestSelectionEvent) {
@@ -39,7 +46,18 @@ class WorksheetBloc extends Bloc<WorksheetEvent, WorksheetState> {
   Stream<WorksheetState> _swapRequests(Request from, Request to) async* {
     final currentState = state;
     if (currentState is WorksheetDataState) {
-      worksheetService.swapRequest(currentState.worksheet, from, to);
+      _worksheetService.swapRequest(currentState.worksheet, from, to);
+    }
+  }
+
+  Stream<WorksheetState> _editRequest(Request? request) async* {
+    final currentState = state;
+    if (currentState is WorksheetDataState) {
+      await _worksheetNavigationRoutes.showRequestEditorDialog(
+        currentState.worksheet,
+        currentState.document,
+        request,
+      );
     }
   }
 
@@ -54,7 +72,7 @@ class WorksheetBloc extends Bloc<WorksheetEvent, WorksheetState> {
     } else {
       // First time emitting
       yield WorksheetDataState(
-        document: worksheetService.document,
+        document: _worksheetService.document,
         requests: worksheet.requests,
         worksheet: worksheet,
       );
@@ -64,7 +82,7 @@ class WorksheetBloc extends Bloc<WorksheetEvent, WorksheetState> {
 
     // Subscribe to worksheet updates
     _targetSubscription =
-        worksheetService.listenOn(worksheet).listen((updatedWorksheet) {
+        _worksheetService.listenOn(worksheet).listen((updatedWorksheet) {
       add(SetCurrentWorksheetEvent(updatedWorksheet));
     });
   }
@@ -115,7 +133,7 @@ class WorksheetBloc extends Bloc<WorksheetEvent, WorksheetState> {
               currentState,
             );
           case SelectionAction.dropSelected:
-            worksheetService.removeRequests(
+            _worksheetService.removeRequests(
                 worksheet, currentState.selectionList.toList());
             return currentState.copyWith();
           case SelectionAction.cancel:

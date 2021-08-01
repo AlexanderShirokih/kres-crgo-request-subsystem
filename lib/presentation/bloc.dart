@@ -41,9 +41,3 @@ class ErrorState extends BaseState {
   @override
   List<Object?> get props => [error, stackTrace];
 }
-
-/// Used when work is done. May be used to navigate back or close a dialog.
-class CompletedState extends BaseState {
-  @override
-  List<Object?> get props => [];
-}
