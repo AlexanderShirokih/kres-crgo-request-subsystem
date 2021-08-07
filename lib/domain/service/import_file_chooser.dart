@@ -1,5 +1,6 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:kres_requests2/domain/usecases/storage/update_last_working_directory.dart';
+import 'package:kres_requests2/domain/usecases/usecases.dart';
 
 import 'import/document_import_service.dart';
 
@@ -15,54 +16,55 @@ abstract class ImportFileChooser {
   ) {
     switch (type) {
       case ImportType.excelRequests:
-        return _FileChooserImpl(
-          'Файлы Excel 97-2003',
-          ['xls'],
-          getWorkingDirectory,
-          updateWorkingDirectory,
+        return FileChooserImpl(
+          label: 'Файлы Excel 97-2003',
+          extensions: ['xls'],
+          getWorkingDirectory: getWorkingDirectory,
+          updateWorkingDirectory: updateWorkingDirectory,
         );
       case ImportType.excelCounters:
-        return _FileChooserImpl(
-          'Файлы Excel 2007-365',
-          ['xlsx'],
-          getWorkingDirectory,
-          updateWorkingDirectory,
+        return FileChooserImpl(
+          label: 'Файлы Excel 2007-365',
+          extensions: ['xlsx'],
+          getWorkingDirectory: getWorkingDirectory,
+          updateWorkingDirectory: updateWorkingDirectory,
         );
       case ImportType.native:
-        return _FileChooserImpl(
-          'Документ заявок',
-          ['json'],
-          getWorkingDirectory,
-          updateWorkingDirectory,
+        return FileChooserImpl(
+          label: 'Документ заявок',
+          extensions: ['json'],
+          getWorkingDirectory: getWorkingDirectory,
+          updateWorkingDirectory: updateWorkingDirectory,
         );
     }
   }
 }
 
-class _FileChooserImpl implements ImportFileChooser {
-  final String fileLabel;
+class FileChooserImpl implements ImportFileChooser {
+  final String label;
   final List<String> extensions;
-  final GetLastWorkingDirectory getWorkingDirectory;
-  final UpdateLastWorkingDirectory updateWorkingDirectory;
+  final AsyncUseCase<String> getWorkingDirectory;
+  final UpdateLastWorkingDirectory? updateWorkingDirectory;
 
-  _FileChooserImpl(
-    this.fileLabel,
-    this.extensions,
-    this.getWorkingDirectory,
+  FileChooserImpl({
+    required this.label,
+    required this.extensions,
+    required this.getWorkingDirectory,
     this.updateWorkingDirectory,
-  );
+  });
 
   @override
   Future<String?> pickFile() async {
     return await openFile(
       initialDirectory: await getWorkingDirectory(),
       confirmButtonText: 'Открыть',
-      acceptedTypeGroups: [
-        XTypeGroup(label: fileLabel, extensions: extensions)
-      ],
+      acceptedTypeGroups: [XTypeGroup(label: label, extensions: extensions)],
     ).then((file) async {
       final path = file?.path;
-      await updateWorkingDirectory(path);
+
+      if (updateWorkingDirectory != null) {
+        await updateWorkingDirectory!(path);
+      }
 
       return path;
     });

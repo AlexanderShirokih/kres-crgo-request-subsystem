@@ -1,4 +1,5 @@
 import 'package:kres_requests2/data/datasource/app_database.dart';
+import 'package:kres_requests2/data/export/table_exporter.dart';
 import 'package:kres_requests2/data/models/request_type.dart';
 import 'package:kres_requests2/data/repository/encoder.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
@@ -31,7 +32,8 @@ class RequestTypeSerializer
 }
 
 /// Data access object for [RequestType] objects
-class RequestTypeDao extends BaseDao<RequestType, RequestTypeEntity> {
+class RequestTypeDao extends BaseDao<RequestType, RequestTypeEntity>
+    with ExportableEntity {
   const RequestTypeDao(AppDatabase database)
       : super(
           const RequestTypeSerializer(),

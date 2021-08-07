@@ -1,25 +1,20 @@
-// App database holder
 import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:kres_requests2/domain/usecases/storage/database_path.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+/// App database holder
 class AppDatabase extends Disposable {
-  static const String _dbName = 'main.db';
 
-  static final AppDatabase _instance = AppDatabase._();
+  final GetDatabasePath getDatabasePath;
 
   Completer<Database>? _dbOpenCompleter;
   Database? _openedInstance;
 
-  AppDatabase._();
-
-  /// Returns instance to database singleton
-  static AppDatabase get instance => _instance;
+  AppDatabase(this.getDatabasePath);
 
   /// Returns opened database connection
   Future<Database> get database async {
@@ -36,9 +31,8 @@ class AppDatabase extends Disposable {
     // Init ffi loader if needed.
     sqfliteFfiInit();
 
-    // Get application files directory
-    final appDir = await getApplicationSupportDirectory();
-    final dbPath = join(appDir.path, _dbName);
+    // Get the database path
+    final dbPath = await getDatabasePath();
 
     // Open the database
     var databaseFactory = databaseFactoryFfi;

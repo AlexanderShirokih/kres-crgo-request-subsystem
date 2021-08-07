@@ -1,4 +1,5 @@
 import 'package:kres_requests2/data/datasource/app_database.dart';
+import 'package:kres_requests2/data/export/table_exporter.dart';
 import 'package:kres_requests2/data/models/position.dart';
 import 'package:kres_requests2/data/repository/encoder.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
@@ -29,7 +30,8 @@ class PositionSerializer
 }
 
 /// Data access object for [Position] objects
-class PositionDao extends BaseDao<Position, PositionEntity> {
+class PositionDao extends BaseDao<Position, PositionEntity>
+    with ExportableEntity {
   const PositionDao(AppDatabase database)
       : super(
           const PositionSerializer(),

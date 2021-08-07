@@ -9,11 +9,15 @@ abstract class SettingsRepository {
 
   Future<String?> get lastUsedPrinter;
 
+  Future<String?> get databasePath;
+
   Future<void> setJavaPath(String? file);
 
   Future<void> setLastUsedDirectory(String? directory);
 
   Future<void> setLastUsedPrinter(String? printer);
+
+  Future<void> setDatabasePath(String? databasePath);
 
   const SettingsRepository();
 
@@ -24,6 +28,7 @@ class _PrefsSettingsRepository extends SettingsRepository {
   static const _kLastUsedPrinter = 'last_printer';
   static const _kJavaPath = 'java_home';
   static const _kLastUsedDirectory = 'last_used_directory';
+  static const _kDbPath = 'database_path';
 
   Completer<SharedPreferences>? _prefsCompleter;
 
@@ -38,47 +43,41 @@ class _PrefsSettingsRepository extends SettingsRepository {
   }
 
   @override
-  Future<String?> get javaPath =>
-      _prefs.then((prefs) => prefs.getString(_kJavaPath));
+  Future<String?> get javaPath => _getString(_kJavaPath);
 
   @override
-  Future<String?> get lastWorkingDirectory =>
-      _prefs.then((prefs) => prefs.getString(_kLastUsedDirectory));
+  Future<String?> get databasePath => _getString(_kDbPath);
 
   @override
-  Future<String?> get lastUsedPrinter =>
-      _prefs.then((prefs) => prefs.getString(_kLastUsedPrinter));
+  Future<String?> get lastWorkingDirectory => _getString(_kLastUsedDirectory);
 
   @override
-  Future<void> setJavaPath(String? path) async {
+  Future<String?> get lastUsedPrinter => _getString(_kLastUsedPrinter);
+
+  @override
+  Future<void> setJavaPath(String? path) => _setString(_kJavaPath, path);
+
+  @override
+  Future<void> setDatabasePath(String? dbPath) => _setString(_kDbPath, dbPath);
+
+  @override
+  Future<void> setLastUsedDirectory(String? directory) =>
+      _setString(_kLastUsedDirectory, directory);
+
+  @override
+  Future<void> setLastUsedPrinter(String? printer) =>
+      _setString(_kLastUsedPrinter, printer);
+
+  Future<String?> _getString(String key) =>
+      _prefs.then((prefs) => prefs.getString(key));
+
+  Future<void> _setString(String key, String? value) async {
     final prefs = await _prefs;
 
-    if (path == null) {
-      await prefs.remove(_kJavaPath);
+    if (value == null) {
+      await prefs.remove(key);
     } else {
-      await prefs.setString(_kJavaPath, path);
-    }
-  }
-
-  @override
-  Future<void> setLastUsedDirectory(String? directory) async {
-    final prefs = await _prefs;
-
-    if (directory == null) {
-      await prefs.remove(_kLastUsedDirectory);
-    } else {
-      await prefs.setString(_kLastUsedDirectory, directory);
-    }
-  }
-
-  @override
-  Future<void> setLastUsedPrinter(String? printer) async {
-    final prefs = await _prefs;
-
-    if (printer == null) {
-      await prefs.remove(_kLastUsedPrinter);
-    } else {
-      await prefs.setString(_kLastUsedPrinter, printer);
+      await prefs.setString(key, value);
     }
   }
 }

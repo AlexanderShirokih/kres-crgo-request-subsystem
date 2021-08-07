@@ -5,6 +5,7 @@ import 'package:kres_requests2/presentation/settings/employees/employees_screen.
 import 'package:kres_requests2/presentation/settings/positions/positions_screen.dart';
 import 'package:kres_requests2/presentation/settings/request_types/request_types_screen.dart';
 
+import 'db_utils/db_utils_screen.dart';
 import 'java_path_selector/java_path_selector_screen.dart';
 
 /// The settings screen. Provides access to main app preference tables and
@@ -56,6 +57,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: const FaIcon(FontAwesomeIcons.java),
         title: 'Путь к Java (JAVA_HOME)',
         builder: () => const JavaPathChooserScreen(),
+      ),
+      _NavigableItem(
+        icon: const FaIcon(FontAwesomeIcons.database),
+        title: 'База данных',
+        builder: () => const DatabaseUtilsScreen(),
       ),
     ];
     return Scaffold(

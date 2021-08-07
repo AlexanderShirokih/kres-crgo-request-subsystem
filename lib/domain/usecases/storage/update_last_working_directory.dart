@@ -2,25 +2,29 @@ import 'dart:io';
 
 import 'package:kres_requests2/domain/repository/settings_repository.dart';
 
+import '../usecases.dart';
+
 /// Gets current working directory. If directory no more exists it will be
 /// removed from the repository
-class GetLastWorkingDirectory {
+class GetLastWorkingDirectory implements AsyncUseCase<String> {
   final SettingsRepository _settingsRepository;
 
   GetLastWorkingDirectory(this._settingsRepository);
 
-  Future<String?> call() async {
+  @override
+  Future<String> call() async {
+    final currentDirectory = Directory.current.absolute.path;
     final lastDirectory = await _settingsRepository.lastWorkingDirectory;
 
     if (lastDirectory == null) {
-      return null;
+      return currentDirectory;
     }
 
     final isExists = await Directory(lastDirectory).exists();
 
     if (!isExists) {
       await _settingsRepository.setLastUsedDirectory(null);
-      return null;
+      return currentDirectory;
     }
 
     return lastDirectory;

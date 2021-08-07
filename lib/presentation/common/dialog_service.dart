@@ -46,4 +46,17 @@ class _DialogManagerState extends State<DialogManager>
       ),
     );
   }
+
+  @override
+  void showInfoMessage(String message) {
+    final messenger = ScaffoldMessenger.of(context);
+
+    messenger.removeCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 3),
+        content: Text(message),
+      ),
+    );
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:kres_requests2/data/datasource/app_database.dart';
+import 'package:kres_requests2/data/export/table_exporter.dart';
 import 'package:kres_requests2/data/models/employee.dart';
 import 'package:kres_requests2/data/models/position.dart';
 import 'package:kres_requests2/data/persistence_exception.dart';
@@ -45,7 +46,8 @@ class EmployeeEncoder
 }
 
 /// Data access object for [Employee] objects
-class EmployeeDao extends BaseDao<Employee, EmployeeEntity> {
+class EmployeeDao extends BaseDao<Employee, EmployeeEntity>
+    with ExportableEntity {
   EmployeeDao(AppDatabase database, Dao<Position, PositionEntity> positionDao)
       : super(
           EmployeeEncoder(positionDao),

@@ -2,6 +2,9 @@ abstract class IDialogManager {
   /// Shows short error [message] without blocking.
   /// Error will disappear after few seconds.
   void showErrorMessage(String message);
+
+  /// Shows short information [message].
+  void showInfoMessage(String message);
 }
 
 /// Service representing base dialogs support
@@ -22,5 +25,10 @@ class DialogService {
   /// Error will disappear after few seconds.
   void showErrorMessage(String message) {
     _manager?.showErrorMessage(message);
+  }
+
+  /// Shows short information [message].
+  void showInfoMessage(String message) {
+    _manager?.showInfoMessage(message);
   }
 }
