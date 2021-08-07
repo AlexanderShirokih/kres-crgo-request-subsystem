@@ -12,13 +12,16 @@ import 'package:kres_requests2/presentation/common/table_view.dart';
 import 'package:kres_requests2/presentation/settings/common/undoable_editor_screen.dart';
 import 'package:kres_requests2/presentation/settings/common/widgets/delete_button.dart';
 import 'package:kres_requests2/presentation/settings/common/widgets/editable_name_field.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Manages employees.
-class EmployeesScreen extends StatelessWidget {
+class EmployeesScreen extends StatelessWidget
+    implements TableRowBuilder<EmployeeData> {
   const EmployeesScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => UndoableEditorScreen(
+  Widget build(BuildContext context) =>
+      UndoableEditorScreen<EmployeeData, Employee>(
         blocBuilder: (_) => EmployeeBloc(
           Modular.get(),
           Modular.get(),
@@ -33,31 +36,8 @@ class EmployeesScreen extends StatelessWidget {
               label: Text('Группа допуска'), preferredWidth: 168.0),
           TableHeadingColumn(label: SizedBox(), preferredWidth: 60.0),
         ],
-        dataRowBuilder: _buildData,
+        dataRowBuilder: this,
       );
-
-  List<TableDataRow> _buildData(
-      UndoableBloc<EmployeeData, Employee> bloc, EmployeeData dataHolder) {
-    return dataHolder.data.map((e) {
-      return TableDataRow(
-        key: ObjectKey(e),
-        cells: [
-          EditableNameField(
-            validator: Modular.get<MappedValidator<Employee>>()
-                .findValidator<StringValidator>('name'),
-            value: e.name,
-            onChanged: (newValue) =>
-                _fireItemChanged(bloc, e, e.copy(name: newValue)),
-          ),
-          _createPositionDropdown(bloc, e, dataHolder),
-          _createGroupDropdown(bloc, e, dataHolder),
-          DeleteButton(
-            onPressed: () => bloc.add(DeleteItemEvent(e)),
-          ),
-        ],
-      );
-    }).toList();
-  }
 
   void _fireItemChanged(UndoableBloc<EmployeeData, Employee> bloc,
           Employee source, Employee updated) =>
@@ -101,4 +81,29 @@ class EmployeesScreen extends StatelessWidget {
               .toList(),
         ),
       );
+
+  @override
+  List<TableDataRow> buildDataRow(
+      BuildContext context, EmployeeData dataHolder) {
+    final bloc = context.read<UndoableBloc<EmployeeData, Employee>>();
+    return dataHolder.data.map((e) {
+      return TableDataRow(
+        key: ObjectKey(e),
+        cells: [
+          EditableNameField(
+            validator: Modular.get<MappedValidator<Employee>>()
+                .findValidator<StringValidator>('name'),
+            value: e.name,
+            onChanged: (newValue) =>
+                _fireItemChanged(bloc, e, e.copy(name: newValue)),
+          ),
+          _createPositionDropdown(bloc, e, dataHolder),
+          _createGroupDropdown(bloc, e, dataHolder),
+          DeleteButton(
+            onPressed: () => bloc.add(DeleteItemEvent(e)),
+          ),
+        ],
+      );
+    }).toList();
+  }
 }

@@ -43,6 +43,11 @@ abstract class UndoableBloc<DH extends UndoableDataHolder<E>, E extends Object>
   @override
   Stream<DataState<E, DH>> mapEventToState(UndoableDataEvent event) async* {
     if (event is RefreshDataEvent<E>) {
+      final current = state;
+      if (current is DataState<E, DH> && current.hasUnresolvedDependencies) {
+        return;
+      }
+
       yield DataState(
         current: await onRefreshData(event.data),
         hasUnsavedChanges: _controller.hasUncommittedChanges,
@@ -59,6 +64,17 @@ abstract class UndoableBloc<DH extends UndoableDataHolder<E>, E extends Object>
       _controller.update(event.original, event.updated);
     } else if (event is DeleteItemEvent<E>) {
       _controller.delete(event.entity);
+    } else if (event is MissingDependencyEvent) {
+      final current = state;
+
+      if (current is DataState<E, DH>) {
+        yield DataState(
+          current: current.current,
+          canSave: current.canSave,
+          hasUnresolvedDependencies: true,
+          hasUnsavedChanges: current.hasUnsavedChanges,
+        );
+      }
     }
   }
 

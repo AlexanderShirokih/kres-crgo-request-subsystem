@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 
 /// Describes employee position
 class Position extends Equatable {
+  static const Position fallback = Position(name: 'Безработный');
+
   /// Position name
   final String name;
 

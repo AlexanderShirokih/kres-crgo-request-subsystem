@@ -29,6 +29,7 @@ class TableView extends StatelessWidget {
   final TextStyle? headingTextStyle;
   final TextStyle? rowsTextStyle;
   final Widget? headerTrailing;
+  final WidgetBuilder? onTableEmpty;
 
   const TableView({
     Key? key,
@@ -36,6 +37,7 @@ class TableView extends StatelessWidget {
     this.headerTrailing,
     this.rowsTextStyle,
     this.controller,
+    this.onTableEmpty,
     required this.header,
     required this.rows,
   }) : super(key: key);
@@ -46,7 +48,13 @@ class TableView extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildHeading(context),
-        _buildRows(context),
+        if (rows.isEmpty)
+          if (onTableEmpty != null)
+            onTableEmpty!(context)
+          else
+            const Expanded(child: SizedBox())
+        else
+          _buildRows(context),
       ],
     );
   }

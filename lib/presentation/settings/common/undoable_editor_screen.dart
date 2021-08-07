@@ -11,8 +11,9 @@ import 'package:kres_requests2/presentation/common/table_view.dart';
 typedef UndoableBlocBuilder<DH extends UndoableDataHolder<E>, E extends Object>
     = UndoableBloc<DH, E> Function(BuildContext);
 
-typedef TableRowBuilder<DH extends UndoableDataHolder<E>, E extends Object>
-    = List<TableDataRow> Function(UndoableBloc<DH, E>, DH);
+abstract class TableRowBuilder<E> {
+  List<TableDataRow> buildDataRow(BuildContext context, E entity);
+}
 
 /// Creates for managing some list of entities. Shows all entities in table view.
 /// Supports showing insertion, modifying, deleting of entities.
@@ -21,7 +22,7 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
   final String addItemButtonName;
   final Widget addItemIcon;
   final List<TableHeadingColumn> tableHeader;
-  final TableRowBuilder<DH, E> dataRowBuilder;
+  final TableRowBuilder<DH> dataRowBuilder;
   final UndoableBlocBuilder<DH, E> blocBuilder;
 
   const UndoableEditorScreen({
@@ -42,9 +43,9 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
               // ignore: close_sinks
               final bloc = context.read<UndoableBloc<DH, E>>();
 
-              if (bloc.state is DataState<E, DH>) {
-                final dataState = bloc.state as DataState<E, DH>;
-                if (dataState.hasUnsavedChanges && dataState.canSave) {
+              final currentState = bloc.state;
+              if (currentState is DataState<E, DH>) {
+                if (currentState.hasUnsavedChanges && currentState.canSave) {
                   final canPop = await showDialog<bool?>(
                       context: context,
                       builder: (_) => const SaveChangesDialog());
@@ -55,7 +56,7 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
                   }
 
                   if (!canPop) {
-                    // Cannot be popped before changed
+                    // Cannot be popped before  all changes committed
                     await bloc.commitChanges();
                   }
 
@@ -69,10 +70,19 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
             child: BlocBuilder<UndoableBloc<DH, E>, UndoableState<DH>>(
               builder: (context, state) {
                 if (state is DataState<E, DH>) {
+                  if (state.hasUnresolvedDependencies) {
+                    final theme = Theme.of(context);
+                    return Center(
+                      child: Text(
+                        'Поля этой таблицы зависят от другой таблицы, но она пуста',
+                        style: theme.textTheme.headline3!
+                            .copyWith(color: theme.errorColor),
+                      ),
+                    );
+                  }
                   return Stack(
                     children: [
                       _EntityTableContent<DH, E>(
-                        bloc: context.watch<UndoableBloc<DH, E>>(),
                         headerTrailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -152,15 +162,13 @@ class UndoableEditorScreen<DH extends UndoableDataHolder<E>, E extends Object>
 class _EntityTableContent<DH extends UndoableDataHolder<E>, E extends Object>
     extends StatefulWidget {
   final DH data;
-  final UndoableBloc<DH, E> bloc;
   final Widget headerTrailing;
   final List<TableHeadingColumn> tableHeader;
-  final TableRowBuilder<DH, E> dataRowBuilder;
+  final TableRowBuilder<DH> dataRowBuilder;
 
   const _EntityTableContent({
     Key? key,
     required this.data,
-    required this.bloc,
     required this.headerTrailing,
     required this.tableHeader,
     required this.dataRowBuilder,
@@ -191,15 +199,8 @@ class _EntityTableContentState<DH extends UndoableDataHolder<E>,
 
   @override
   Widget build(BuildContext context) {
-    if (widget.data.data.isEmpty) {
-      return Center(
-        child:
-            Text('Таблица пуста', style: Theme.of(context).textTheme.headline3),
-      );
-    }
-
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      if (_wasRebuilt) {
+    Future.delayed(Duration.zero, () {
+      if (_wasRebuilt && _scrollController.hasClients) {
         _scrollController.animateTo(
           100000.0,
           duration: const Duration(milliseconds: 500),
@@ -209,8 +210,8 @@ class _EntityTableContentState<DH extends UndoableDataHolder<E>,
       _wasRebuilt = true;
     });
 
-    final List<TableDataRow> rows = widget.dataRowBuilder(
-        widget.bloc as UndoableBloc<DH, E>, widget.data as DH);
+    final List<TableDataRow> rows =
+        widget.dataRowBuilder.buildDataRow(context, widget.data as DH);
 
     return ConstrainedBox(
       constraints: const BoxConstraints(
@@ -225,6 +226,12 @@ class _EntityTableContentState<DH extends UndoableDataHolder<E>,
             Theme.of(context).textTheme.bodyText2!.copyWith(fontSize: 18.0),
         header: widget.tableHeader,
         rows: rows,
+        onTableEmpty: (BuildContext context) => Expanded(
+          child: Center(
+            child: Text('Таблица пуста',
+                style: Theme.of(context).textTheme.headline3),
+          ),
+        ),
       ),
     );
   }

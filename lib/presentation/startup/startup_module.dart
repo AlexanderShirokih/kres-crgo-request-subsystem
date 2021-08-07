@@ -11,9 +11,11 @@ import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/process_executor.dart';
 import 'package:kres_requests2/domain/repository/recent_documents_repository.dart';
+import 'package:kres_requests2/domain/repository/settings_repository.dart';
 import 'package:kres_requests2/domain/request_processor.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/domain/service/export_file_chooser.dart';
+import 'package:kres_requests2/domain/usecases/storage/update_last_working_directory.dart';
 import 'package:kres_requests2/domain/validators.dart';
 import 'package:kres_requests2/presentation/editor/document_manager_module.dart';
 import 'package:kres_requests2/presentation/settings/settings_module.dart';
@@ -23,6 +25,12 @@ import 'package:kres_requests2/presentation/startup/startup_screen.dart';
 class StartupModule extends Module {
   @override
   List<Bind<Object>> get binds => [
+        Bind.factory<GetLastWorkingDirectory>(
+          (i) => GetLastWorkingDirectory(i<SettingsRepository>()),
+        ),
+        Bind.factory<UpdateLastWorkingDirectory>(
+          (i) => UpdateLastWorkingDirectory(i<SettingsRepository>()),
+        ),
         Bind.factory<ProcessExecutor>(
           (i) => JavaProcessExecutor(
             settingsRepository: i(),

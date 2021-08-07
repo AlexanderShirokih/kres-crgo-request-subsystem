@@ -26,16 +26,21 @@ class DataState<E extends Object, D extends UndoableDataHolder<E>>
   /// `true` is current document can be saved (All fields are valid).
   final bool canSave;
 
+  /// `true` is current table has references to other tables, but they are empty
+  final bool hasUnresolvedDependencies;
+
   const DataState({
     required this.current,
     required this.hasUnsavedChanges,
     required this.canSave,
+    this.hasUnresolvedDependencies = false,
   });
 
   @override
   List<Object?> get props => [
+        canSave,
         current,
         hasUnsavedChanges,
-        canSave,
+        hasUnresolvedDependencies,
       ];
 }

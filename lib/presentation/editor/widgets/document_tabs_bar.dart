@@ -32,8 +32,9 @@ class DocumentTabsBar extends StatelessWidget {
           final current = state.pageIndex;
 
           if (controller!.index != current) {
-            // TODO: Called during build!
-            controller.index = current;
+            Future.delayed(Duration.zero, () {
+              controller.index = current;
+            });
           }
 
           return TabBar(

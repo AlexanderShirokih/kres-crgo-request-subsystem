@@ -5,9 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class SettingsRepository {
   Future<String?> get javaPath;
 
-  Future<void> setJavaPath(String? file);
+  Future<String?> get lastWorkingDirectory;
 
   Future<String?> get lastUsedPrinter;
+
+  Future<void> setJavaPath(String? file);
+
+  Future<void> setLastUsedDirectory(String? directory);
 
   Future<void> setLastUsedPrinter(String? printer);
 
@@ -19,6 +23,7 @@ abstract class SettingsRepository {
 class _PrefsSettingsRepository extends SettingsRepository {
   static const _kLastUsedPrinter = 'last_printer';
   static const _kJavaPath = 'java_home';
+  static const _kLastUsedDirectory = 'last_used_directory';
 
   Completer<SharedPreferences>? _prefsCompleter;
 
@@ -37,6 +42,14 @@ class _PrefsSettingsRepository extends SettingsRepository {
       _prefs.then((prefs) => prefs.getString(_kJavaPath));
 
   @override
+  Future<String?> get lastWorkingDirectory =>
+      _prefs.then((prefs) => prefs.getString(_kLastUsedDirectory));
+
+  @override
+  Future<String?> get lastUsedPrinter =>
+      _prefs.then((prefs) => prefs.getString(_kLastUsedPrinter));
+
+  @override
   Future<void> setJavaPath(String? path) async {
     final prefs = await _prefs;
 
@@ -48,8 +61,15 @@ class _PrefsSettingsRepository extends SettingsRepository {
   }
 
   @override
-  Future<String?> get lastUsedPrinter =>
-      _prefs.then((prefs) => prefs.getString(_kLastUsedPrinter));
+  Future<void> setLastUsedDirectory(String? directory) async {
+    final prefs = await _prefs;
+
+    if (directory == null) {
+      await prefs.remove(_kLastUsedDirectory);
+    } else {
+      await prefs.setString(_kLastUsedDirectory, directory);
+    }
+  }
 
   @override
   Future<void> setLastUsedPrinter(String? printer) async {

@@ -11,9 +11,11 @@ import 'package:kres_requests2/presentation/common/table_view.dart';
 import 'package:kres_requests2/presentation/settings/common/undoable_editor_screen.dart';
 import 'package:kres_requests2/presentation/settings/common/widgets/delete_button.dart';
 import 'package:kres_requests2/presentation/settings/common/widgets/editable_name_field.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Manages request types.
-class RequestTypesScreen extends StatelessWidget {
+class RequestTypesScreen extends StatelessWidget
+    implements TableRowBuilder<RequestTypeData> {
   const RequestTypesScreen({Key? key}) : super(key: key);
 
   @override
@@ -28,11 +30,13 @@ class RequestTypesScreen extends StatelessWidget {
               label: Text('Полное название'), preferredWidth: 360.0),
           TableHeadingColumn(label: SizedBox(), preferredWidth: 60.0),
         ],
-        dataRowBuilder: _buildData,
+        dataRowBuilder: this,
       );
 
-  List<TableDataRow> _buildData(UndoableBloc<RequestTypeData, RequestType> bloc,
-      RequestTypeData dataHolder) {
+  @override
+  List<TableDataRow> buildDataRow(
+      BuildContext context, RequestTypeData dataHolder) {
+    final bloc = context.read<UndoableBloc<RequestTypeData, RequestType>>();
     final validator = Modular.get<MappedValidator<RequestType>>();
     return dataHolder.data.map((e) {
       return TableDataRow(

@@ -11,9 +11,11 @@ import 'package:kres_requests2/presentation/common/table_view.dart';
 import 'package:kres_requests2/presentation/settings/common/undoable_editor_screen.dart';
 import 'package:kres_requests2/presentation/settings/common/widgets/delete_button.dart';
 import 'package:kres_requests2/presentation/settings/common/widgets/editable_name_field.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Manages employee positions
-class PositionsScreen extends StatelessWidget {
+class PositionsScreen extends StatelessWidget
+    implements TableRowBuilder<PositionData> {
   const PositionsScreen({Key? key}) : super(key: key);
 
   @override
@@ -26,11 +28,14 @@ class PositionsScreen extends StatelessWidget {
               label: Text('Название должности'), preferredWidth: 320.0),
           TableHeadingColumn(label: SizedBox(), preferredWidth: 60.0),
         ],
-        dataRowBuilder: _buildData,
+        dataRowBuilder: this,
       );
 
-  List<TableDataRow> _buildData(
-      UndoableBloc<PositionData, Position> bloc, PositionData dataHolder) {
+  @override
+  List<TableDataRow> buildDataRow(
+      BuildContext context, PositionData dataHolder) {
+    final bloc = context.read<UndoableBloc<PositionData, Position>>();
+
     return dataHolder.data.map((e) {
       return TableDataRow(
         key: ObjectKey(e),

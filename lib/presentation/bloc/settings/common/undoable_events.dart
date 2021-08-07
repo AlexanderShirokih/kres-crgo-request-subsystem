@@ -62,3 +62,11 @@ class DeleteItemEvent<T extends Object> extends UndoableDataEvent {
   @override
   List<Object> get props => [entity];
 }
+
+/// Event used when some table references to another table, but it is empty
+class MissingDependencyEvent extends UndoableDataEvent {
+  const MissingDependencyEvent();
+
+  @override
+  List<Object> get props => [];
+}

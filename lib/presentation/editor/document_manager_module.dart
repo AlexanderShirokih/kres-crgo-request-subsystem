@@ -9,6 +9,7 @@ import 'package:kres_requests2/domain/service/import/document_import_service.dar
 import 'package:kres_requests2/domain/service/import/megabilling_import_service.dart';
 import 'package:kres_requests2/domain/service/import/native_import_service.dart';
 import 'package:kres_requests2/domain/service/import_file_chooser.dart';
+import 'package:kres_requests2/domain/usecases/storage/update_last_working_directory.dart';
 import 'package:kres_requests2/presentation/bloc/importer/importer_bloc.dart';
 import 'package:kres_requests2/presentation/editor/editor_module.dart';
 import 'package:kres_requests2/presentation/importer/counters_importer_screen.dart';
@@ -20,6 +21,7 @@ import 'package:kres_requests2/presentation/importer/requests_importer_screen.da
 /// Module that contains all submodules to work with documents.
 /// Provides routes to open, import or edit documents.
 class DocumentManagerModule extends Module {
+
   @override
   final List<ModularRoute> routes = [
     ModuleRoute('/edit', module: EditorModule()),
@@ -42,7 +44,11 @@ class DocumentManagerModule extends Module {
                   : null,
             ),
             pickerService: FilePickerServiceImpl(
-              ImportFileChooser.forType(ImportType.native),
+              ImportFileChooser.forType(
+                ImportType.native,
+                Modular.get<GetLastWorkingDirectory>(),
+                Modular.get<UpdateLastWorkingDirectory>(),
+              ),
             ),
           )..add(ImportEvent(filePath: data['filePath'])),
           child: const NativeImporterScreen(),
@@ -59,7 +65,11 @@ class DocumentManagerModule extends Module {
             documentManager: Modular.get(),
             importService: MegaBillingImportService(Modular.get()),
             pickerService: FilePickerServiceImpl(
-              ImportFileChooser.forType(ImportType.excelRequests),
+              ImportFileChooser.forType(
+                ImportType.excelRequests,
+                Modular.get<GetLastWorkingDirectory>(),
+                Modular.get<UpdateLastWorkingDirectory>(),
+              ),
             ),
           ),
           child: RequestsImporterScreen(mergeTarget: _findMergeTarget(args)),
@@ -81,7 +91,11 @@ class DocumentManagerModule extends Module {
               ),
             ),
             pickerService: FilePickerServiceImpl(
-              ImportFileChooser.forType(ImportType.excelCounters),
+              ImportFileChooser.forType(
+                ImportType.excelCounters,
+                Modular.get<GetLastWorkingDirectory>(),
+                Modular.get<UpdateLastWorkingDirectory>(),
+              ),
             ),
           ),
           child: CountersImportScreen(mergeTarget: _findMergeTarget(args)),

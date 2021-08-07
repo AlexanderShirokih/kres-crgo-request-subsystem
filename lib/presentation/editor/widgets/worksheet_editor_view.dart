@@ -74,6 +74,7 @@ class WorksheetEditorView extends HookWidget {
           child: Padding(
             padding: const EdgeInsets.all(30.0),
             child: FloatingActionButton(
+              heroTag: 'add_request',
               child: const FaIcon(FontAwesomeIcons.plus),
               tooltip: "Добавить заявку",
               onPressed: () =>

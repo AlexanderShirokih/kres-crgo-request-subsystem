@@ -9,6 +9,8 @@ import 'package:kres_requests2/domain/repository/repository.dart';
 import 'package:kres_requests2/domain/validator.dart';
 import 'package:kres_requests2/presentation/bloc/settings/common/undoable_bloc.dart';
 import 'package:kres_requests2/presentation/bloc/settings/common/undoable_data.dart';
+import 'package:kres_requests2/presentation/bloc/settings/common/undoable_events.dart';
+import 'package:list_ext/list_ext.dart';
 
 part 'employee_data.dart';
 
@@ -26,12 +28,22 @@ class EmployeeBloc extends UndoableBloc<EmployeeData, Employee> {
         super(controller, validator);
 
   @override
-  Future<Employee> createNewEntity() async => Employee(
-        name: '',
-        position: await _defaultPosition
-            .call(() async => (await _positionRepository.getAll()).first),
-        accessGroup: 3,
-      );
+  Future<Employee> createNewEntity() async {
+    return Employee(
+      name: '',
+      position: await _defaultPosition.call(
+        () async {
+          final def = (await _positionRepository.getAll()).firstOrNull;
+          if (def == null) {
+            add(const MissingDependencyEvent());
+            return Position.fallback;
+          }
+          return def;
+        },
+      ),
+      accessGroup: 3,
+    );
+  }
 
   @override
   Future<EmployeeData> onRefreshData(List<Employee> data) async => EmployeeData(
