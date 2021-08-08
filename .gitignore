@@ -43,3 +43,6 @@ app.*.map.json
 
 # Test data
 autofill.sql
+
+# Generated requests module libs
+/requests/
