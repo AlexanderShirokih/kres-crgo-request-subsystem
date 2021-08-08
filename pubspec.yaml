@@ -19,12 +19,7 @@ dependencies:
   flutter_bloc: ^7.0.0
   flutter_hooks: ^0.17.0
 
-#  flutter_modular: ^3.2.2+1
-  flutter_modular:
-    git:
-      url: https://github.com/AlexanderShirokih/modular.git
-      path: flutter_modular/
-      ref: add-key
+  flutter_modular: ^3.4.0-dev.5
 
   list_ext: ^1.0.2
   rxdart: ^0.26.0

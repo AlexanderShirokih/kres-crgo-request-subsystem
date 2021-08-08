@@ -24,7 +24,7 @@ class DatabaseUtilsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return DialogManager(
       dialogService: Modular.get(),
-      child: BlocProvider(
+      child: BlocProvider<DatabaseUtilsBloc>(
         create: (_) => DatabaseUtilsBloc(
           errorLogger: ErrorLogger(),
           dialogService: Modular.get<DialogService>(),
