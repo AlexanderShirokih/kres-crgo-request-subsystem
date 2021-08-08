@@ -11,7 +11,7 @@ class SetDocuments extends DocumentMasterEvent {
   /// Currently selected document
   /// Can be `null` if there are no opened documents
   final Document? selected;
-  final List<Document> all;
+  final List<DocumentDescriptor> all;
 
   const SetDocuments(this.selected, this.all) : super._();
 

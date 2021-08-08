@@ -54,7 +54,7 @@ abstract class DocumentImporter {
       await newDocument.close();
     } else {
       // Register new document in the document manager
-      manager.addDocument(newDocument);
+      await manager.addDocument(newDocument);
     }
     return true;
   }

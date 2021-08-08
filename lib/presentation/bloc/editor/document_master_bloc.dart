@@ -35,9 +35,9 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
     this._navigator,
   ) : super(const NoOpenedDocumentsState()) {
     _subscription = Rx.combineLatest2(
-      _documentManager.openedDocumentsStream,
+      _documentManager.openedDocumentDescriptors,
       _documentManager.selectedStream,
-      (List<Document> list, Document? selected) {
+      (List<DocumentDescriptor> list, Document? selected) {
         return SetDocuments(selected, list);
       },
     ).listen((event) {
@@ -89,11 +89,14 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
 
   Stream<DocumentMasterState> _setDocuments(
     Document? selected,
-    List<Document> all,
+    List<DocumentDescriptor> all,
   ) async* {
     final allDocumentsInfo = all
         .map(
-          (doc) => DocumentInfo(SaveState.unsaved, doc),
+          (doc) => DocumentInfo(
+            doc.hasChanges ? SaveState.unsaved : SaveState.saved,
+            doc.document,
+          ),
         )
         .toList(growable: false);
 

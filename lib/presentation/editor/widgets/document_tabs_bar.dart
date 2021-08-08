@@ -79,7 +79,22 @@ class DocumentTab extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
-          Expanded(child: Text(title)),
+          Expanded(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isSaved)
+                  Text(title)
+                else
+                  Text(
+                    '$title [*]',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  )
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18.0),
             child:

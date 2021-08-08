@@ -21,6 +21,7 @@ dependencies:
 
   flutter_modular: ^3.4.0-dev.5
 
+  crypto: ^3.0.1
   list_ext: ^1.0.2
   rxdart: ^0.26.0
   path_provider: ^2.0.1

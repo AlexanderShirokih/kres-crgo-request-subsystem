@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models.dart';
@@ -16,19 +17,30 @@ class JsonDocumentSaver implements DocumentSaver {
 
   const JsonDocumentSaver({required this.saveLegacyInfo});
 
+  @override
+  Future<String> digest(Document document) async {
+    final json = await _buildJson(document);
+    final data = utf8.encode(json);
+
+    return md5.convert(data).toString();
+  }
+
   /// TODO: Implement file locking
   @override
   Future<void> store(Document document, [File? savePath]) async {
-    final stored = _storeDocument(document);
-
-    final json = await Future.microtask(() => jsonEncode(stored));
-
     final path = savePath ?? document.currentSavePath;
     if (path == null) {
       throw 'Save path is null';
     }
 
+    final json = await _buildJson(document);
+
     await path.writeAsString(json);
+  }
+
+  Future<String> _buildJson(Document document) {
+    final stored = _storeDocument(document);
+    return Future.microtask(() => jsonEncode(stored));
   }
 
   Map<String, dynamic> _storeDocument(Document document) {
