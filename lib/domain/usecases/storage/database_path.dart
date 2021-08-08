@@ -43,10 +43,9 @@ class UpdateDatabasePath {
       return;
     }
 
-    final file = File(path);
+    final dir = Directory(path);
 
-    if (await file.exists()) {
-      final dir = file.parent;
+    if (await dir.exists()) {
       await _settingsRepository.setDatabasePath(dir.absolute.path);
     }
   }
