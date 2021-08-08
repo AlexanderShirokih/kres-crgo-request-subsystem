@@ -20,6 +20,8 @@ class WorksheetsList extends Equatable implements WorksheetChangeListener {
   final BehaviorSubject<List<WorksheetEditor>> _editors =
       BehaviorSubject.seeded([]);
 
+  WorksheetsList();
+
   /// Document worksheets list as a stream
   Stream<List<Worksheet>> get stream => _editors
       .map(

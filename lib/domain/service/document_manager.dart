@@ -1,17 +1,41 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/domain.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/export.dart';
 import 'package:kres_requests2/domain/models/recent_document_info.dart';
 import 'package:rxdart/rxdart.dart';
-
+import 'package:collection/collection.dart';
 import 'export_file_chooser.dart';
+
+class DocumentDescriptor extends Equatable {
+  /// The document instance
+  final Document document;
+
+  /// Current document digest
+  final String currentDigest;
+
+  /// Digest of last saved state
+  final String savedDigest;
+
+  const DocumentDescriptor(
+    this.document,
+    this.currentDigest,
+    this.savedDigest,
+  );
+
+  bool get hasChanges => currentDigest != savedDigest;
+
+  @override
+  List<Object?> get props => [currentDigest, savedDigest, document];
+}
 
 /// Manages opened [Document] instances
 class DocumentManager {
-  final BehaviorSubject<List<Document>> _openedDocuments;
+  final BehaviorSubject<List<DocumentDescriptor>> _openedDocuments;
   final BehaviorSubject<int> _selectedIndex;
 
   /// Recent documents controller to add saved items into recent documents list
@@ -24,38 +48,77 @@ class DocumentManager {
   /// Class that handles document saving
   final DocumentSaver _documentSaver;
 
+  StreamSubscription? _documentChangeListener;
+
   /// Creates a new document manager with empty document
   DocumentManager(
     this._savePathChooser,
     this._documentSaver,
     this._repositoryController,
   )   : _openedDocuments = BehaviorSubject.seeded([]),
-        _selectedIndex = BehaviorSubject();
+        _selectedIndex = BehaviorSubject() {
+    _documentChangeListener = openedDocumentsStream.flatMap((documents) {
+      return Rx.merge(
+        documents.map(
+          (document) => document.worksheets.stream.map(
+            (event) => document,
+          ),
+        ),
+      ).asyncMap((changedDocument) async {
+        final newDigest = await _documentSaver.digest(changedDocument);
+        return DocumentDescriptor(
+          changedDocument,
+          newDigest,
+          newDigest,
+        );
+      });
+    }).listen((changedDocument) {
+      final opened = _openedDocuments.value;
+      if (opened != null) {
+        final changedDocumentIndex = opened.indexWhere(
+          (element) => element.document == changedDocument.document,
+        );
 
-  /// Creates a new document manager for document instances.
-  /// Throws an error if [documents] is empty
-  DocumentManager.forDocuments(
-    this._savePathChooser,
-    this._documentSaver,
-    this._repositoryController,
-    List<Document> documents,
-  )   : _openedDocuments = BehaviorSubject.seeded(documents),
-        _selectedIndex = BehaviorSubject.seeded(0) {
-    if (documents.isEmpty) {
-      throw "Documents list should not be empty!";
-    }
+        if (changedDocumentIndex == -1) {
+          throw 'Changed document is not in opened documents list';
+        }
+
+        final current = opened[changedDocumentIndex];
+        opened[changedDocumentIndex] = DocumentDescriptor(
+          changedDocument.document,
+          changedDocument.currentDigest,
+          current.savedDigest,
+        );
+
+        _openedDocuments.add(List.of(opened));
+      }
+    });
   }
 
   /// Returns a stream of opened documents. Returned list is unmodifiable.
-  Stream<List<Document>> get openedDocumentsStream =>
-      _openedDocuments.stream.map((list) => List.unmodifiable(list));
+  Stream<List<Document>> get openedDocumentsStream => _openedDocuments.stream
+      .map(
+        (list) => list
+            .map((descriptor) => descriptor.document)
+            .toList(growable: false),
+      )
+      .distinct(const ListEquality().equals);
 
   /// Returns a list of currently opened documents
-  List<Document> get opened => _openedDocuments.value ?? const <Document>[];
+  List<Document> get opened =>
+      _openedDocuments.value
+          ?.map((handle) => handle.document)
+          .toList(growable: false) ??
+      const <Document>[];
+
+  /// Returns a stream of documents with its meta info
+  Stream<List<DocumentDescriptor>> get openedDocumentDescriptors =>
+      _openedDocuments.stream;
 
   /// Returns a stream with currently selected document
   Stream<Document?> get selectedStream => _selectedIndex
-      .map((index) => index == -1 ? null : _openedDocuments.requireValue[index])
+      .map((index) =>
+          index == -1 ? null : _openedDocuments.requireValue[index].document)
       .distinct();
 
   /// Returns currently selected document or `null` if there is no opened documents
@@ -67,13 +130,15 @@ class DocumentManager {
       return null;
     }
 
-    return opened[selected];
+    return opened[selected].document;
   }
 
   /// Closes internal resources and all opened documents
   Future<void> dispose() async {
-    for (final document in _openedDocuments.requireValue) {
-      await document.close();
+    await _documentChangeListener?.cancel();
+
+    for (final handle in _openedDocuments.requireValue) {
+      await handle.document.close();
     }
 
     await _openedDocuments.close();
@@ -81,19 +146,20 @@ class DocumentManager {
   }
 
   /// Adds [document] to the opened document list
-  void addDocument(Document document) {
+  Future<void> addDocument(Document document) async {
     final opened = _openedDocuments.requireValue;
     if (opened.contains(document)) {
       // Document is already opened
       return;
     }
 
-    _addDocument(document);
+    await _addDocument(document);
   }
 
   /// Marks the [document] as selected
   void markSelected(Document document) {
-    final index = _openedDocuments.requireValue.indexOf(document);
+    final index = _openedDocuments.requireValue
+        .indexWhere((handle) => handle.document == document);
 
     if (index == -1) {
       throw 'Given document is not in the document list';
@@ -104,22 +170,22 @@ class DocumentManager {
 
   /// Creates an empty document and adds it to the opened document list.
   /// Returns an instance of the opened document.
-  Future<Document> createNew() {
+  Future<Document> createNew() async {
     final document = Document.empty();
 
-    _addDocument(document);
+    await _addDocument(document);
 
-    return Future.value(document);
+    return document;
   }
 
   /// Closes previously opened document instance and removes it from
   /// opened documents list.
   Future<void> close(Document document) async {
     final opened = _openedDocuments.requireValue;
-    final index = opened.indexOf(document);
+    final index = opened.indexWhere((doc) => doc.document == document);
 
     if (index != -1) {
-      await opened.removeAt(index).close();
+      await opened.removeAt(index).document.close();
 
       final current = _selectedIndex.requireValue;
       if (current >= index) {
@@ -131,10 +197,15 @@ class DocumentManager {
   }
 
   // Adds document to the list and notifies the stream
-  void _addDocument(Document document) {
+  Future<void> _addDocument(Document document) async {
     final currentDocs = _openedDocuments.requireValue;
 
-    _openedDocuments.add(currentDocs..add(document));
+    // Compute initial digest
+    final digest = await _documentSaver.digest(document);
+
+    _openedDocuments.add(
+      List.of(currentDocs..add(DocumentDescriptor(document, digest, digest))),
+    );
 
     if (!_selectedIndex.hasValue || _selectedIndex.requireValue == -1) {
       _selectedIndex.add(0);
@@ -158,6 +229,23 @@ class DocumentManager {
       yield DocumentSavingState.saving;
 
       await currentDocument.save(_documentSaver);
+
+      // Mark the document as saved
+      final opened = _openedDocuments.value;
+      if (opened != null) {
+        final index =
+            opened.indexWhere((element) => element.document == currentDocument);
+        if (index != -1) {
+          final current = opened[index];
+          opened[index] = DocumentDescriptor(
+            currentDocument,
+            current.currentDigest,
+            current.currentDigest,
+          );
+
+          _openedDocuments.add(List.of(opened));
+        }
+      }
 
       // Register file in the recent documents list
       _repositoryController.add(RecentDocumentInfo(path: savePath));
