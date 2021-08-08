@@ -26,6 +26,7 @@ dependencies {
 }
 
 val compileKotlin: KotlinCompile by tasks
+val requestFolder = "../requests/lib/"
 
 compileKotlin.kotlinOptions {
     languageVersion = "1.4"
@@ -35,10 +36,14 @@ tasks {
     create("copyLibsToParentProject") {
         dependsOn(jar)
         doLast {
-           copy {
-               from(jar)
-               into("../requests/lib")
-           }
+            copy {
+                from(configurations.runtimeClasspath)
+                into(requestFolder)
+            }
+            copy {
+                from(jar)
+                into(requestFolder)
+            }
         }
     }
 }
