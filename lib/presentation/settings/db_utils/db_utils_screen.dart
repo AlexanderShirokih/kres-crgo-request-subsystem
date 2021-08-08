@@ -96,7 +96,7 @@ class DatabaseUtilsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8.0),
         Text(
-          'Импортировать данные в базу данных из существующего SQLite файла',
+          'Импортировать данные в базу данных из существующего сценария SQLite',
           style: theme.textTheme.caption,
         ),
         const SizedBox(height: 8.0),
@@ -127,7 +127,7 @@ class DatabaseUtilsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8.0),
         Text(
-          'Создать дамп данных из текущей базы данных',
+          'Создать дамп из текущей базы данных',
           style: theme.textTheme.caption,
         ),
         const SizedBox(height: 8.0),

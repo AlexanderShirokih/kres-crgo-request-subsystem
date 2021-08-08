@@ -35,6 +35,11 @@ class JavaPathChooserScreen extends StatelessWidget {
             info.isOk ? 'Текущий путь к Java:' : 'JVM Не выбрана',
             style: Theme.of(context).textTheme.headline5,
           ),
+          const SizedBox(height: 6.0),
+          Text(
+            'Для работы модулей импорта заявок и печати документов необходима Java Runtime Environment',
+            style: Theme.of(context).textTheme.caption,
+          ),
           const SizedBox(height: 12.0),
           Text(info.path),
           const SizedBox(height: 16.0),
