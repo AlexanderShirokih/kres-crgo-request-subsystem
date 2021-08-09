@@ -95,6 +95,14 @@ class DocumentManager {
     });
   }
 
+  /// Returns a list of unsaved documents
+  List<Document> get unsaved =>
+      _openedDocuments.value
+          ?.where((element) => element.hasChanges)
+          .map((e) => e.document)
+          .toList(growable: false) ??
+      <Document>[];
+
   /// Returns a stream of opened documents. Returned list is unmodifiable.
   Stream<List<Document>> get openedDocumentsStream => _openedDocuments.stream
       .map(
@@ -116,10 +124,10 @@ class DocumentManager {
       _openedDocuments.stream;
 
   /// Returns a stream with currently selected document
-  Stream<Document?> get selectedStream => _selectedIndex
-      .map((index) =>
-          index == -1 ? null : _openedDocuments.requireValue[index].document)
-      .distinct();
+  Stream<Document?> get selectedStream => _selectedIndex.map((index) {
+        final opened = _openedDocuments.requireValue;
+        return index == -1 || opened.isEmpty ? null : opened[index].document;
+      }).distinct();
 
   /// Returns currently selected document or `null` if there is no opened documents
   Document? get selected {
@@ -170,12 +178,33 @@ class DocumentManager {
 
   /// Creates an empty document and adds it to the opened document list.
   /// Returns an instance of the opened document.
-  Future<Document> createNew() async {
+  /// Until force is `true` new document instances will not be created if empty
+  /// document already exists
+  Future<Document> createNew([bool force = false]) async {
+    if (!force) {
+      final emptyDocument =
+          opened.firstWhereOrNull((doc) => doc.worksheets.isEmpty);
+
+      if (emptyDocument != null) {
+        return emptyDocument;
+      }
+    }
+
     final document = Document.empty();
 
     await _addDocument(document);
 
     return document;
+  }
+
+  /// Closes all opened document instances
+  Future<void> closeAll() async {
+    for (final doc in opened) {
+      await doc.close();
+    }
+
+    _openedDocuments.add([]);
+    _selectedIndex.add(0);
   }
 
   /// Closes previously opened document instance and removes it from

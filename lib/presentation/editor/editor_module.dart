@@ -13,7 +13,7 @@ class EditorModule extends Module {
   List<Bind<Object>> get binds => [
         // Request entity related binds
         Bind.factory<MappedValidator<Request>>((i) => RequestValidator()),
-        Bind.factory(
+        Bind.singleton(
           (i) => DocumentMasterBloc(
             i<DocumentManager>(),
             i<DialogService>(),

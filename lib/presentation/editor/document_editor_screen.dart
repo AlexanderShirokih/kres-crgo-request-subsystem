@@ -6,8 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/presentation/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/presentation/common/dialog_service.dart';
+import 'package:kres_requests2/presentation/editor/save_before_exit_dialog.dart';
 import 'package:kres_requests2/presentation/editor/widgets/document_tabs_bar.dart';
 
 import 'document_module.dart';
@@ -29,7 +31,7 @@ class DocumentEditorScreen extends HookWidget {
 
     useEffect(() {
       if (blankDocumentOnStart) {
-        bloc.add(const CreatePage());
+        bloc.add(const CreatePage(false));
       }
     });
 
@@ -157,39 +159,21 @@ class DocumentEditorScreen extends HookWidget {
 
   Future<bool> _showExitConfirmationDialog(
       List<DocumentInfo> docs, BuildContext context) async {
-    final isAllSaved =
-        docs.isEmpty || docs.every((e) => e.saveState == SaveState.saved);
+    final documentManager = Modular.get<DocumentManager>();
 
-    if (!isAllSaved) return true;
+    if (documentManager.unsaved.isEmpty) return true;
 
-    return true;
-    // TODO: Use DialogService instead
-    // return await showDialog<bool>(
-    //   context: context,
-    //   barrierDismissible: false,
-    //   builder: (ctx) => AlertDialog(
-    //     title: Text('Сохранить документ перед выходом?'),
-    //     actionsPadding: EdgeInsets.only(right: 24.0, bottom: 12.0),
-    //     actions: [
-    //       OutlinedButton(
-    //         onPressed: () => Navigator.pop(ctx, false),
-    //         child: Text('Отмена'),
-    //       ),
-    //       const SizedBox(width: 12.0),
-    //       FlatButton(
-    //         onPressed: () => Navigator.pop(ctx, true),
-    //         child: Text('Нет'),
-    //       ),
-    //       const SizedBox(width: 12.0),
-    //       RaisedButton(
-    //         color: Theme.of(ctx).primaryColor,
-    //         textColor: Theme.of(ctx).primaryTextTheme.bodyText2.color,
-    //         onPressed: () => _worksheetBloc
-    //             .add(WorksheetMasterSaveEvent(popAfterSave: true)),
-    //         child: Text('Да'),
-    //       ),
-    //     ],
-    //   ),
-    // );
+    showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => BlocProvider.value(
+        value: context.watch<DocumentMasterBloc>(),
+        child: SaveBeforeExitDialog(
+          documentManager: documentManager,
+        ),
+      ),
+    );
+
+    return false;
   }
 }
