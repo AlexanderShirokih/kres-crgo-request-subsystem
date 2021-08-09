@@ -1,0 +1,22 @@
+name: window_control
+description: Plugin for controlling native window (close, maximize, minimize)
+version: 0.0.1
+author:
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+# The following section is specific to Flutter.
+flutter:
+  plugin:
+    platforms:
+      windows:
+        pluginClass: WindowControlPlugin
