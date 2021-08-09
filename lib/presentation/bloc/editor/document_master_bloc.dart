@@ -138,9 +138,6 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
 
   void _handleEventBehaviour(EventBehaviour eventBehaviour) {
     switch (eventBehaviour) {
-      case EventBehaviour.exitApp:
-        // TODO: exit from app
-        break;
       case EventBehaviour.pop:
         _navigator.pop();
         break;

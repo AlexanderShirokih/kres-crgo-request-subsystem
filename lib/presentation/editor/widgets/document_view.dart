@@ -69,8 +69,6 @@ class DocumentView extends HookWidget {
         children: info.all
             .map((e) => BlocProvider<WorksheetBloc>(
                   key: ObjectKey(e),
-
-                  /// TODO: Use common bloc or create WorksheetModule
                   create: (_) => WorksheetBloc(
                     Modular.get<WorksheetService>(),
                     WorksheetNavigationRoutesImpl(

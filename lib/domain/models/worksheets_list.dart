@@ -159,6 +159,7 @@ class WorksheetsList extends Equatable implements WorksheetChangeListener {
   int _getUniqueId() => ++_lastId;
 
   String _getUniqueName(String? name) {
+    // TODO: Fix name creation
     final currentWorksheets = _editors.requireValue;
 
     if (name?.isEmpty ?? true) {
