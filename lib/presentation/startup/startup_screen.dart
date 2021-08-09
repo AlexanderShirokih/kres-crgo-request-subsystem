@@ -60,7 +60,6 @@ class StartupScreen extends StatelessWidget {
         children: [
           StartupScreenButtonContainer(
             onPressed: () {
-              // TODO: Move to BLoC
               Modular.to.pushNamed('/document/edit?start=blank');
             },
             child: const TextStartupTile(
@@ -71,7 +70,6 @@ class StartupScreen extends StatelessWidget {
           ),
           StartupScreenButtonContainer(
             onPressed: () {
-              // TODO: Move to BLoC
               Modular.to.pushNamed('/document/open');
             },
             child: const TextStartupTile(
@@ -82,7 +80,6 @@ class StartupScreen extends StatelessWidget {
           ),
           StartupScreenButtonContainer(
             onPressed: () {
-              // TODO: Move to BLoC
               Modular.to.pushNamed('/document/import/requests');
             },
             child: const TextStartupTile(
@@ -128,7 +125,6 @@ class StartupScreen extends StatelessWidget {
                 .map(
                   (e) => StartupScreenButtonContainer(
                     onPressed: () {
-                      // TODO: Move to BLoC
                       Modular.to.pushNamed<Document>(
                         '/document/open',
                         arguments: {'filePath': e.path},

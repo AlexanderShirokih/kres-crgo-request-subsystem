@@ -82,7 +82,7 @@ class SaveEvent extends DocumentMasterEvent {
 }
 
 /// Defines what app should to do after document has saved
-enum EventBehaviour { exitApp, pop, nothing }
+enum EventBehaviour { pop, nothing }
 
 /// Event used to save all opened documents
 class SaveAllEvent extends DocumentMasterEvent {

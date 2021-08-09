@@ -18,7 +18,6 @@ class EmployeeEncoder
 
   @override
   Future<PersistedObject> deserialize(Map<String, dynamic> data) async {
-    // TODO: Proxy this call: cache results
     final position = await _positionDao.findById(data['position_id']);
 
     return EmployeeEntity(

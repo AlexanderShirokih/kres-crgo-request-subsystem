@@ -124,7 +124,6 @@ class ExportService {
       case ExportFormat.excel:
         return _requestsService.exportToXlsx(document, filePath);
       default:
-        // TODO: Check this case!
         throw "Unsupported case!";
     }
   }

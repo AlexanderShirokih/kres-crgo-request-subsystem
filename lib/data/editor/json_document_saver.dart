@@ -25,7 +25,6 @@ class JsonDocumentSaver implements DocumentSaver {
     return md5.convert(data).toString();
   }
 
-  /// TODO: Implement file locking
   @override
   Future<void> store(Document document, [File? savePath]) async {
     final path = savePath ?? document.currentSavePath;
