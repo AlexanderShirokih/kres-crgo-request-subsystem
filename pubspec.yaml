@@ -33,6 +33,9 @@ dependencies:
   file_selector_linux: ^0.0.2
   file_selector_windows: ^0.0.2
 
+  window_control:
+    path: window_control/
+
 dev_dependencies:
   flutter_lints: ^1.0.4
   build_runner: ^2.0.4
