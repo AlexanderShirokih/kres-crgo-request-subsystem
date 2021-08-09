@@ -42,10 +42,12 @@ class DeletePage extends DocumentMasterEvent {
 
 /// Creates an empty document in a new tab
 class CreatePage extends DocumentMasterEvent {
-  const CreatePage() : super._();
+  final bool force;
+
+  const CreatePage([this.force = false]) : super._();
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [force];
 }
 
 /// Imports document from the storage
@@ -77,6 +79,29 @@ class SaveEvent extends DocumentMasterEvent {
 
   @override
   List<Object> get props => [changePath, popAfterSave];
+}
+
+/// Defines what app should to do after document has saved
+enum EventBehaviour { exitApp, pop, nothing }
+
+/// Event used to save all opened documents
+class SaveAllEvent extends DocumentMasterEvent {
+  final EventBehaviour saveAllBehaviour;
+
+  const SaveAllEvent(this.saveAllBehaviour) : super._();
+
+  @override
+  List<Object?> get props => [saveAllBehaviour];
+}
+
+/// Discard all changes in all opened documents
+class DiscardChangesEvent extends DocumentMasterEvent {
+  final EventBehaviour discardAllBehaviour;
+
+  const DiscardChangesEvent(this.discardAllBehaviour) : super._();
+
+  @override
+  List<Object?> get props => [discardAllBehaviour];
 }
 
 /// Event used to toggle searching mode with some searching text

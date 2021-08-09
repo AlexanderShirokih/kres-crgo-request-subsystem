@@ -55,15 +55,22 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
     } else if (event is DeletePage) {
       await _deletePage(event.target);
     } else if (event is CreatePage) {
-      await _createNewPage();
+      await _createNewPage(event.force);
     } else if (event is ImportPage) {
       await _importPage();
     } else if (event is ImportMegaBillingRequests) {
       await _importMegaBilling();
     } else if (event is SaveEvent) {
-      yield* _saveDocument(event.changePath, event.popAfterSave);
+      yield* _saveDocument(
+        changePath: event.changePath,
+        popAfterSave: event.popAfterSave,
+      );
     } else if (event is WorksheetMasterSearchEvent) {
       yield* _toggleSearchMode(event);
+    } else if (event is SaveAllEvent) {
+      yield* _saveAllDocuments(event.saveAllBehaviour);
+    } else if (event is DiscardChangesEvent) {
+      yield* _discardAllDocuments(event.discardAllBehaviour);
     }
   }
 
@@ -77,7 +84,7 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
 
   Future<void> _deletePage(Document target) => _documentManager.close(target);
 
-  Future<void> _createNewPage() => _documentManager.createNew();
+  Future<void> _createNewPage(bool force) => _documentManager.createNew(force);
 
   Future<void> _importPage() async {
     _navigator.pushReplacementNamed('/document/open?pickPages=true');
@@ -107,15 +114,51 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
     }
   }
 
-  Stream<DocumentMasterState> _saveDocument(
-    bool changePath,
-    bool popAfterSave,
-  ) async* {
+  Stream<DocumentMasterState> _saveAllDocuments(
+      EventBehaviour saveBehaviour) async* {
+    for (final document in _documentManager.unsaved) {
+      yield* _saveDocument(
+        document: document,
+        changePath: false,
+        popAfterSave: false,
+      );
+    }
+
+    _handleEventBehaviour(saveBehaviour);
+  }
+
+  Stream<DocumentMasterState> _discardAllDocuments(
+      EventBehaviour discardBehaviour) async* {
+    await _documentManager.closeAll();
+
+    yield const NoOpenedDocumentsState();
+
+    _handleEventBehaviour(discardBehaviour);
+  }
+
+  void _handleEventBehaviour(EventBehaviour eventBehaviour) {
+    switch (eventBehaviour) {
+      case EventBehaviour.exitApp:
+        // TODO: exit from app
+        break;
+      case EventBehaviour.pop:
+        _navigator.pop();
+        break;
+      case EventBehaviour.nothing:
+        break;
+    }
+  }
+
+  Stream<DocumentMasterState> _saveDocument({
+    Document? document,
+    required bool changePath,
+    required bool popAfterSave,
+  }) async* {
     final currentState = state;
     if (currentState is! ShowDocumentsState) return;
 
+    final currentDocument = document ?? currentState.selected;
     final info = currentState.all.toList();
-    final currentDocument = currentState.selected;
     final currentInfoIdx =
         info.indexWhere((doc) => doc.document == currentDocument);
 
