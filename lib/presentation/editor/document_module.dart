@@ -38,7 +38,7 @@ class DocumentScope extends WidgetModule {
           (i) => DocumentService(document, i<DocumentFilter>()),
         ),
         Bind.factory<DocumentBloc>(
-          (i) => DocumentBloc(i<DocumentService>(), Modular.to),
+          (i) => DocumentBloc(i<DocumentService>()),
         ),
         Bind.factory(
           (i) => WorksheetConfigBloc(i<WorksheetService>()),

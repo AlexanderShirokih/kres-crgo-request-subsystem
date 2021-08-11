@@ -1,71 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/presentation/bloc/editor/doc_view/worksheet_creation_mode.dart';
 import 'package:kres_requests2/presentation/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
 
 /// Widget that provides a way to create new worksheet of certain type
 class AddNewWorkSheetTabView extends HookWidget {
-  final void Function(WorksheetCreationMode) onAddPressed;
+  final void Function() onAddPressed;
 
   const AddNewWorkSheetTabView(this.onAddPressed, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final isExpanded = useState(false);
     return SizedBox(
       width: double.maxFinite,
       child: Card(
         elevation: 5.0,
-        child: isExpanded.value
-            ? _buildExpandedLayout(isExpanded)
-            : _buildAddTile(isExpanded),
-      ),
-    );
-  }
-
-  Widget _buildAddTile(ValueNotifier<bool> isExpanded) => _buildItemTile(
-        onTap: () => isExpanded.value = !isExpanded.value,
-        title: 'Добавить',
-        tooltip: 'Добавить новый лист',
-        icon: const Icon(Icons.add),
-      );
-
-  Widget _buildExpandedLayout(ValueNotifier<bool> isExpanded) {
-    void Function() _onCreate(WorksheetCreationMode mode) {
-      return () {
-        onAddPressed(mode);
-        isExpanded.value = false;
-      };
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildAddTile(isExpanded),
-        _buildItemTile(
-          onTap: _onCreate(WorksheetCreationMode.empty),
-          title: 'Пустой лист заявок',
+        child: _buildItemTile(
+          onTap: onAddPressed,
+          title: 'Добавить',
           tooltip: 'Добавить пустой лист для создания заявок',
-          icon: const FaIcon(FontAwesomeIcons.file),
+          icon: const Icon(Icons.add),
         ),
-        _buildItemTile(
-          onTap: _onCreate(WorksheetCreationMode.import),
-          title: 'Импорт файла заявок',
-          tooltip:
-              'Создать новый лист заявок из подготовленного файла Mega-billing',
-          icon: const FaIcon(FontAwesomeIcons.fileExcel),
-        ),
-        _buildItemTile(
-          onTap: _onCreate(WorksheetCreationMode.importCounters),
-          title: 'Импорт списка счётчиков',
-          tooltip:
-              'Создать новый лист заявок из подготовленного списка счётчиков',
-          icon: const FaIcon(FontAwesomeIcons.table),
-        )
-      ],
+      ),
     );
   }
 

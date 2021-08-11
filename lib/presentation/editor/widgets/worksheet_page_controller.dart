@@ -33,9 +33,9 @@ class WorksheetsPageController extends StatelessWidget {
           itemBuilder: (context, index) {
             return index == worksheets.length
                 ? AddNewWorkSheetTabView(
-                    (worksheetCreationMode) => context.read<DocumentBloc>().add(
-                          AddNewWorksheetEvent(worksheetCreationMode),
-                        ),
+                    () => context
+                        .read<DocumentBloc>()
+                        .add(const AddNewWorksheetEvent()),
                   )
                 : _buildTabView(
                     context,

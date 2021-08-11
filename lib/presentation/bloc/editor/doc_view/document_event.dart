@@ -29,14 +29,12 @@ class WorksheetActionEvent extends DocumentEvent {
   List<Object> get props => [targetWorksheet, action];
 }
 
-/// Used to add a page (worksheet) and optionally open importer wizard
+/// Used to add an empty page (worksheet)
 class AddNewWorksheetEvent extends DocumentEvent {
-  final WorksheetCreationMode mode;
-
-  const AddNewWorksheetEvent(this.mode) : super._();
+  const AddNewWorksheetEvent() : super._();
 
   @override
-  List<Object> get props => [mode];
+  List<Object> get props => [];
 }
 
 /// Event used internally to update view when document state changes

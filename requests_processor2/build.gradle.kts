@@ -23,6 +23,7 @@ dependencies {
     implementation("org.apache.poi:poi-ooxml:4.1.2")
     implementation("org.apache.pdfbox:pdfbox:2.0.21")
     implementation("org.apache.commons:commons-lang3:3.11")
+    implementation("org.apache.commons:commons-math3:3.6.1")
 }
 
 val compileKotlin: KotlinCompile by tasks

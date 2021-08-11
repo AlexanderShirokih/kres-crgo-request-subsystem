@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
 import 'package:kres_requests2/domain/service/document_service.dart';
 import 'package:kres_requests2/presentation/bloc.dart';
-import 'package:kres_requests2/presentation/bloc/editor/doc_view/worksheet_creation_mode.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -35,13 +33,10 @@ class DocumentBloc extends Bloc<DocumentEvent, BaseState> {
   /// [DocumentService] to manage document properties
   final DocumentService _service;
 
-  /// Navigator for navigating
-  final IModularNavigator _navigator;
-
   /// Subscription to document updates
   late StreamSubscription<DocumentInfo> _subscription;
 
-  DocumentBloc(this._service, this._navigator) : super(const InitialState()) {
+  DocumentBloc(this._service) : super(const InitialState()) {
     final worksheets = _service.document.worksheets;
 
     _subscription = Rx.combineLatest2<List<Worksheet>, Worksheet, DocumentInfo>(
@@ -49,7 +44,6 @@ class DocumentBloc extends Bloc<DocumentEvent, BaseState> {
       worksheets.activeStream,
       (all, active) => DocumentInfo(active, all),
     ).listen((info) => add(_UpdateDocumentInfo(info)));
-    // _service.document.
   }
 
   @override
@@ -59,7 +53,7 @@ class DocumentBloc extends Bloc<DocumentEvent, BaseState> {
     } else if (event is WorksheetActionEvent) {
       yield* _handleWorksheetAction(event.targetWorksheet, event.action);
     } else if (event is AddNewWorksheetEvent) {
-      yield* _createNewWorksheet(event.mode);
+      yield* _createNewWorksheet();
     }
   }
 
@@ -75,23 +69,8 @@ class DocumentBloc extends Bloc<DocumentEvent, BaseState> {
     }
   }
 
-  Stream<BaseState> _createNewWorksheet(WorksheetCreationMode mode) async* {
-    switch (mode) {
-      case WorksheetCreationMode.import:
-        _navigator.pushReplacementNamed(
-          '/document/import/requests',
-          arguments: {'document': _service.document},
-        );
-        break;
-      case WorksheetCreationMode.importCounters:
-        _navigator.pushReplacementNamed(
-          '/document/import/counters',
-          arguments: {'document': _service.document},
-        );
-        return;
-      case WorksheetCreationMode.empty:
-        _service.addEmptyWorksheet();
-    }
+  Stream<BaseState> _createNewWorksheet() async* {
+    _service.addEmptyWorksheet();
   }
 
   @override
