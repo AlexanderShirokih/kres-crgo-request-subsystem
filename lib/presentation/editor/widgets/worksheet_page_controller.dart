@@ -8,7 +8,7 @@ import 'package:kres_requests2/presentation/confirmation_dialog.dart';
 
 import 'worksheet_tab_view.dart';
 
-/// Show a tabs for worksheets that currently exists in the document to
+/// Shows a tabs for worksheets that currently exists in the document to
 /// switch between pages
 /// Requires [DocumentBloc] to be injected in the widget tree
 class WorksheetsPageController extends StatelessWidget {
