@@ -43,6 +43,7 @@ class RequestItemView extends StatelessWidget {
       child: Card(
         color: isHighlighted ? Colors.yellow : Colors.white,
         child: Stack(
+          clipBehavior: Clip.hardEdge,
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -70,101 +71,7 @@ class RequestItemView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (isSelected != null)
-                Checkbox(
-                    value: isSelected,
-                    onChanged: (newValue) {
-                      if (newValue != null) {
-                        onChanged(newValue);
-                      }
-                    }),
-              // First column
-              Text(position.toString()),
-              const SizedBox(width: 16.0),
-              SizedBox(
-                width: 72.0,
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      request.accountId?.toString().padLeft(6, '0') ?? "--",
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w800, fontSize: 20.0),
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text(request.requestType?.shortName ?? "--"),
-                  ],
-                ),
-              ),
-              // Second column
-              const SizedBox(width: 12.0),
-              SizedBox(
-                width: 360.0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(request.name, style: const TextStyle(fontSize: 20.0)),
-                    const SizedBox(height: 6.0),
-                    Text(
-                      request.address,
-                      style: const TextStyle(
-                        fontSize: 18.0,
-                      ),
-                    ),
-                    const SizedBox(height: 16.0),
-                    Text(
-                      request.reason ?? '',
-                      style: Theme.of(context)
-                          .textTheme
-                          .caption!
-                          .copyWith(fontSize: 16.0),
-                    ),
-                  ],
-                ),
-              ),
-              // Third column
-              const SizedBox(width: 12.0),
-              SizedBox(
-                width: 320.0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 220.0,
-                          child: Text(
-                            request.counter?.mainInfo ?? 'ПУ отсутств.',
-                            style: const TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 4.0),
-                        Text(
-                          request.counter?.checkInfo ?? '',
-                          style: const TextStyle(
-                            fontSize: 16.0,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10.0),
-                    _printConnectionPoint(request.connectionPoint),
-                    const SizedBox(height: 10.0),
-                    _printPhone(request.phoneNumber),
-                  ],
-                ),
-              )
-            ],
-          ),
+          _buildMainContentRow(context),
           const Divider(),
           Padding(
             padding: const EdgeInsets.only(left: 24.0),
@@ -174,6 +81,174 @@ class RequestItemView extends StatelessWidget {
             ),
           ),
         ],
+      );
+
+  Widget _buildMainContentRow(BuildContext context) => LayoutBuilder(
+        builder: (context, constrains) {
+          if (constrains.maxWidth >= 800) {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isSelected != null) _selectionCheckbox(context),
+                // First column
+                Text(position.toString()),
+                const SizedBox(width: 16.0),
+                _accountIdAndRequestType(context),
+                // Second column
+                const SizedBox(width: 12.0),
+                _nameAddressAndReason(context),
+                // Third column
+                const SizedBox(width: 12.0),
+                _connectionPointAndPhone(context),
+              ],
+            );
+          } else {
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isSelected != null) _selectionCheckbox(context),
+                // First column
+                Text(position.toString()),
+                const SizedBox(width: 16.0),
+                _simpleLayout(context),
+              ],
+            );
+          }
+        },
+      );
+
+  Widget _simpleLayout(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 320.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(request.name, style: const TextStyle(fontSize: 20.0)),
+              const SizedBox(height: 8.0),
+              Text(request.address, style: const TextStyle(fontSize: 18.0)),
+              const SizedBox(height: 10.0),
+              _printReason(context),
+              const SizedBox(height: 10.0),
+              _printPhone(request.phoneNumber),
+            ],
+          ),
+        ),
+        const SizedBox(width: 20.0),
+        SizedBox(
+          width: 180.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                request.counter != null ? '№${request.counter!.number}' : '',
+                style: const TextStyle(fontSize: 18.0),
+              ),
+              const SizedBox(height: 6.0),
+              Text(
+                request.counter?.type ?? 'ПУ отсутств.',
+                style: const TextStyle(fontSize: 18.0),
+              ),
+              const SizedBox(height: 6.0),
+              Text(
+                request.counter?.checkInfo ?? '',
+                style: const TextStyle(fontSize: 16.0),
+              ),
+              const SizedBox(height: 10.0),
+              _printConnectionPoint(request.connectionPoint),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _selectionCheckbox(BuildContext context) => Checkbox(
+      value: isSelected,
+      onChanged: (newValue) {
+        if (newValue != null) {
+          onChanged(newValue);
+        }
+      });
+
+  Widget _accountIdAndRequestType(BuildContext context) => SizedBox(
+        width: 72.0,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              request.accountId?.toString().padLeft(6, '0') ?? "--",
+              style:
+                  const TextStyle(fontWeight: FontWeight.w800, fontSize: 20.0),
+            ),
+            const SizedBox(height: 8.0),
+            Text(request.requestType?.shortName ?? "--"),
+          ],
+        ),
+      );
+
+  Widget _nameAddressAndReason(BuildContext context) => SizedBox(
+        width: 360.0,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(request.name, style: const TextStyle(fontSize: 20.0)),
+            const SizedBox(height: 6.0),
+            Text(
+              request.address,
+              style: const TextStyle(
+                fontSize: 18.0,
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            _printReason(context),
+          ],
+        ),
+      );
+
+  Widget _printReason(BuildContext context) => Text(
+        request.reason ?? '',
+        style: Theme.of(context).textTheme.caption!.copyWith(fontSize: 16.0),
+      );
+
+  Widget _connectionPointAndPhone(BuildContext context) => SizedBox(
+        width: 320.0,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                SizedBox(
+                  width: 220.0,
+                  child: Text(
+                    request.counter?.mainInfo ?? 'ПУ отсутств.',
+                    style: const TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4.0),
+                Text(
+                  request.counter?.checkInfo ?? '',
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10.0),
+            _printConnectionPoint(request.connectionPoint),
+            const SizedBox(height: 10.0),
+            _printPhone(request.phoneNumber),
+          ],
+        ),
       );
 
   Widget _printPhone(String? phone) {
