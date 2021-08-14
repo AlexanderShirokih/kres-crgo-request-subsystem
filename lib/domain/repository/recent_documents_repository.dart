@@ -31,10 +31,18 @@ class RecentDocumentsRepository extends PersistedStorageRepository<
   @override
   Future<RecentDocumentInfo> add(RecentDocumentInfo entity) async {
     final recentDao = dao as RecentDocumentsDao;
+
+    // Last document is the same
     final last = await recentDao.findLast();
 
     if (last != null && last.path.path == entity.path.path) {
       return last;
+    }
+
+    // Check whether document was already opened
+    final all = await recentDao.findAll();
+    for (final dup in all.where((element) => element.path.path == entity.path.path)) {
+      await recentDao.delete(dup);
     }
 
     final count = await dao.count();

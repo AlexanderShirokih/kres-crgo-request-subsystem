@@ -33,6 +33,8 @@ dependencies:
   file_selector_linux: ^0.0.2
   file_selector_windows: ^0.0.2
 
+  synchronized: ^3.0.0
+
   window_control:
     path: window_control/
 

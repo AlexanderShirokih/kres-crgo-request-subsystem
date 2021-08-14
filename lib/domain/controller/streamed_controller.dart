@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:synchronized/synchronized.dart';
+
 import 'repository_controller.dart';
 
 class StreamedRepositoryController<E>
     implements AbstractRepositoryController<E> {
   final AbstractRepositoryController<E> _underlyingController;
   final StreamController<List<E>> _streamController = StreamController();
+  final _commitLock = Lock();
 
   StreamedRepositoryController(this._underlyingController);
 
@@ -26,13 +29,13 @@ class StreamedRepositoryController<E>
   }
 
   @override
-  Future<bool> commit() async {
-    final hasChanges = await _underlyingController.commit();
-    if (hasChanges) {
-      fetchData();
-    }
-    return hasChanges;
-  }
+  Future<bool> commit() => _commitLock.synchronized(() async {
+        final hasChanges = await _underlyingController.commit();
+        if (hasChanges) {
+          fetchData();
+        }
+        return hasChanges;
+      });
 
   @override
   void delete(E entity) {

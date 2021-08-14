@@ -2,12 +2,16 @@ import 'package:kres_requests2/data/dao/dao.dart';
 import 'package:kres_requests2/data/persistence_exception.dart';
 import 'package:kres_requests2/domain/repository/repository.dart';
 import 'package:meta/meta.dart';
+import 'package:synchronized/synchronized.dart';
 
 import 'persisted_object.dart';
 
 /// Implements employee repository for persisting objects in the database
 class PersistedStorageRepository<E, PE extends PersistedObject<int>>
     extends Repository<E> {
+  /// Use this object to  prevent concurrent access to data
+  final writeLock = Lock();
+
   @protected
   final Dao<E, PE> dao;
 
@@ -23,8 +27,8 @@ class PersistedStorageRepository<E, PE extends PersistedObject<int>>
   }
 
   @override
-  Future<E> add(E entity) async {
-    return ((await dao.insert(entity)) as E);
+  Future<E> add(E entity) {
+    return writeLock.synchronized(() async => (await dao.insert(entity)) as E);
   }
 
   @override
@@ -35,7 +39,7 @@ class PersistedStorageRepository<E, PE extends PersistedObject<int>>
   @override
   Future<void> update(E entity) async {
     if (entity is PE) {
-      return dao.update(entity);
+      return await writeLock.synchronized(() => dao.update(entity));
     } else {
       throw PersistenceException.notPersisted();
     }

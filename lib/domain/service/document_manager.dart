@@ -246,6 +246,14 @@ class DocumentManager {
     } else {
       _selectedIndex.add(currentDocs.length - 1);
     }
+
+    final currentSavePath = document.currentSavePath;
+    if (currentSavePath != null) {
+      // Update file in the recent documents list
+      _repositoryController.add(RecentDocumentInfo(path: currentSavePath));
+    }
+
+    await _repositoryController.commit();
   }
 
   /// Saves the document using [DocumentSaver].
@@ -281,7 +289,7 @@ class DocumentManager {
         }
       }
 
-      // Register file in the recent documents list
+      // Update file in the recent documents list
       _repositoryController.add(RecentDocumentInfo(path: savePath));
       await _repositoryController.commit();
 
