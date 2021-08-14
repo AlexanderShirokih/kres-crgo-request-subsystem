@@ -69,7 +69,22 @@ class WorksheetEditorView extends HookWidget {
           Center(
             child: SizedBox(
               width: 895.0,
-              child: _buildContent(context, state, scroll, isSelected),
+              child: LayoutBuilder(
+                builder: (context, constrains) {
+                  if (constrains.maxWidth < 400.0) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _smallSizeBadge(context),
+                        Expanded(child: _buildContent(context, state, scroll, isSelected)),
+                      ],
+                    );
+                  } else {
+                    return _buildContent(context, state, scroll, isSelected);
+                  }
+                },
+              ),
             ),
           ),
         Align(
@@ -111,6 +126,25 @@ class WorksheetEditorView extends HookWidget {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _smallSizeBadge(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        width: 150.0,
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Text(
+          'Размер окна слишком мал, чтобы уместить все элементы',
+          style: theme.textTheme.bodyText1!.copyWith(color: Colors.white),
+        ),
+      ),
     );
   }
 
