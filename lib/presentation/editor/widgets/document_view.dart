@@ -32,29 +32,12 @@ class DocumentView extends HookWidget {
     final Animation<double> configViewWidth =
         CurvedAnimation(parent: configViewAnimator, curve: Curves.easeIn);
 
-    return Stack(children: [
-      Positioned.fill(
-        child: _buildEditor(
-          context,
-          configViewWidth,
-          configViewAnimator,
-          isConfigViewOpened,
-        ),
-      ),
-      // FIXME: BROKEN
-      // if (state is WorksheetMasterSearchingState)
-      // Align(
-      //   alignment: Alignment.topRight,
-      //   child: Padding(
-      //     padding: const EdgeInsets.only(top: 12.0, right: 12.0),
-      //     child: SearchBox(
-      //       textWatcher: (String searchText) => context
-      //           .read<WorksheetMasterBloc>()
-      //           .add(WorksheetMasterSearchEvent(searchText)),
-      //     ),
-      //   ),
-      // ),
-    ]);
+    return _buildEditor(
+      context,
+      configViewWidth,
+      configViewAnimator,
+      isConfigViewOpened,
+    );
   }
 
   Widget _buildEditor(
@@ -67,16 +50,18 @@ class DocumentView extends HookWidget {
       return IndexedStack(
         index: info.activePosition,
         children: info.all
-            .map((e) => BlocProvider<WorksheetBloc>(
-                  key: ObjectKey(e),
+            .map((worksheet) => BlocProvider<WorksheetBloc>(
+                  key: ObjectKey(worksheet),
                   create: (_) => WorksheetBloc(
                     Modular.get<WorksheetService>(),
                     WorksheetNavigationRoutesImpl(
                       context,
                       Modular.get(),
                     ),
-                  )..add(SetCurrentWorksheetEvent(e)),
-                  child: WorksheetEditorView(),
+                  )..add(SetCurrentWorksheetEvent(worksheet)),
+                  child: WorksheetEditorView(
+                    filtered: info.filtered[worksheet] ?? const [],
+                  ),
                 ))
             .toList(),
       );

@@ -21,9 +21,6 @@ class DocumentScope extends WidgetModule {
 
   @override
   List<Bind<Object>> get binds => [
-        Bind.singleton<DocumentFilter>(
-          (i) => DocumentFilter(document),
-        ),
         Bind.singleton<RequestService>(
           (i) => RequestService(
             i<Repository<RequestType>>(),

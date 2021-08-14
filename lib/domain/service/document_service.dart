@@ -4,11 +4,11 @@ import 'package:kres_requests2/domain/models.dart';
 /// Service for handling actions on document
 class DocumentService {
   final Document document;
-  final DocumentFilter _documentFilter;
+  final DocumentFilter documentFilter;
 
   DocumentService(
     this.document,
-    this._documentFilter,
+    this.documentFilter,
   );
 
   /// Adds an empty worksheet to the document
@@ -29,6 +29,6 @@ class DocumentService {
   /// Sets the current document search text filter.
   /// When [searchText] is empty filter will be disabled
   void setSearchFilter(String searchText) {
-    _documentFilter.setSearchingTest(searchText);
+    documentFilter.setSearchText(searchText);
   }
 }

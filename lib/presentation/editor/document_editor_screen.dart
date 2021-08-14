@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/presentation/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/presentation/common/dialog_service.dart';
+import 'package:kres_requests2/presentation/common/search_bar.dart';
 import 'package:kres_requests2/presentation/editor/save_before_exit_dialog.dart';
 import 'package:kres_requests2/presentation/editor/widgets/document_tabs_bar.dart';
 import 'package:window_control/window_listener.dart';
@@ -50,24 +51,7 @@ class DocumentEditorScreen extends HookWidget {
                 appBar: _buildAppBar(),
                 body: DialogManager(
                   dialogService: Modular.get(),
-                  child: Stack(children: [
-                    Positioned.fill(
-                      child: _buildEditor(context, state),
-                    ),
-                    // FIXME: BROKEN
-                    // if (state is WorksheetMasterSearchingState)
-                    // Align(
-                    //   alignment: Alignment.topRight,
-                    //   child: Padding(
-                    //     padding: const EdgeInsets.only(top: 12.0, right: 12.0),
-                    //     child: SearchBox(
-                    //       textWatcher: (String searchText) => context
-                    //           .read<WorksheetMasterBloc>()
-                    //           .add(WorksheetMasterSearchEvent(searchText)),
-                    //     ),
-                    //   ),
-                    // ),
-                  ]),
+                  child: _buildEditor(context, state),
                 ),
               ),
             ),
@@ -84,12 +68,17 @@ class DocumentEditorScreen extends HookWidget {
           child: DocumentTabsBar(),
         ),
         actions: [
-          _createActionButton(
-            icon: const FaIcon(FontAwesomeIcons.search),
-            tooltip: 'Поиск',
-            onPressed: (context) => context
-                .read<DocumentMasterBloc>()
-                .add(const WorksheetMasterSearchEvent()),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8.0,
+              vertical: 4.0,
+            ),
+            child: SearchBar(
+              expandedWidth: 400,
+              onUpdateSearchText: (context, text) => context
+                  .read<DocumentMasterBloc>()
+                  .add(WorksheetMasterSearchEvent(text)),
+            ),
           ),
           const SizedBox(width: 24.0),
           _createActionButton(

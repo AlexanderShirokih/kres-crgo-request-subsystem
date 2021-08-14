@@ -71,11 +71,12 @@ class ChangeGroupEvent extends WorksheetEvent {
 /// Used to trigger state update when worksheet changes
 class SetCurrentWorksheetEvent extends WorksheetEvent {
   final Worksheet worksheet;
+  final List<Request>? filtered;
 
-  const SetCurrentWorksheetEvent(this.worksheet) : super._();
+  const SetCurrentWorksheetEvent(this.worksheet, [this.filtered]) : super._();
 
   @override
-  List<Object?> get props => [worksheet];
+  List<Object?> get props => [worksheet, filtered];
 }
 
 /// Event used to edit existing request or create a new request

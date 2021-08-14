@@ -30,7 +30,9 @@ class WorksheetBloc extends Bloc<WorksheetEvent, WorksheetState> {
     WorksheetEvent event,
   ) async* {
     if (event is SetCurrentWorksheetEvent) {
-      yield* _keepSelectionState(_handleWorksheetUpdate(event.worksheet));
+      yield* _keepSelectionState(
+        _handleWorksheetUpdate(event.worksheet),
+      );
     } else if (event is EditRequestEvent) {
       yield* _editRequest(event.request);
     } else if (event is SwapRequestsEvent) {

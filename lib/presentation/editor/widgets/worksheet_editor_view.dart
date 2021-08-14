@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_bloc.dart';
 import 'package:kres_requests2/presentation/editor/requests_move_dialog/requests_move_dialog.dart';
 import 'package:kres_requests2/presentation/editor/widgets/request_item_view.dart';
@@ -11,11 +12,13 @@ import '../../confirmation_dialog.dart';
 /// Show the list of requests for target worksheet.
 /// Requires [WorksheetBloc] to be injected.
 class WorksheetEditorView extends HookWidget {
-  /// A list of currently highlighted requests
-  /// TODO: FIX
-  // final Stream<List<RequestEntity>> highlighted;
+  /// A list of currently filtered requests
+  final List<Request> filtered;
 
-  WorksheetEditorView({Key? key}) : super(key: key);
+  WorksheetEditorView({
+    Key? key,
+    required this.filtered,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +142,7 @@ class WorksheetEditorView extends HookWidget {
             position: index + 1,
             groupIndex: state.getGroup(request),
             defaultGroupIndex: state.lastGroupIndex,
-            isHighlighted: state.getIsHighlighted(request),
+            isHighlighted: filtered.contains(request),
             isSelected: isSelected,
             onChanged: (isSelected) => context.read<WorksheetBloc>().add(
                   RequestSelectionEvent(

@@ -66,7 +66,7 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
         popAfterSave: event.popAfterSave,
       );
     } else if (event is WorksheetMasterSearchEvent) {
-      yield* _toggleSearchMode(event);
+      yield* _updateSearchText(event);
     } else if (event is SaveAllEvent) {
       yield* _saveAllDocuments(event.saveAllBehaviour);
     } else if (event is DiscardChangesEvent) {
@@ -193,11 +193,9 @@ class DocumentMasterBloc extends Bloc<DocumentMasterEvent, DocumentMasterState>
     }
   }
 
-  Stream<DocumentMasterState> _toggleSearchMode(
+  Stream<DocumentMasterState> _updateSearchText(
       WorksheetMasterSearchEvent event) async* {
-    throw UnimplementedError();
-    // TODO: FIX SEARCH MODE!
-    // _service.setSearchFilter(event.searchText ?? '');
+    _documentManager.setSearchText(event.searchText);
   }
 
   @override

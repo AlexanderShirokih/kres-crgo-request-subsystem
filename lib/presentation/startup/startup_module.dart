@@ -8,6 +8,7 @@ import 'package:kres_requests2/data/models.dart';
 import 'package:kres_requests2/data/models/recent_document_info.dart';
 import 'package:kres_requests2/data/repository/storage_repository.dart';
 import 'package:kres_requests2/domain/domain.dart';
+import 'package:kres_requests2/domain/editor/document_filter.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/process_executor.dart';
 import 'package:kres_requests2/domain/repository/recent_documents_repository.dart';
@@ -37,6 +38,7 @@ class StartupModule extends Module {
             javaProcessHome: Directory('requests/lib'),
           ),
         ),
+        Bind.singleton<DocumentFilter>((i) => DocumentFilter()),
         Bind.instance<DocumentSaver>(
           const JsonDocumentSaver(saveLegacyInfo: true),
         ),
@@ -89,6 +91,7 @@ class StartupModule extends Module {
         Bind.singleton<DocumentManager>(
           (i) => DocumentManager(
             i<ExportFileChooser>(),
+            i<DocumentFilter>(),
             i<DocumentSaver>(),
             i<StreamedRepositoryController<RecentDocumentInfo>>(),
           ),

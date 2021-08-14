@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/domain/domain.dart';
+import 'package:kres_requests2/domain/editor/document_filter.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/export.dart';
@@ -48,11 +49,15 @@ class DocumentManager {
   /// Class that handles document saving
   final DocumentSaver _documentSaver;
 
+  /// Class used to filter request by certain search criteria
+  final DocumentFilter _documentFilter;
+
   StreamSubscription? _documentChangeListener;
 
   /// Creates a new document manager with empty document
   DocumentManager(
     this._savePathChooser,
+    this._documentFilter,
     this._documentSaver,
     this._repositoryController,
   )   : _openedDocuments = BehaviorSubject.seeded([]),
@@ -300,6 +305,10 @@ class DocumentManager {
 
     return savePath;
   }
+
+  /// Updates current search filter text
+  void setSearchText(String searchText) =>
+      _documentFilter.setSearchText(searchText);
 }
 
 enum DocumentSavingState {

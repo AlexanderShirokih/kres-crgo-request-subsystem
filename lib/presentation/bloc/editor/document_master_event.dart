@@ -105,11 +105,11 @@ class DiscardChangesEvent extends DocumentMasterEvent {
 }
 
 /// Event used to toggle searching mode with some searching text
-/// If [searchText] is `null` search mode will be disabled
+/// If [searchText] is empty search mode will be disabled
 class WorksheetMasterSearchEvent extends DocumentMasterEvent {
-  final String? searchText;
+  final String searchText;
 
-  const WorksheetMasterSearchEvent([this.searchText]) : super._();
+  const WorksheetMasterSearchEvent(this.searchText) : super._();
 
   @override
   List<Object?> get props => [searchText];

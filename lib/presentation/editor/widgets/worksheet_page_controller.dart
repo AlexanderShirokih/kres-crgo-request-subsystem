@@ -24,6 +24,7 @@ class WorksheetsPageController extends StatelessWidget {
 
     final documentInfo = currentState.data;
     final worksheets = documentInfo.all;
+    final filtered = documentInfo.filtered;
     final active = documentInfo.active;
 
     return Padding(
@@ -42,6 +43,7 @@ class WorksheetsPageController extends StatelessWidget {
                     canRemove: worksheets.length == 1,
                     isActive: worksheets[index] == active,
                     current: worksheets[index],
+                    filtered: (filtered[worksheets[index]] ?? []).length,
                   );
           }),
     );
@@ -52,15 +54,12 @@ class WorksheetsPageController extends StatelessWidget {
     required Worksheet current,
     required bool isActive,
     required bool canRemove,
+    required int filtered,
   }) {
     return WorksheetTabView(
       key: ObjectKey(current),
       worksheet: current,
-      filteredItemsCount:
-          // TODO: Broken code
-          // state is WorksheetMasterSearchingState
-          //     ? state.filteredItems[current]?.length ?? 0:
-          0,
+      filteredItemsCount: filtered,
       isActive: isActive,
       onSelect: () => context
           .read<DocumentBloc>()

@@ -19,13 +19,17 @@ class DocumentInfo extends Equatable {
   /// All available worksheets
   final List<Worksheet> all;
 
+  /// Requests that passes the search filter associated with its owning worksheet.
+  /// Empty either if no matching requests at this document or search filter is empty
+  final Map<Worksheet, List<Request>> filtered;
+
   /// Returns index of active worksheet in [all] list
   int get activePosition => all.indexWhere((ws) => ws == active);
 
-  const DocumentInfo(this.active, this.all);
+  const DocumentInfo(this.active, this.all, this.filtered);
 
   @override
-  List<Object?> get props => [active, all];
+  List<Object?> get props => [active, all, filtered];
 }
 
 /// BLoC to manage document state
@@ -39,10 +43,12 @@ class DocumentBloc extends Bloc<DocumentEvent, BaseState> {
   DocumentBloc(this._service) : super(const InitialState()) {
     final worksheets = _service.document.worksheets;
 
-    _subscription = Rx.combineLatest2<List<Worksheet>, Worksheet, DocumentInfo>(
+    _subscription = Rx.combineLatest3<List<Worksheet>, Worksheet,
+        Map<Worksheet, List<Request>>, DocumentInfo>(
       worksheets.stream,
       worksheets.activeStream,
-      (all, active) => DocumentInfo(active, all),
+      _service.documentFilter.filterRequests(worksheets),
+      (all, active, filtered) => DocumentInfo(active, all, filtered),
     ).listen((info) => add(_UpdateDocumentInfo(info)));
   }
 

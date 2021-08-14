@@ -1,32 +1,30 @@
-import 'package:kres_requests2/domain/models/document.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/domain/models/worksheet.dart';
+import 'package:kres_requests2/domain/models/worksheets_list.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Class that responsible for filtering requests that matches search criteria
-class DocumentFilter {
-  final Document _document;
+class DocumentFilter implements Disposable {
+  final BehaviorSubject<String> _searchText = BehaviorSubject.seeded('');
 
-  /// Creates new [DocumentFilter] from existing document
-  DocumentFilter(this._document);
-
-  final BehaviorSubject<String> _searchingText = BehaviorSubject.seeded('');
-
-  void setSearchingTest(String searchingText) {
-    _searchingText.add(searchingText);
+  void setSearchText(String searchText) {
+    _searchText.add(searchText);
   }
 
-  Stream<Map<Worksheet, List<Request>>> get filteredRequests =>
+  Stream<Map<Worksheet, List<Request>>> filterRequests(
+    WorksheetsList worksheets,
+  ) =>
       Rx.combineLatest2(
-        _searchingText,
-        _document.worksheets.stream,
+        _searchText.distinct(),
+        worksheets.stream,
         _filterRequests,
       );
 
   Map<Worksheet, List<Request>> _filterRequests(
       String searchText, List<Worksheet> ws) {
     if (searchText.isEmpty) {
-      return <Worksheet, List<Request>>{};
+      return const {};
     }
 
     searchText = searchText.toLowerCase();
@@ -46,5 +44,8 @@ class DocumentFilter {
   }
 
   /// Closes internal resources
-  Future<void> close() => _searchingText.close();
+  @override
+  void dispose() {
+    _searchText.close();
+  }
 }

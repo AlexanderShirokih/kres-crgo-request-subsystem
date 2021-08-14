@@ -59,17 +59,10 @@ class WorksheetDataState extends WorksheetState {
     return groupList.isNotEmpty ? groupList[request] ?? 0 : 0;
   }
 
-  /// Returns `true` if [request] is highlighted
-  bool getIsHighlighted(Request request) {
-    // TODO: Implement highlighting
-    // highlighted != null &&
-    //     highlighted!.contains(request),
-    return false;
-  }
-
   /// Creates a deep copy with customizable params
   WorksheetDataState copyWith({
     List<Request>? requests,
+    List<Request>? highlighted,
     Map<Request, int>? groupList,
     int? lastGroupIndex,
     Worksheet? worksheet,
@@ -77,9 +70,9 @@ class WorksheetDataState extends WorksheetState {
   }) =>
       WorksheetDataState(
         document: document ?? this.document,
-        worksheet: worksheet ?? this.worksheet,
         requests: requests ?? this.requests,
         groupList: groupList ?? this.groupList,
+        worksheet: worksheet ?? this.worksheet,
         lastGroupIndex: lastGroupIndex ?? this.lastGroupIndex,
       );
 }
