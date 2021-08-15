@@ -10,6 +10,7 @@ class DatabaseModule extends Module {
         Bind.factory(
           (i) => DatabaseExporter([
             i<RequestTypeDao>(),
+            i<MegaBillingMatchingDao>(),
             i<PositionDao>(),
             i<EmployeeDao>(),
           ]),

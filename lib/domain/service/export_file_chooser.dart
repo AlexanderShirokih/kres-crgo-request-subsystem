@@ -1,5 +1,7 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:kres_requests2/domain/models.dart';
+import 'package:kres_requests2/domain/usecases/storage/update_last_working_directory.dart';
+import 'package:kres_requests2/domain/usecases/usecases.dart';
 import 'package:path/path.dart' as path;
 
 /// Interface for picking filenames from the storage
@@ -12,13 +14,22 @@ abstract class ExportFileChooser {
 
 /// Default implementation of [ExportFileChooser]
 class ExportFileChooserImpl implements ExportFileChooser {
+  final UpdateLastWorkingDirectory updateWorkingDirectory;
+  final AsyncUseCase<String> getWorkingDirectory;
+
+  ExportFileChooserImpl({
+    required this.getWorkingDirectory,
+    required this.updateWorkingDirectory,
+  });
+
   @override
   Future<String?> getFile(ExportFormat format, Document document) async {
     final extension = format.extension();
     final suggested = '${document.suggestedName}.$extension';
     final dotExtension = '.$extension';
     final res = await getSavePath(
-      initialDirectory: document.currentSavePath?.parent.absolute.path,
+      initialDirectory: document.currentSavePath?.parent.absolute.path ??
+          (await getWorkingDirectory()),
       suggestedName: _correctExtension(suggested, dotExtension),
       confirmButtonText: 'Сохранить',
       acceptedTypeGroups: [
@@ -38,6 +49,8 @@ class ExportFileChooserImpl implements ExportFileChooser {
     if (res == null) {
       return null;
     }
+
+    await updateWorkingDirectory(res);
 
     return _correctExtension(res, dotExtension);
   }

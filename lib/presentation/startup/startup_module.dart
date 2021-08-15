@@ -52,7 +52,10 @@ class StartupModule extends Module {
         Bind.instance<DocumentSaver>(
           const JsonDocumentSaver(saveLegacyInfo: true),
         ),
-        Bind.factory<ExportFileChooser>((i) => ExportFileChooserImpl()),
+        Bind.factory<ExportFileChooser>((i) => ExportFileChooserImpl(
+              getWorkingDirectory: i<GetLastWorkingDirectory>(),
+              updateWorkingDirectory: i<UpdateLastWorkingDirectory>(),
+            )),
         Bind.factory<AbstractRequestProcessor>(
           (i) => MegaBillingRequestProcessorImpl(
             i<ProcessExecutor>(),
