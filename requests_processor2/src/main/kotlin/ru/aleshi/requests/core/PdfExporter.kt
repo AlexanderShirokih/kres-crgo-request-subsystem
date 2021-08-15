@@ -21,10 +21,11 @@ class PdfExporter(private val document: Document) {
     private val loader = PdfExporter::class.java.classLoader
 
     fun print(printer: PrintService, noLists: Boolean) {
+        val orderTemplate = PDDocument.load(loader.getResourceAsStream("templates/order.pdf"))
         val worksheets = document.worksheets
         val ordersDoc = PDDocument().apply {
             writeOrders(
-                this, worksheets, PDType0Font.load(
+                this, orderTemplate, worksheets, PDType0Font.load(
                     this,
                     loader.getResourceAsStream("fonts/Roboto-Regular.ttf"), false
                 )
@@ -65,6 +66,8 @@ class PdfExporter(private val document: Document) {
     }
 
     fun export(destinationPath: String) {
+        val orderTemplate = PDDocument.load(loader.getResourceAsStream("templates/order.pdf"))
+
         val worksheets = document.worksheets
         val target = PDDocument()
         val font = PDType0Font.load(
@@ -72,16 +75,19 @@ class PdfExporter(private val document: Document) {
             loader.getResourceAsStream("fonts/Roboto-Regular.ttf"), false
         )
 
-        writeOrders(target, worksheets, font)
+        writeOrders(target, orderTemplate, worksheets, font)
         writeLists(target, worksheets, font)
 
         target.save(destinationPath)
         target.close()
     }
 
-    private fun writeOrders(target: PDDocument, worksheets: List<Worksheet>, font: PDFont) {
-        val orderTemplate = PDDocument.load(loader.getResourceAsStream("templates/order.pdf"))
-
+    private fun writeOrders(
+        target: PDDocument,
+        orderTemplate: PDDocument,
+        worksheets: List<Worksheet>,
+        font: PDFont,
+    ) {
         for (worksheet in worksheets) {
             writeFirstPage(target, target.importPage(orderTemplate.getPage(0)), font, worksheet)
             writeSecondPage(target, target.importPage(orderTemplate.getPage(1)), font, worksheet)
