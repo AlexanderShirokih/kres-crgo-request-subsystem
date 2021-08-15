@@ -27,7 +27,7 @@ class DocumentView extends HookWidget {
     final isConfigViewOpened = useState(false);
 
     final AnimationController configViewAnimator =
-        useAnimationController(duration: const Duration(milliseconds: 500));
+        useAnimationController(duration: const Duration(milliseconds: 300));
 
     final Animation<double> configViewWidth =
         CurvedAnimation(parent: configViewAnimator, curve: Curves.easeIn);

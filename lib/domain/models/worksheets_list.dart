@@ -53,7 +53,9 @@ class WorksheetsList extends Equatable implements WorksheetChangeListener {
       Rx.combineLatest2<List<Worksheet>, int, Worksheet>(
         stream,
         _activeWorksheet,
-        (ws, int activeIdx) => ws[activeIdx],
+        (ws, int activeIdx) {
+          return ws[min(activeIdx, ws.length - 1)];
+        },
       ).distinct();
 
   /// Returns `true` if document is empty (doesn't have any request)

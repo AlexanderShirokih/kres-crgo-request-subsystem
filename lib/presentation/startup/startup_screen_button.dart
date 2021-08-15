@@ -30,7 +30,7 @@ class TextStartupTile extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 12.0),
+        const SizedBox(height: 8.0),
         Column(
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,7 +41,7 @@ class TextStartupTile extends StatelessWidget {
             ),
             const SizedBox(height: 18.0),
             SizedBox(
-              height: 52.0,
+              height: 56.0,
               child: Text(
                 description,
                 overflow: TextOverflow.fade,
