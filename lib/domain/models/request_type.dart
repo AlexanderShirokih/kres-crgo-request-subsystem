@@ -2,6 +2,12 @@ import 'package:equatable/equatable.dart';
 
 /// Describes request type
 class RequestType extends Equatable {
+
+  static const RequestType fallback = RequestType(
+    shortName: 'безд.',
+    fullName: 'Бездельничать',
+  );
+
   /// Request type short name
   final String shortName;
 

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:kres_requests2/data/models.dart';
 import 'package:kres_requests2/domain/controller/worksheet_editor.dart';
+import 'package:kres_requests2/domain/editor/decoding_pipeline.dart';
 import 'package:kres_requests2/domain/editor/document_factory.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/models/worksheets_list.dart';
@@ -10,11 +11,16 @@ import 'package:kres_requests2/domain/models/worksheets_list.dart';
 class JsonDocumentFactory implements DocumentFactory {
   final Map<String, dynamic> _data;
   final File? savePath;
+  final DecodingPipeline pipeline;
 
-  JsonDocumentFactory(this._data, [this.savePath]);
+  JsonDocumentFactory(
+    this._data, {
+    this.pipeline = const DecodingPipeline(),
+    this.savePath,
+  });
 
   @override
-  Document createDocument() {
+  Future<Document> createDocument() async {
     final document = Document(
       savePath: savePath,
       updateDate: _data['updateDate'] != null
@@ -23,7 +29,7 @@ class JsonDocumentFactory implements DocumentFactory {
     );
 
     for (final worksheet in (_data['worksheets'] as List<dynamic>)) {
-      _createWorksheet(document.worksheets, worksheet);
+      await _createWorksheet(document.worksheets, worksheet);
     }
 
     var activeWorksheetIdx = _data['activeWorksheet'] ?? 0;
@@ -39,7 +45,8 @@ class JsonDocumentFactory implements DocumentFactory {
     return document;
   }
 
-  void _createWorksheet(WorksheetsList worksheets, Map<String, dynamic> ws) {
+  Future<void> _createWorksheet(
+      WorksheetsList worksheets, Map<String, dynamic> ws) async {
     final worksheet = worksheets.add(
       name: ws['name'],
       mainEmployee: ws['mainEmployee'] == null
@@ -62,13 +69,14 @@ class JsonDocumentFactory implements DocumentFactory {
     );
 
     for (final request in (ws['requests'] as List<dynamic>)) {
-      _createRequestEntity(worksheet, request);
+      await _createRequestEntity(worksheet, request);
     }
 
     worksheet.commit();
   }
 
-  void _createRequestEntity(WorksheetEditor editor, Map<String, dynamic> data) {
+  Future<void> _createRequestEntity(
+      WorksheetEditor editor, Map<String, dynamic> data) async {
     final int? accountId = data['accountId'];
     final String name = data['name'];
     final String address = data['address'];
@@ -104,12 +112,14 @@ class JsonDocumentFactory implements DocumentFactory {
       additional = additional.replaceAll(RegExp(r'(тел\.\:|\|)'), '').trim();
     }
 
-    final requestType = data['type'] != null
+    final rawRequestType = data['type'] != null
         ? _createRequestType(data['type'])
         : RequestType(
             shortName: data['reqType'],
             fullName: data['fullReqType'] ?? data['reqType'],
           );
+
+    final requestType = await pipeline.processRequestType(rawRequestType);
 
     if (data['phone'] != null) {
       phone = data['phone'];

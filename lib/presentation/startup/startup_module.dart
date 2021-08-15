@@ -3,14 +3,19 @@ import 'dart:io';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/data/daos.dart';
 import 'package:kres_requests2/data/editor/json_document_saver.dart';
+import 'package:kres_requests2/data/editor/mega_billing_decoding_pipeline.dart';
 import 'package:kres_requests2/data/java/java_process_executor.dart';
 import 'package:kres_requests2/data/models.dart';
+import 'package:kres_requests2/data/models/mega_billing_matching.dart';
 import 'package:kres_requests2/data/models/recent_document_info.dart';
 import 'package:kres_requests2/data/repository/storage_repository.dart';
 import 'package:kres_requests2/domain/domain.dart';
+import 'package:kres_requests2/domain/editor/decoding_pipeline.dart';
 import 'package:kres_requests2/domain/editor/document_filter.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
+import 'package:kres_requests2/domain/models/mega_billing_matching.dart';
 import 'package:kres_requests2/domain/process_executor.dart';
+import 'package:kres_requests2/domain/repository/mega_billing_matching_repository.dart';
 import 'package:kres_requests2/domain/repository/recent_documents_repository.dart';
 import 'package:kres_requests2/domain/repository/settings_repository.dart';
 import 'package:kres_requests2/domain/request_processor.dart';
@@ -38,14 +43,20 @@ class StartupModule extends Module {
             javaProcessHome: Directory('requests/lib'),
           ),
         ),
+        Bind.factory<DecodingPipeline>(
+          (i) => MegaBillingDecodingPipeline(
+            i<MegaBillingMatchingRepository>(),
+          ),
+        ),
         Bind.singleton<DocumentFilter>((i) => DocumentFilter()),
         Bind.instance<DocumentSaver>(
           const JsonDocumentSaver(saveLegacyInfo: true),
         ),
         Bind.factory<ExportFileChooser>((i) => ExportFileChooserImpl()),
         Bind.factory<AbstractRequestProcessor>(
-          (i) => RequestProcessorImpl(
+          (i) => MegaBillingRequestProcessorImpl(
             i<ProcessExecutor>(),
+            i<DecodingPipeline>(),
             i<DocumentSaver>(),
           ),
         ),
@@ -87,6 +98,21 @@ class StartupModule extends Module {
         Bind.lazySingleton<StreamedRepositoryController<RecentDocumentInfo>>(
           (i) => StreamedRepositoryController(
               RepositoryController(const RecentDocumentBuilder(), i())),
+        ),
+        // Mega-billing-related binds
+        Bind.lazySingleton<Dao<MegaBillingMatching, MegaBillingMatchingEntity>>(
+          (i) => MegaBillingMatchingDao(i(), i()),
+        ),
+        Bind.factory<Repository<MegaBillingMatching>>(
+            (i) => MegaBillingMatchingRepository(i())),
+        Bind.factory<StreamedRepositoryController<MegaBillingMatching>>(
+          (i) => StreamedRepositoryController(
+            RepositoryController(
+                const MegaBillingMatchingPersistedBuilder(), i()),
+          ),
+        ),
+        Bind.factory<MappedValidator<MegaBillingMatching>>(
+          (i) => MegaBillingMatchValidator(),
         ),
         Bind.singleton<DocumentManager>(
           (i) => DocumentManager(

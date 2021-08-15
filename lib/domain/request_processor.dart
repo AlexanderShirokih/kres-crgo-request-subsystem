@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/editor/json_document_factory.dart';
+import 'package:kres_requests2/domain/editor/decoding_pipeline.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/process_executor.dart';
@@ -36,12 +38,14 @@ abstract class AbstractRequestProcessor {
   Future<List<String>> listPrinters();
 }
 
-class RequestProcessorImpl extends AbstractRequestProcessor {
+class MegaBillingRequestProcessorImpl extends AbstractRequestProcessor {
   final ProcessExecutor _requestsProcessExecutor;
+  final DecodingPipeline _megaBillingPipeline;
   final DocumentSaver _saver;
 
-  const RequestProcessorImpl(
+  const MegaBillingRequestProcessorImpl(
     this._requestsProcessExecutor,
+    this._megaBillingPipeline,
     this._saver,
   );
 
@@ -105,14 +109,19 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
     return _decodeProcessResult<Document>(
       processResult,
       (requests) {
-        return JsonDocumentFactory({
-          'worksheets': [
-            {
-              'name': path.basenameWithoutExtension(filePath),
-              'requests': requests,
-            }
-          ],
-        }).createDocument();
+        final factory = JsonDocumentFactory(
+          {
+            'worksheets': [
+              {
+                'name': path.basenameWithoutExtension(filePath),
+                'requests': requests,
+              }
+            ],
+          },
+          pipeline: _megaBillingPipeline,
+        );
+
+        return factory.createDocument();
       },
       "Parsing error!",
     );
@@ -129,7 +138,7 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
   }
 
   Future<T> _decodeProcessResult<T>(ProcessResult result,
-      T Function(dynamic) dataConsumer, String errorMsg) async {
+      FutureOr<T> Function(dynamic) dataConsumer, String errorMsg) async {
     if (result.exitCode == 0) {
       // Process finishes successfully
       return await Future.microtask(
@@ -140,8 +149,8 @@ class RequestProcessorImpl extends AbstractRequestProcessor {
     throw RequestProcessorError(errorMsg, result.stderr);
   }
 
-  T _createFromProcessResult<T>(
-      Map<String, dynamic> json, T Function(dynamic) resultBuilder) {
+  FutureOr<T> _createFromProcessResult<T>(
+      Map<String, dynamic> json, FutureOr<T> Function(dynamic) resultBuilder) {
     final data = json['data'];
 
     if (data != null) {

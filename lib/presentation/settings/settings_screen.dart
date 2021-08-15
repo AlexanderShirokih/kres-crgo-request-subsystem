@@ -7,6 +7,7 @@ import 'package:kres_requests2/presentation/settings/request_types/request_types
 
 import 'db_utils/db_utils_screen.dart';
 import 'java_path_selector/java_path_selector_screen.dart';
+import 'mega_billing_matching/mega_billing_mathcing_screen.dart';
 
 /// The settings screen. Provides access to main app preference tables and
 /// ability to configure main parameters.
@@ -52,6 +53,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: const FaIcon(FontAwesomeIcons.wrench),
         title: 'Типы заявок',
         builder: () => const RequestTypesScreen(),
+      ),
+      _NavigableItem(
+        icon: const FaIcon(FontAwesomeIcons.wrench),
+        title: 'Сопоставление с Mega-Billing',
+        builder: () => const MegaBillingMatchingScreen(),
       ),
       _NavigableItem(
         icon: const FaIcon(FontAwesomeIcons.java),

@@ -22,8 +22,12 @@ class NativeImporterService extends DocumentImporter {
     final fileContent = await documentFile.readAsString();
     final jsonData = jsonDecode(fileContent);
 
-    final documentFactory = JsonDocumentFactory(jsonData, documentFile);
-    final document = documentFactory.createDocument();
+    final documentFactory = JsonDocumentFactory(
+      jsonData,
+      savePath: documentFile,
+    );
+
+    final document = await documentFactory.createDocument();
 
     final optDocument = tableChooser == null
         ? document
