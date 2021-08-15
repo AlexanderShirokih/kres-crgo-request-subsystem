@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/presentation/bloc/editor/worksheet_config_view/worksheet_config_bloc.dart';
 
 class WorkTypesList extends StatefulWidget {
@@ -26,13 +27,14 @@ class _WorkTypesListState extends State<WorkTypesList> {
             child: Text('Виды работ:',
                 style: Theme.of(context).textTheme.headline6),
           ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Добавить',
-            onPressed: () => setState(() {
-              _hasAdditionalField = true;
-            }),
-          ),
+          // TODO: fix or remove this behaviour
+          // IconButton(
+          //   icon: const Icon(Icons.add),
+          //   tooltip: 'Добавить',
+          //   onPressed: () => setState(() {
+          //     _hasAdditionalField = true;
+          //   }),
+          // ),
           const SizedBox(width: 8.0),
         ],
       ),
@@ -48,17 +50,19 @@ class _WorkTypesListState extends State<WorkTypesList> {
       children: allWorkTypes
           .map(
             (e) => ListTile(
-              leading: IconButton(
-                icon: const Icon(Icons.remove_circle_outline, size: 16.0),
-                onPressed: () => setState(() {
-                  if (e == null) {
-                    _hasAdditionalField = false;
-                  } else {
-                    allWorkTypes.remove(e);
-                    _updateWorkTypes(allWorkTypes);
-                  }
-                }),
-              ),
+              // TODO: Fix or remove
+              // leading: IconButton(
+              //   // icon: const Icon(Icons.remove_circle_outline, size: 16.0),
+              //   onPressed: () => setState(() {
+              //     if (e == null) {
+              //       _hasAdditionalField = false;
+              //     } else {
+              //       allWorkTypes.remove(e);
+              //       _updateWorkTypes(allWorkTypes);
+              //     }
+              //   }),
+              // ),
+              leading: const FaIcon(FontAwesomeIcons.check),
               title: e != null
                   ? Text(e)
                   : TextField(
