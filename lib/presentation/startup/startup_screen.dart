@@ -6,6 +6,7 @@ import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/recent_document_info.dart';
 import 'package:kres_requests2/presentation/bloc/startup/recent_docs_bloc.dart';
 import 'package:kres_requests2/presentation/startup/startup_screen_button.dart';
+import 'package:window_control/window_control.dart';
 
 /// Shows startup wizard
 class StartupScreen extends StatelessWidget {
@@ -16,6 +17,13 @@ class StartupScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Начало работы'),
           actions: [
+            IconButton(
+              onPressed: () {
+                print("Hit the close!");
+                WindowControl.instance.triggerClosing();
+              },
+              icon: Icon(Icons.work_outline),
+            ),
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: IconButton(
