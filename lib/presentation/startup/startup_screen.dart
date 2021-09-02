@@ -1,48 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/models/recent_document_info.dart';
 import 'package:kres_requests2/presentation/bloc/startup/recent_docs_bloc.dart';
 import 'package:kres_requests2/presentation/startup/startup_screen_button.dart';
+import 'package:window_control/window_control.dart';
 
 /// Shows startup wizard
-class StartupScreen extends StatelessWidget {
+class StartupScreen extends HookWidget {
   const StartupScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Начало работы'),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: IconButton(
-                icon: const FaIcon(FontAwesomeIcons.cog),
-                onPressed: () => Modular.to.pushNamed('/settings'),
-              ),
-            ),
-          ],
-        ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 700.0,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _createGroupTitle(context, 'Действия'),
-                _createMainActionsButtons(context),
-                _createGroupTitle(context, 'Последние'),
-                _createRecentlyOpenedItems(),
-              ],
+  Widget build(BuildContext context) {
+    useEffect(() {
+      WindowControl.init();
+    });
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Начало работы'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: const FaIcon(FontAwesomeIcons.cog),
+              onPressed: () => Modular.to.pushNamed('/settings'),
             ),
           ),
+        ],
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 700.0,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _createGroupTitle(context, 'Действия'),
+              _createMainActionsButtons(context),
+              _createGroupTitle(context, 'Последние'),
+              _createRecentlyOpenedItems(),
+            ],
+          ),
         ),
-      );
+      ),
+    );
+  }
 
   Widget _createGroupTitle(BuildContext context, String groupTitle) => Padding(
         padding: const EdgeInsets.fromLTRB(0.0, 24.0, 0.0, 12.0),

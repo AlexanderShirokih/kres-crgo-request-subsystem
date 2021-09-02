@@ -11,8 +11,14 @@ class WindowControl {
   Queue<WindowClosingCallback> _onClosingCallbacks = Queue();
 
   static WindowControl get instance {
-    if (_instance == null) _instance = WindowControl();
-    return _instance!;
+    return _instance ?? WindowControl();
+  }
+
+  /**
+   * Initializes WindowsControl instance
+   */
+  static void init() {
+    instance;
   }
 
   WindowControl() {
@@ -22,11 +28,18 @@ class WindowControl {
   Future<dynamic> _onMethodCall(MethodCall call) {
     switch (call.method) {
       case "onWindowClosing":
-        if (_onClosingCallbacks.isEmpty) return Future.value(true);
-        return _onClosingCallbacks.last();
+        return _doWindowClosing();
     }
 
     throw ("Unexpected method was called: ${call.method}");
+  }
+
+  Future<bool> _doWindowClosing() {
+    if (_onClosingCallbacks.isEmpty) {
+      return Future.value(true);
+    }
+
+    return _onClosingCallbacks.last();
   }
 
   void addOnWindowClosingCallback(WindowClosingCallback onClosingCallback) {
