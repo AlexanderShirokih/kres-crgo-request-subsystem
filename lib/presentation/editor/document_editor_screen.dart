@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kres_requests2/domain/models/document.dart';
 import 'package:kres_requests2/domain/service/document_manager.dart';
 import 'package:kres_requests2/presentation/bloc/editor/document_master_bloc.dart';
 import 'package:kres_requests2/presentation/common/dialog_service.dart';
@@ -132,7 +133,7 @@ class DocumentEditorScreen extends HookWidget {
 
       content = TabBarView(
         children: allDocs
-            .map((docInfo) => DocumentScope(docInfo.document))
+            .map((docInfo) => _DocumentPageWrapper(document: docInfo.document))
             .toList(growable: false),
       );
     } else {
@@ -169,4 +170,29 @@ class DocumentEditorScreen extends HookWidget {
 
     return false;
   }
+}
+
+class _DocumentPageWrapper extends StatefulWidget {
+  final Document document;
+
+  const _DocumentPageWrapper({
+    required this.document,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  _DocumentPageWrapperState createState() => _DocumentPageWrapperState();
+}
+
+class _DocumentPageWrapperState extends State<_DocumentPageWrapper>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return DocumentScope(widget.document);
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }

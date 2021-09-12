@@ -51,7 +51,7 @@ class DocumentView extends HookWidget {
         index: info.activePosition,
         children: info.all
             .map((worksheet) => BlocProvider<WorksheetBloc>(
-                  key: ObjectKey(worksheet),
+                  key: ValueKey(worksheet.worksheetId),
                   create: (_) => WorksheetBloc(
                     Modular.get<WorksheetService>(),
                     WorksheetNavigationRoutesImpl(

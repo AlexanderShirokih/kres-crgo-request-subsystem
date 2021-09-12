@@ -45,6 +45,7 @@ class DocumentScope extends WidgetModule {
   @override
   Widget get view {
     return MultiBlocProvider(
+      key: ObjectKey(document),
       providers: [
         BlocProvider(create: (_) => Modular.get<DocumentBloc>()),
         BlocProvider(create: (_) => Modular.get<WorksheetConfigBloc>()),
