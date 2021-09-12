@@ -19,3 +19,9 @@ jobs:
           channel: beta
       - run: flutter config --enable-windows-desktop
       - run: flutter build windows
+      
+       # Upload generated apk to the artifacts.
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Windows build
+          path: build/windows/runner/Release/
