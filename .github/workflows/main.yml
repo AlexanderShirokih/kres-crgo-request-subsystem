@@ -20,9 +20,13 @@ jobs:
       - run: flutter config --enable-windows-desktop
       - run: flutter build windows
 
-      # Copy required libs and modules to build location
-      - run: xcopy *.dll build/windows/runner/Release/
-      - run: xcopy requests/ build/windows/runner/Release/requests/
+      - name: Copy requests module
+        shell: powershell
+        run: xcopy /S ".\requests\ ".\build\windows\runner\Release\requests\"
+
+      - name: Copy requires libs
+        shell: powershell
+        run: xcopy /S ".\requirements\*.dll" ".\build/windows/runner/Release/"
 
       # Upload generated Windows build to the artifacts.
       - uses: actions/upload-artifact@v2
