@@ -45,6 +45,9 @@ class RecentDocumentsDao
   /// Deletes first `N` elements from the table
   Future<void> deleteFirstN(int n) async {
     final db = await database.database;
-    await db.rawDelete('DELETE FROM $tableName LIMIT $n');
+    await db.rawDelete(
+        'DELETE FROM $tableName\n'
+        'WHERE id IN (SELECT id FROM $tableName LIMIT ?)',
+        [n]);
   }
 }
