@@ -22,9 +22,9 @@ jobs:
 
       - name: Copy requests module
         shell: powershell
-        run: xcopy /S "requests\" "build\windows\runner\Release\requests\"
+        run: xcopy /S "requests" "build\windows\runner\Release\requests\"
 
-      - name: Copy requires libs
+      - name: Copy required libs
         shell: powershell
         run: xcopy /S "requirements\*.dll" "build\windows\runner\Release\"
 
