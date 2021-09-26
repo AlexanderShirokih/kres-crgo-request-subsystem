@@ -9,9 +9,16 @@ data class RequestItem(
     val type: RequestType,
     val reason: String?,
     var counter: CounterInfo?,
-    var additionalInfo: String = "",
+    var additionalInfo: String,
+) {
 
-    ) {
+    fun addAdditionalInfo(info: String) {
+        additionalInfo = if (additionalInfo.isEmpty()) {
+            info
+        } else {
+            "$additionalInfo, $info"
+        }
+    }
 
     val counterInfo: String
         get() = counter?.fullInfo ?: "ПУ отсутств."

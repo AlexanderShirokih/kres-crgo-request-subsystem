@@ -91,16 +91,18 @@ object RequestParser {
         mainLine: List<String>
     ): RequestItem {
         val requestType = translateRequestType(mainLine[4].substringAfter("/").trim())
+        val reason = mainLine[5].capitalize().trim()
 
         return RequestItem(
             accountId = mainLine[1].toInt(),
             name = mainLine[2],
-            address = mainLine[3].substringAfter("Керчь").trim(),
+            address = mainLine[3].substringAfter("Керчь").replace(",", "").trim(),
             type = RequestType(
                 short = requestType.shortName,
                 full = requestType.fullName,
             ),
-            reason = mainLine[5].capitalize().trim(),
+            reason = reason.substringBefore("/").trim(),
+            additionalInfo = reason.substringAfter("/").trim(),
             phone = "",
             connectionPoint = null,
             counter = null,
@@ -144,7 +146,7 @@ object RequestParser {
         Regex("Мощность: (\\d{1,3},?\\d?)").find(line[0])?.run {
             val power = groups[1]!!.value
             if (power != "0") {
-                requestItem.additionalInfo = "М: $power"
+                requestItem.addAdditionalInfo("М: $power")
             }
         }
     }
