@@ -17,9 +17,21 @@ jobs:
       - uses: subosito/flutter-action@v1
         with:
           channel: beta
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 8
+          
       - run: flutter config --enable-windows-desktop
       - run: flutter build windows
-
+      
+      - name: Build requests module
+      - uses: eskatos/gradle-command-action@v1
+        with:
+          arguments: copyLibsToParentProject
+          wrapper-cache-enabled: true
+          dependencies-cache-enabled: true
+          configuration-cache-enabled: true
+      
       - name: Copy requests module
         shell: powershell
         run: xcopy /S "requests" "build\windows\runner\Release\requests\"
