@@ -260,6 +260,9 @@ class _TemporaryRequest extends Request {
         );
 
   @override
+  final int id = 0;
+
+  @override
   Request rebuild({
     required int? accountId,
     required String name,

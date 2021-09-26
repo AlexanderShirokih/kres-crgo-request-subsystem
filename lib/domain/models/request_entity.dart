@@ -44,6 +44,9 @@ abstract class Request extends Equatable {
     this.reason,
   });
 
+  /// Unique request id
+  int get id;
+
   /// `true` if all fields are empty
   bool get isEmpty {
     return name.isEmpty &&

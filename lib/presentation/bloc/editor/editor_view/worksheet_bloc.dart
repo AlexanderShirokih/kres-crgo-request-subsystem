@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/domain/models.dart';
@@ -8,7 +9,6 @@ import 'package:kres_requests2/presentation/bloc/editor/editor_view/worksheet_na
 import 'package:meta/meta.dart';
 
 part 'worksheet_event.dart';
-
 part 'worksheet_state.dart';
 
 /// BLoC responsible for control worksheet state.
@@ -88,14 +88,6 @@ class WorksheetBloc extends Bloc<WorksheetEvent, WorksheetState> {
       add(SetCurrentWorksheetEvent(updatedWorksheet));
     });
   }
-
-  // TODO: Remember selection list should be updated after WorksheetMoveDialog
-  // TODO: affects the selected requests
-  // Old code:  if (_groupList != null) {
-  //               for (final selected in _selectionList!)
-  //                 _groupList!.remove(selected);
-  //             }
-  //             _selectionList = null;
 
   /// Deals some action with the selection list
   Stream<WorksheetState> _handleSelectionEvent(
@@ -191,12 +183,31 @@ class WorksheetBloc extends Bloc<WorksheetEvent, WorksheetState> {
       return actions.map(
         (event) =>
             event is WorksheetDataState && event is! WorksheetSelectionState
-                ? WorksheetSelectionState(original.selectionList, event)
+                ? WorksheetSelectionState(
+                    _updateRequestSelectionInstances(
+                      original.selectionList,
+                      event.requests.toSet(),
+                    ),
+                    event,
+                  )
                 : event,
       );
     }
     return actions;
   }
+
+  Set<Request> _updateRequestSelectionInstances(
+    Set<Request> selectionList,
+    Set<Request> current,
+  ) =>
+      selectionList
+          .map(
+            (selected) => current
+                .firstWhereOrNull((element) => element.id == selected.id),
+          )
+          .whereNotNull()
+          .whereNot((element) => element.id == 0)
+          .toSet();
 
   @override
   Future<void> close() async {
