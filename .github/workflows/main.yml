@@ -31,6 +31,7 @@ jobs:
           wrapper-cache-enabled: true
           dependencies-cache-enabled: true
           configuration-cache-enabled: true
+          build-root-directory: requests_processor2
       
       - name: Copy requests module
         shell: powershell
