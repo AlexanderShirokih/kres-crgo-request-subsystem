@@ -1,5 +1,4 @@
 import 'package:kres_requests2/domain/domain.dart';
-import 'package:kres_requests2/domain/models/request_entity.dart';
 import 'package:kres_requests2/domain/validators.dart';
 
 /// [Validator] implementation that validates request instances

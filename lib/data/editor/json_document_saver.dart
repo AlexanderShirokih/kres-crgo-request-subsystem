@@ -5,7 +5,6 @@ import 'package:crypto/crypto.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/editor/document_saver.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/models/document.dart';
 
 /// Stores document to JSON format and saves it in the storage
 class JsonDocumentSaver implements DocumentSaver {

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:kres_requests2/data/repository/persisted_object.dart';
-import 'package:kres_requests2/domain/controller/repository_controller.dart';
 import 'package:kres_requests2/domain/domain.dart';
 
 /// Creates [PersistedObjectBuilder] factory that creates new persisted recent

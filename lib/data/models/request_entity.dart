@@ -1,8 +1,5 @@
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/models/connection_point.dart';
-import 'package:kres_requests2/domain/models/counter_info.dart';
-import 'package:kres_requests2/domain/models/request_entity.dart';
 
 /// Request entity implementation that uses internal ID as [PersistedObject]
 class RequestEntityImpl extends Request implements PersistedObject<int> {

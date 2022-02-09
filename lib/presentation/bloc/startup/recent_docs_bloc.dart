@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kres_requests2/domain/domain.dart';
-import 'package:kres_requests2/domain/models.dart';
 import 'package:meta/meta.dart';
 
 part 'recent_docs_event.dart';

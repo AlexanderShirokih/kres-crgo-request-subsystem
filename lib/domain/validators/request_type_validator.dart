@@ -1,7 +1,6 @@
 import 'package:kres_requests2/domain/models/request_type.dart';
 import 'package:kres_requests2/domain/validators.dart';
 
-import 'mapped_validator.dart';
 
 /// [Validator] implementation that validates request type instances
 class RequestTypeValidator extends MappedValidator<RequestType> {

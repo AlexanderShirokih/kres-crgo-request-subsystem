@@ -1,11 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:kres_requests2/data/models/request_entity.dart';
 import 'package:kres_requests2/domain/models.dart';
-import 'package:kres_requests2/domain/models/counter_info.dart';
-import 'package:kres_requests2/domain/models/employee.dart';
-import 'package:kres_requests2/domain/models/request_entity.dart';
-
-import 'connection_point.dart';
 
 /// Contains info about single working document
 class Worksheet extends Equatable {

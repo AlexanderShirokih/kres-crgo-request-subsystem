@@ -5,7 +5,6 @@ import 'package:kres_requests2/data/models/recent_document_info.dart';
 import 'package:kres_requests2/data/repository/encoder.dart';
 import 'package:kres_requests2/data/repository/persisted_object.dart';
 import 'package:kres_requests2/domain/domain.dart';
-import 'package:kres_requests2/domain/models/request_type.dart';
 
 import 'dao.dart';
 

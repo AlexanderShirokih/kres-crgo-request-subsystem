@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:kres_requests2/domain/domain.dart';
-import 'package:kres_requests2/domain/models.dart';
 import 'package:kres_requests2/domain/service/request_service.dart';
 import 'package:kres_requests2/presentation/bloc.dart';
 import 'package:meta/meta.dart';
