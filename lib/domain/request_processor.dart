@@ -103,8 +103,8 @@ class MegaBillingRequestProcessorImpl extends AbstractRequestProcessor {
 
   @override
   Future<Document> importRequests(String filePath) async {
-    final processResult =
-        await _requestsProcessExecutor.runProcess(['-parse', filePath]);
+    final processResult = await _requestsProcessExecutor
+        .runProcess(['-parse', filePath, '--no-templates']);
 
     return _decodeProcessResult<Document>(
       processResult,

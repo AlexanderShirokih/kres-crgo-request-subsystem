@@ -9,7 +9,9 @@ import ru.aleshi.requests.data.RequestType
 import java.nio.file.Files
 import java.nio.file.Path
 
-object RequestParser {
+class RequestParser(
+    private val noDefaultTemplates: Boolean = false,
+) {
     private val defaultReqTypeReplacements =
         listOf(
             WorkReplacementTemplate(
@@ -87,9 +89,7 @@ object RequestParser {
     }
 
 
-    private fun createNewRequest(
-        mainLine: List<String>
-    ): RequestItem {
+    private fun createNewRequest(mainLine: List<String>): RequestItem {
         val requestType = translateRequestType(mainLine[4].substringAfter("/").trim())
         val reason = mainLine[5].capitalize().trim()
 
@@ -151,8 +151,12 @@ object RequestParser {
         }
     }
 
-    private fun translateRequestType(requestType: String): WorkReplacementTemplate =
-        defaultReqTypeReplacements.firstOrNull { it.pattern == requestType } ?: WorkReplacementTemplate(
-            requestType
-        )
+    private fun translateRequestType(requestType: String): WorkReplacementTemplate {
+        return defaultReqTypeReplacements
+            .takeIf { noDefaultTemplates }
+            ?.firstOrNull { it.pattern == requestType }
+            ?: WorkReplacementTemplate(
+                requestType
+            )
+    }
 }

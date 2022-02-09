@@ -22,7 +22,13 @@ object AppKt {
                 when (args[0]) {
                     "-export-pdf" -> PdfExporter(loadDocument(args[1])).export(args[2])
                     "-export-xlsx" -> XlsxExporter(loadDocument(args[1])).export(args[2])
-                    "-parse" -> RequestParser.parse(filePath = Paths.get(args[1]))
+                    "-parse" -> {
+                        RequestParser(
+                            noDefaultTemplates = args.size > 1 && args[2] == "--no-templates",
+                        ).parse(
+                            filePath = Paths.get(args[1]),
+                        )
+                    }
                     "-list-printers" -> getAvailablePrinters()
                     "-print" -> printDocument(
                         document = loadDocument(args[1]),
